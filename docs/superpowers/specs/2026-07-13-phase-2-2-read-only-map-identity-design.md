@@ -1,7 +1,7 @@
 # Phase 2.2 Read-Only Map Identity Probe Design
 
-Date: 2026-07-13  
-Target: The Settlers IV History Edition through Settlers United  
+Date: 2026-07-13
+Target: The Settlers IV History Edition through Settlers United
 Branch: `main`
 
 ## Goal
