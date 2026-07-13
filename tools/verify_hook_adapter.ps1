@@ -54,6 +54,7 @@ $imageBaseMatch = [regex]::Match(
     $imageBaseRow[0], "^\s*([0-9A-Fa-f]+)\s+image base(?:\s|$)")
 $imageBase = [Convert]::ToUInt64($imageBaseMatch.Groups[1].Value, 16)
 $adapterAddress = "{0:X8}" -f ($imageBase + $adapterRva)
+$adapterRvaAddress = "{0:X8}" -f $adapterRva
 
 $disassembly = @(& $dumpbin /NOLOGO /DISASM $Binary 2>&1)
 if ($LASTEXITCODE -ne 0) {
@@ -61,13 +62,14 @@ if ($LASTEXITCODE -ne 0) {
 }
 $addressRows = @(
     for ($index = 0; $index -lt $disassembly.Count; ++$index) {
-        if ($disassembly[$index] -match "^\s*$adapterAddress\s*:") {
+        if ($disassembly[$index] -match
+            "^\s*(?:$adapterAddress|$adapterRvaAddress)\s*:") {
             $index
         }
     }
 )
 if ($addressRows.Count -ne 1) {
-    throw "Adapter address $adapterAddress not found exactly once in disassembly"
+    throw "Adapter VA $adapterAddress / RVA $adapterRvaAddress not found exactly once in disassembly"
 }
 
 $start = $addressRows[0]
