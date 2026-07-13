@@ -71,6 +71,27 @@ if ($addressRows.Count -ne 1) {
 }
 
 $start = $addressRows[0]
+$entryWindowEnd = [Math]::Min($start + 8, $disassembly.Count - 1)
+$entryWindow = @($disassembly[$start..$entryWindowEnd])
+$jump = @($entryWindow | Where-Object {
+    $_ -match "\bjmp\s+([0-9A-Fa-f]{8})\b"
+})
+if ($jump.Count -eq 1) {
+    $jumpMatch = [regex]::Match(
+        $jump[0], "\bjmp\s+([0-9A-Fa-f]{8})\b")
+    $implementationAddress = $jumpMatch.Groups[1].Value.ToUpperInvariant()
+    $implementationRows = @(
+        for ($index = 0; $index -lt $disassembly.Count; ++$index) {
+            if ($disassembly[$index] -match "^\s*$implementationAddress\s*:") {
+                $index
+            }
+        }
+    )
+    if ($implementationRows.Count -ne 1) {
+        throw "Incremental-link target $implementationAddress was not found exactly once"
+    }
+    $start = $implementationRows[0]
+}
 $end = [Math]::Min($start + 300, $disassembly.Count - 1)
 for ($index = $start + 1; $index -le $end; ++$index) {
     if ($disassembly[$index] -match "\bENDP\b") {
@@ -84,7 +105,7 @@ $ret0c = @($returns | Where-Object {
     $_ -match "\bret\s+(?:0*0C(?:h)?)\b"
 })
 if ($ret0c.Count -ne 1 -or $returns.Count -ne 1) {
-    throw "Adapter must contain exactly one 'ret 0Ch'; returns were: $($returns -join ' | ')"
+    throw "Adapter must contain exactly one 'ret 0Ch'; returns were: $($returns -join ' | '); body: $($adapterBody -join ' | ')"
 }
 
 $sourceFiles = @(Get-ChildItem -LiteralPath (Join-Path $SourceRoot "src") `
