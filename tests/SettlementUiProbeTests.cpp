@@ -30,6 +30,8 @@ int RunSettlementUiProbeTests() {
     Require(!probe.Begin(7u, 101u), "capture cannot begin twice");
     probe.Observe(first);
     probe.Observe(first);
+    Require(!probe.FinishIfDue(99u).has_value(),
+            "clock regression does not finish a capture");
     Require(!probe.FinishIfDue(100u + kSettlementCaptureMs - 1u).has_value(),
             "capture remains open before deadline");
     const auto capture = probe.FinishIfDue(100u + kSettlementCaptureMs);
