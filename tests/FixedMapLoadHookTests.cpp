@@ -242,15 +242,20 @@ int RunFixedMapLoadHookTests() {
                                           0u);
         Require(invoker.calls == 2,
                 "malformed capture still invokes original exactly once");
-        Require(sink.Size() == 1u,
-                "malformed capture is not published");
+        Require(sink.Size() == 2u,
+                "malformed capture publishes a bounded failure event");
+        Require(sink.records.back().failure ==
+                    campaign_completion::WideCaptureFailure::NullObject,
+                "malformed capture preserves the exact failure reason");
+        Require(sink.sequences.back() == sink.sequences.front() + 1u,
+                "every adapter entry receives a monotonic sequence");
 
         Require(hook.Stop() == PatchFailure::None,
                 "owned patch restores cleanly");
         Require(backend.restoreCalls == 1, "restore occurs once");
         CampaignCompletionFixedMapAdapter(fakeMapFile, nullptr, &fixture, 2u,
                                           1u);
-        Require(sink.Size() == 1u,
+        Require(sink.Size() == 2u,
                 "closed adapter cannot publish a new capture");
     }
 
