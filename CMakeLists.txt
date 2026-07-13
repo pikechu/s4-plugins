@@ -16,6 +16,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/hook/HookSiteLayout.cpp
     src/hook/MsvcX86WideString.cpp
     src/identity/ListAttribution.cpp
+    src/identity/MapPathValidator.cpp
     src/runtime/CallbackGate.cpp
     src/runtime/DiagnosticRuntime.cpp
     src/runtime/ListenerRemoval.cpp
@@ -60,6 +61,7 @@ add_executable(campaign_completion_tests
   src/hook/HookSiteLayout.cpp
   src/hook/MsvcX86WideString.cpp
   src/identity/ListAttribution.cpp
+  src/identity/MapPathValidator.cpp
   src/runtime/CallbackGate.cpp
   src/runtime/ListenerRemoval.cpp
   src/runtime/PageObservation.cpp
