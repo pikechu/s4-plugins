@@ -27,6 +27,24 @@ function New-SampleArchive([string]$SourceDirectory, [string]$ArchivePath) {
     [IO.Compression.ZipFile]::CreateFromDirectory($SourceDirectory, $ArchivePath)
 }
 
+function New-DuplicateEntryArchive([string]$ArchivePath) {
+    $stream = [IO.File]::Open($ArchivePath, [IO.FileMode]::CreateNew)
+    try {
+        $zip = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Create, $true)
+        try {
+            foreach ($value in @('first', 'second')) {
+                $entry = $zip.CreateEntry('Plugins/SettlersUnited.asi')
+                $writer = [IO.StreamWriter]::new($entry.Open())
+                try { $writer.Write($value) } finally { $writer.Dispose() }
+            }
+        } finally {
+            $zip.Dispose()
+        }
+    } finally {
+        $stream.Dispose()
+    }
+}
+
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) "CampaignCompletionArtifactTests-$([guid]::NewGuid())"
 try {
     $artifactDirectory = Join-Path $testRoot 's4_artifacts'
@@ -85,6 +103,23 @@ try {
     Assert-True $installRefused 'install accepted a missing ASI'
     Assert-Equal $beforeFailureHash (Get-FileSha256 $archive) 'failed install changed archive'
     Assert-True (-not (Test-Path "$archive.campaigncompletion.tmp")) 'failed install leaked temp'
+
+    $duplicateRoot = Join-Path $testRoot 'duplicate'
+    $duplicateArtifactDirectory = Join-Path $duplicateRoot 's4_artifacts'
+    $duplicateBackup = Join-Path $duplicateRoot 'backup'
+    $duplicateArchive = Join-Path $duplicateArtifactDirectory 'Plugin_SU.zip'
+    New-Item -ItemType Directory -Path $duplicateArtifactDirectory -Force | Out-Null
+    New-DuplicateEntryArchive $duplicateArchive
+    $duplicateHash = Get-FileSha256 $duplicateArchive
+    $verificationRefused = $false
+    try {
+        Install-CampaignCompletionArtifact $duplicateArchive $asiOne $duplicateBackup | Out-Null
+    } catch {
+        $verificationRefused = $true
+    }
+    Assert-True $verificationRefused 'install accepted duplicate ZIP entries'
+    Assert-Equal $duplicateHash (Get-FileSha256 $duplicateArchive) 'verification failure changed archive'
+    Assert-True (-not (Test-Path "$duplicateArchive.campaigncompletion.tmp")) 'verification failure leaked temp'
 
     Write-Host 'Settlers United archive integration tests passed.'
 } finally {
