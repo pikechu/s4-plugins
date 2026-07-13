@@ -103,5 +103,30 @@ int RunRuntimePolicyTests() {
             "internal hook stop precedes public listener stop");
     Require(traceClose != std::string::npos && listenerStop < traceClose,
             "capture trace closes after hook and public listeners");
+
+    const auto listeners = ReadText(sourceRoot / "src" / "runtime" /
+                                    "S4Listeners.cpp");
+    Require(listeners.find("AddLuaOpenListener(&OnLuaOpen)") !=
+                std::string::npos,
+            "public LuaOpen listener must be registered");
+    Require(listeners.find("AddTickListener(&OnTick)") != std::string::npos,
+            "public Tick listener must be registered");
+    const auto luaOpenBody = listeners.find("S4Listeners::OnLuaOpen()");
+    const auto tickBody = listeners.find("S4Listeners::OnTick(");
+    const auto mapInitBody = listeners.find("S4Listeners::ObserveMapInit()");
+    const auto mouseBody = listeners.find("S4Listeners::ObserveMouse(");
+    Require(luaOpenBody != std::string::npos && tickBody != std::string::npos &&
+                luaOpenBody < tickBody &&
+                listeners.substr(luaOpenBody, tickBody - luaOpenBody)
+                        .find("bridge_") == std::string::npos,
+            "LuaOpen callback performs generation bookkeeping only");
+    Require(mapInitBody != std::string::npos && mouseBody != std::string::npos &&
+                mapInitBody < mouseBody &&
+                listeners.substr(mapInitBody, mouseBody - mapInitBody)
+                        .find("bridge_") == std::string::npos,
+            "MapInit callback never reads Lua");
+    Require(listeners.find("coordinator_->ObserveTick(inGame, now, *bridge_)") !=
+                std::string::npos,
+            "bridge is delegated only through the bounded Tick path");
     return 0;
 }

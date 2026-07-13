@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <numeric>
 #include <vector>
 
 namespace {
@@ -42,5 +43,23 @@ int RunListenerRemovalTests() {
                 partial.failures == 1,
             "partial removal counts must be exact");
     Require(hooks.empty(), "partial removal must still clear stored handles");
+
+    hooks.resize(77u);
+    std::iota(hooks.begin(), hooks.end(), static_cast<S4HOOK>(1));
+    attempts.clear();
+    const auto publicListenerSet =
+        campaign_completion::RemoveListenersInReverse(
+            hooks, [&attempts](S4HOOK hook) {
+                attempts.push_back(hook);
+                return S_OK;
+            });
+    Require(attempts.size() == 77u && attempts.front() == 77u &&
+                attempts.back() == 1u,
+            "all 77 public listeners are removed in exact reverse order");
+    Require(publicListenerSet.registered == 77u &&
+                publicListenerSet.removed == 77u &&
+                publicListenerSet.failures == 0u,
+            "77-listener lifecycle counts are exact");
+    Require(hooks.empty(), "77-listener removal clears every handle");
     return 0;
 }
