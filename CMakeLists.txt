@@ -36,6 +36,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE
   )
   target_compile_options(CampaignCompletionDebug PRIVATE /W4 /WX /permissive-)
+  target_link_options(CampaignCompletionDebug PRIVATE /INCREMENTAL:NO)
   target_link_libraries(CampaignCompletionDebug PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/third_party/S4ModApi/S4ModApi.lib"
     Version Advapi32 Crypt32 Psapi
