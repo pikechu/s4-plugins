@@ -114,7 +114,9 @@ void LaunchOriginTracker::ObservePage(DWORD page,
 
     switch (page) {
         case S4_SCREEN_LOADGAME:
-            ObserveBack();
+            if (!explicitLoadSelection_) {
+                ObserveBack();
+            }
             break;
         case S4_SCREEN_SINGLEPLAYER_MAPSELECT_SINGLE:
         case S4_SCREEN_SINGLEPLAYER_MAPSELECT_MULTI:
@@ -144,16 +146,25 @@ void LaunchOriginTracker::ObservePage(DWORD page,
             }
             break;
         case S4_SCREEN_LOADGAME_CAMPAIGN:
+            if (explicitLoadSelection_) {
+                break;
+            }
             Set(Origin(LaunchSource::LoadCampaign,
                        SessionEligibility::Eligible),
                 nowMs);
             break;
         case S4_SCREEN_LOADGAME_MAP:
+            if (explicitLoadSelection_) {
+                break;
+            }
             Set(Origin(LaunchSource::LoadMapUnresolved,
                        SessionEligibility::Unknown),
                 nowMs);
             break;
         case S4_SCREEN_LOADGAME_MULTIPLAYER:
+            if (explicitLoadSelection_) {
+                break;
+            }
             Set(Origin(LaunchSource::LoadOnlineMultiplayer,
                        SessionEligibility::ExcludedOnlineMultiplayer),
                 nowMs);
@@ -161,6 +172,37 @@ void LaunchOriginTracker::ObservePage(DWORD page,
         default:
             break;
     }
+}
+
+void LaunchOriginTracker::ObserveLoadTypeControl(
+    DWORD elementId,
+    std::uint64_t nowMs) noexcept {
+    if (!enabled_) {
+        return;
+    }
+
+    LaunchOriginSnapshot selected;
+    switch (elementId) {
+        case kLoadSinglePlayerControl:
+            selected = Origin(LaunchSource::LoadMapUnresolved,
+                              SessionEligibility::Unknown);
+            break;
+        case kLoadMultiplayerControl:
+            selected = Origin(LaunchSource::LoadOnlineMultiplayer,
+                              SessionEligibility::ExcludedOnlineMultiplayer);
+            break;
+        case kLoadCampaignControl:
+            selected = Origin(LaunchSource::LoadCampaign,
+                              SessionEligibility::Eligible);
+            break;
+        default:
+            return;
+    }
+
+    current_ = selected;
+    observedAtMs_ = nowMs;
+    context_ = NavigationContext::Unknown;
+    explicitLoadSelection_ = true;
 }
 
 void LaunchOriginTracker::ObserveListKind(FixedMapListKind kind,
@@ -202,6 +244,7 @@ void LaunchOriginTracker::ObserveBack() noexcept {
         current_ = {};
         observedAtMs_ = 0u;
         context_ = NavigationContext::Unknown;
+        explicitLoadSelection_ = false;
     }
 }
 
@@ -219,6 +262,7 @@ LaunchOriginSnapshot LaunchOriginTracker::ConsumeMapInit(
     current_ = {};
     observedAtMs_ = 0u;
     context_ = NavigationContext::Unknown;
+    explicitLoadSelection_ = false;
     return result;
 }
 
@@ -226,6 +270,7 @@ void LaunchOriginTracker::Disable() noexcept {
     current_ = {};
     observedAtMs_ = 0u;
     context_ = NavigationContext::Unknown;
+    explicitLoadSelection_ = false;
     enabled_ = false;
 }
 

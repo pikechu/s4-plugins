@@ -9,6 +9,9 @@
 namespace campaign_completion {
 
 constexpr std::uint64_t kLaunchOriginLeaseMs = 30'000u;
+constexpr DWORD kLoadSinglePlayerControl = 2390u;
+constexpr DWORD kLoadMultiplayerControl = 2391u;
+constexpr DWORD kLoadCampaignControl = 2399u;
 
 enum class LaunchSource {
     Unknown,
@@ -41,6 +44,8 @@ std::string_view SessionEligibilityName(SessionEligibility value) noexcept;
 class LaunchOriginTracker final {
 public:
     void ObservePage(DWORD page, std::uint64_t nowMs) noexcept;
+    void ObserveLoadTypeControl(DWORD elementId,
+                                std::uint64_t nowMs) noexcept;
     void ObserveListKind(FixedMapListKind kind,
                          std::uint64_t nowMs) noexcept;
     void ObserveBack() noexcept;
@@ -59,6 +64,7 @@ private:
     LaunchOriginSnapshot current_{};
     std::uint64_t observedAtMs_ = 0u;
     NavigationContext context_ = NavigationContext::Unknown;
+    bool explicitLoadSelection_ = false;
     bool enabled_ = true;
 };
 

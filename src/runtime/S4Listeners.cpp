@@ -402,6 +402,9 @@ void S4Listeners::ObserveMouse(DWORD button, INT x, INT y, DWORD message,
         return;
     }
     if (element != nullptr) {
+        if (origin_ != nullptr && message == WM_LBUTTONUP) {
+            origin_->ObserveLoadTypeControl(element->id, now);
+        }
         const bool wasFixedMap =
             listAttribution_.Current() != FixedMapListKind::Unknown;
         if (origin_ != nullptr && message == WM_LBUTTONUP &&

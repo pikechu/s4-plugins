@@ -111,7 +111,8 @@ int RunLaunchOriginTests() {
             "multiplayer load is excluded");
 
     LaunchOriginTracker explicitLoadedMap;
-    explicitLoadedMap.ObserveLoadTypeControl(2390u, 100u);
+    explicitLoadedMap.ObserveLoadTypeControl(kLoadSinglePlayerControl, 100u);
+    explicitLoadedMap.ObservePage(S4_SCREEN_LOADGAME, 100u);
     explicitLoadedMap.ObservePage(S4_SCREEN_LOADGAME_CAMPAIGN, 101u);
     explicitLoadedMap.ObservePage(S4_SCREEN_LOADGAME_MAP, 102u);
     explicitLoadedMap.ObservePage(S4_SCREEN_LOADGAME_MULTIPLAYER, 103u);
@@ -121,14 +122,14 @@ int RunLaunchOriginTests() {
             "single-player load control survives sibling load pages");
 
     LaunchOriginTracker explicitLoadedCampaign;
-    explicitLoadedCampaign.ObserveLoadTypeControl(2399u, 100u);
+    explicitLoadedCampaign.ObserveLoadTypeControl(kLoadCampaignControl, 100u);
     explicitLoadedCampaign.ObservePage(S4_SCREEN_LOADGAME_MULTIPLAYER, 101u);
     Require(explicitLoadedCampaign.ConsumeMapInit(200u).source ==
                 LaunchSource::LoadCampaign,
             "campaign load control survives multiplayer sibling page");
 
     LaunchOriginTracker explicitLoadedOnline;
-    explicitLoadedOnline.ObserveLoadTypeControl(2391u, 100u);
+    explicitLoadedOnline.ObserveLoadTypeControl(kLoadMultiplayerControl, 100u);
     explicitLoadedOnline.ObservePage(S4_SCREEN_LOADGAME_CAMPAIGN, 101u);
     Require(explicitLoadedOnline.ConsumeMapInit(200u).eligibility ==
                 SessionEligibility::ExcludedOnlineMultiplayer,

@@ -25,7 +25,13 @@ void LuaMapSession::ObserveLuaOpen(std::uint64_t nowMs) noexcept {
     }
 
     if (bound_) {
-        stale_ = true;
+        if (attempts_ == 0u) {
+            boundGeneration_ = luaGeneration_;
+            stale_ = false;
+            nextAttemptMs_ = nowMs;
+        } else {
+            stale_ = true;
+        }
         return;
     }
 

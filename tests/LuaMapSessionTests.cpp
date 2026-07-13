@@ -114,18 +114,23 @@ int RunLuaMapSessionTests() {
             "post-MapInit LuaOpen rebinds before the first read");
 
     QueueBridge staleBridge;
+    staleBridge.Push(
+        Attempt(Value(SuMapReadStatus::FunctionMissing),
+                Value(SuMapReadStatus::FunctionMissing)));
     LuaMapSession stale;
     stale.ObserveLuaOpen(1u);
     stale.ObserveMapInit(2u);
-    stale.ObserveLuaOpen(3u);
-    const auto staleResult = stale.ObserveTick(true, 52u, staleBridge);
+    Require(!stale.ObserveTick(true, 52u, staleBridge).has_value(),
+            "first retryable read keeps the session active");
+    stale.ObserveLuaOpen(53u);
+    const auto staleResult = stale.ObserveTick(true, 53u, staleBridge);
     Require(staleResult && staleResult->terminal &&
                 staleResult->name.status == SuMapReadStatus::StaleGeneration &&
                 staleResult->relative.status ==
                     SuMapReadStatus::StaleGeneration,
             "second LuaOpen makes a bound session stale");
-    Require(staleBridge.readCount == 0u,
-            "stale generation never enters Lua");
+    Require(staleBridge.readCount == 1u,
+            "stale generation prevents reads from the replacement Lua state");
 
     QueueBridge replacementBridge;
     replacementBridge.Push(Success("Odysseus", "Maps\\Single\\Odysseus.map"));
