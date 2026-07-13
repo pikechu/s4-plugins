@@ -439,18 +439,25 @@ and returns the counts. Registration failure uses the same cleanup path.
 
 - [ ] **Step 4: Add the persistent control loop and PID header**
 
-`DiagnosticRuntime::Start` stores the stop path and logs:
+`DiagnosticRuntime::Start` stores the stop path and builds the header with:
 
-```text
-CampaignCompletionDebug bootstrap version=0.2.1 pid=<pid> hook-mode=public-only
+```cpp
+std::ostringstream header;
+header << "CampaignCompletionDebug bootstrap version=0.2.1 pid="
+       << GetCurrentProcessId() << " hook-mode=public-only";
+logger_.Write(LogLevel::Info, header.str());
 ```
 
 `RunControlLoop` checks every 100 ms. On a consumed request it logs
 `controlled stop requested`, calls `Stop`, and returns. `Stop` logs:
 
-```text
-listeners stopped registered=<n> removed=<n> failures=<n>
-diagnostic runtime stopped
+```cpp
+std::ostringstream summary;
+summary << "listeners stopped registered=" << result.registered
+        << " removed=" << result.removed
+        << " failures=" << result.failures;
+logger_.Write(LogLevel::Info, summary.str());
+logger_.Write(LogLevel::Info, "diagnostic runtime stopped");
 ```
 
 The bootstrap thread becomes:
@@ -539,8 +546,8 @@ Do not proceed otherwise.
 - [ ] **Step 2: Run the guarded installer**
 
 ```powershell
-./tools/install_settlers_united_artifact.ps1 `
-  -AsiPath <absolute-downloaded-phase-2.1-asi-path>
+$asi = (Resolve-Path '.\dist\phase-2-1\downloaded\package\Plugins\CampaignCompletionDebug.asi').Path
+./tools/install_settlers_united_artifact.ps1 -AsiPath $asi
 ```
 
 Expected: backup precedes replacement; original, patched, and embedded hashes
