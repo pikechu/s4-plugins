@@ -13,7 +13,9 @@ ILuaApi::LuaObject S4LuaApi::GetGlobal(char* name) noexcept {
 }
 
 ILuaApi::LuaObject S4LuaApi::GetField(LuaObject object, char* field) noexcept {
-    return lua_getfield(object, field);
+    lua_pushobject(object);
+    lua_pushstring(field);
+    return lua_gettable();
 }
 
 bool S4LuaApi::IsTable(LuaObject object) noexcept {
