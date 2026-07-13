@@ -167,6 +167,7 @@ void S4Listeners::ObserveUiFrame(DWORD page) {
                settlement_ != nullptr) {
         settlementStarted_ = settlement_->Begin(activeSessionId_, now);
     }
+    FinishSettlementIfDue(now);
 
     const auto snapshot = pageWindow_.Observe(page, now);
     if (!snapshot.has_value() || logger_ == nullptr) {
@@ -239,11 +240,14 @@ void S4Listeners::ObserveTick(BOOL delayed) {
     if (coordinator_ != nullptr && bridge_ != nullptr) {
         coordinator_->ObserveTick(inGame, now, *bridge_);
     }
+    FinishSettlementIfDue(now);
+}
 
-    if (settlement_ == nullptr || phase3Trace_ == nullptr) {
+void S4Listeners::FinishSettlementIfDue(std::uint64_t nowMs) {
+    if (api_ == nullptr || settlement_ == nullptr || phase3Trace_ == nullptr) {
         return;
     }
-    const auto capture = settlement_->FinishIfDue(now);
+    const auto capture = settlement_->FinishIfDue(nowMs);
     if (!capture.has_value()) {
         return;
     }

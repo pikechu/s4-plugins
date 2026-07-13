@@ -98,6 +98,7 @@ private:
     void ObserveMouse(DWORD button, INT x, INT y, DWORD message,
                       LPCS4UIELEMENT element);
     void ObserveGuiElement(LPS4GUIDRAWBLTPARAMS element);
+    void FinishSettlementIfDue(std::uint64_t nowMs);
 
     static std::atomic<S4Listeners*> active_;
     static const std::array<LPS4FRAMECALLBACK, S4_GUI_ENUM_MAXVALUE - 1>
