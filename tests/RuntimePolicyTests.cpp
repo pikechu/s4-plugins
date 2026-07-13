@@ -74,14 +74,16 @@ int RunRuntimePolicyTests() {
     const auto policy = ReadText(sourceRoot / "config" /
                                  "CampaignCompletionDebug.ini");
     for (const auto* required : {
-             "Version=0.2.5", "IdentitySource=SettlersUnitedLua",
-             "FixedMapLoadHook=0", "HookCount=0",
+             "Version=0.3.0", "DiagnosticMode=VictoryUiCalibration",
+             "IdentitySource=SettlersUnitedLua",
+             "PublicSettlementUiProbe=1", "LaunchOriginTracking=1",
+             "LoadOriginRecovery=1", "InternalVictoryHook=0",
+             "GameDefaultGameEndCheckCalls=0", "HookCount=0",
              "CodePatchBytes=0", "LuaWrites=0", "GameDataWrites=0",
-             "UnrelatedInternalCalls=0", "CompletionDetection=0",
-             "CompletionStorage=0", "CompletionMarkers=0",
-             "CaptureTraceRoot="}) {
+             "CompletionDetection=0", "CompletionStorage=0",
+             "CompletionMarkers=0", "CaptureTraceRoot="}) {
         Require(policy.find(required) != std::string::npos,
-                "phase 2.5 INI policy field missing");
+                "phase 3A INI policy field missing");
     }
     Require(policy.find("CaptureTraceRoot=F:") == std::string::npos,
             "packaged trace root must remain empty");
@@ -94,10 +96,10 @@ int RunRuntimePolicyTests() {
                                   "DiagnosticRuntime.cpp");
     const auto runtimeHeader = ReadText(sourceRoot / "src" / "runtime" /
                                         "DiagnosticRuntime.h");
-    Require(runtime.find("version=0.2.5") != std::string::npos &&
-                runtime.find("identity-mode=su-lua-read-only") !=
+    Require(runtime.find("version=0.3.0") != std::string::npos &&
+                runtime.find("mode=victory-ui-calibration-public") !=
                     std::string::npos,
-            "runtime header identifies phase 2.5 read-only Lua mode");
+            "runtime header identifies phase 3A public calibration mode");
     for (const auto* forbidden : {
              "FixedMapLoadHook", "HlibCallPatchBackend", "HookSiteLayout",
              "fixedMapHook_", "hookBackend_", "originalInvoker_",
@@ -109,17 +111,26 @@ int RunRuntimePolicyTests() {
     Require(runtimeHeader.find("S4LuaApi") != std::string::npos &&
                 runtimeHeader.find("S4LuaMapBridge") != std::string::npos &&
                 runtimeHeader.find("MapIdentityCoordinator") !=
-                    std::string::npos,
-            "runtime owns the production SU Lua identity pipeline");
+                    std::string::npos &&
+                runtimeHeader.find("Phase3Trace") != std::string::npos &&
+                runtimeHeader.find("LaunchOriginTracker") !=
+                    std::string::npos &&
+                runtimeHeader.find("SettlementUiProbe") != std::string::npos,
+            "runtime owns the public calibration pipeline");
     const auto coordinatorDisable = runtime.find("coordinator_->Disable()");
+    const auto originDisable = runtime.find("origin_.Disable()");
+    const auto settlementDisable = runtime.find("settlement_.Disable()");
     const auto listenerStop = runtime.find("listeners_.Stop()");
-    const auto traceClose = runtime.find("captureTrace_.Close()", listenerStop);
+    const auto traceClose = runtime.find("phase3Trace_.Close()", listenerStop);
     Require(coordinatorDisable != std::string::npos &&
+                originDisable != std::string::npos &&
+                settlementDisable != std::string::npos &&
                 listenerStop != std::string::npos &&
-                coordinatorDisable < listenerStop,
-            "coordinator is disabled before public listener stop");
+                coordinatorDisable < listenerStop &&
+                originDisable < listenerStop && settlementDisable < listenerStop,
+            "calibration components are disabled before public listener stop");
     Require(traceClose != std::string::npos && listenerStop < traceClose,
-            "capture trace closes after public listeners");
+            "phase 3 trace closes after public listeners");
 
     const auto cmake = ReadText(sourceRoot / "CMakeLists.txt");
     const auto asiBegin = cmake.find("add_library(CampaignCompletionDebug");
@@ -136,6 +147,12 @@ int RunRuntimePolicyTests() {
 
     const auto listeners = ReadText(sourceRoot / "src" / "runtime" /
                                     "S4Listeners.cpp");
+    Require((runtime + runtimeHeader + listeners)
+                .find("GameDefaultGameEndCheck") == std::string::npos,
+            "runtime must never call the behavior-producing end check");
+    Require(listeners.find("AddGuiElementBltListener(&OnGuiElement)") !=
+                std::string::npos,
+            "public GUI-element observer remains the settlement source");
     Require(listeners.find("AddLuaOpenListener(&OnLuaOpen)") !=
                 std::string::npos,
             "public LuaOpen listener must be registered");
