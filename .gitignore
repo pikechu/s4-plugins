@@ -1,0 +1,47 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build output
+build/
+out/
+bin/
+obj/
+Debug/
+Release/
+x86/
+x64/
+Win32/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Compiled binaries
+*.dll
+*.asi
+*.exe
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.obj
+*.o
+
+# Package managers and IDE metadata
+.vscode/
+.idea/
+
+# Logs and runtime data
+*.log
+CampaignCompletion/completed_maps.json
+CampaignCompletion/completed_maps.json.bak
+CampaignCompletion/completed_maps.json.tmp
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
