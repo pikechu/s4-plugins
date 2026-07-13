@@ -75,13 +75,14 @@ retries the reorder repeatedly within the same map session.
 
 ## Guarded deployment and remaining live controls
 
-- The user explicitly confirmed that the game was closed. Fresh read-only process checks immediately before and after deployment found neither `S4_Main` nor Settlers United, and no process was terminated.
+- The user explicitly approved the `0.3.2` deployment. Fresh read-only process checks immediately before deployment found neither `S4_Main` nor Settlers United, and no process was terminated.
 - Deployment used the fixed-hash elevated wrapper and the existing guarded archive installer. Only the authorized `Plugin_SU.zip`, game-side `CampaignCompletionDebug.ini`, and project deployment evidence were written.
-- Installed archive: `C:\Program Files\Settlers United\resources\bin\s4_artifacts\Plugin_SU.zip`; SHA-256 `c6eafa1a596e477581626fe309dda84c850397e3826ae019ba78d1f668985c0c`; size `1701818` bytes.
+- The corrected source commit `2253cd54022cd42d93533123954d86bb860a45a5` passed two independent complete Win32 workflows: runs `29268716027` and `29268737175`.
+- Installed archive: `C:\Program Files\Settlers United\resources\bin\s4_artifacts\Plugin_SU.zip`; SHA-256 `175d580f78e80ff0994d738123b6da80f365e9a4362d9ec8ec5ae344575c1355`; size `1702061` bytes.
 - The immutable original archive backup remains SHA-256 `807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265`, size `1176944` bytes.
-- Complete ZIP verification found eight entries: all seven original non-target entries remained byte-identical to the immutable backup, and exactly one `Plugins/CampaignCompletionDebug.asi` had frozen SHA-256 `d0b6f498198eb9f924f16434bd2eb91dde129437be34571303cd111d58465036`.
-- Live configuration: `F:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\games\thesettlers4\CampaignCompletion\CampaignCompletionDebug.ini`; SHA-256 `ac0c080a1a57b27337edd6a6d71e03f36f55f530457f00a3f00d0870da88b7b3`.
-- Normalized comparison proved the live INI differs from the frozen INI only by setting `CaptureTraceRoot=F:\claude projects\thesettler4plugin\artifacts\phase-3-victory-diagnostics`. The trace root exists and is not a reparse point.
+- Complete ZIP verification found eight entries: all seven original non-target entries remained byte-identical to the immutable backup, and exactly one `Plugins/CampaignCompletionDebug.asi` had frozen SHA-256 `fca972726376c5c29f36413faf5f410b3d7e3ebb73f8de22581474cd2d7c8cd0`.
+- Live configuration: `F:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\games\thesettlers4\CampaignCompletion\CampaignCompletionDebug.ini`; SHA-256 `3c445e5949ac26028498c85dc6081993b083c554fd93f011986777ef4c0b8136`.
+- Logical-line comparison proved the live INI differs from the frozen INI only by setting `CaptureTraceRoot=F:\claude projects\thesettler4plugin\artifacts\phase-3-victory-diagnostics`. The trace root exists and is not a reparse point.
 - The inert SU-side INI and both authorized temporary siblings are absent after deployment.
 
 ### Live control 1: voluntary exit
