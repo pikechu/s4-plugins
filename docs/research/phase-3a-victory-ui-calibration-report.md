@@ -91,3 +91,43 @@ The following evidence is still required before Phase 3A can produce a GO decisi
 6. Controlled-stop evidence showing all listeners removed, trace flush success, and normal game responsiveness.
 
 No victory/defeat/exit classifier will be implemented until those samples provide stable, reviewable signatures.
+
+## 2026-07-14 ordinary-load and random-map identity resolution
+
+- Corrected load-page control evidence maps control `2390` to an ordinary
+  single-player save, `2391` to an excluded online-multiplayer save, and
+  `2399` to an eligible campaign save. The correction is present in source
+  commit `1cb983cc975e9cf45e24e5527aeb1230ef5350c1` and passed GitHub Actions
+  run `29272707020`.
+- A loaded fixed/custom positive sample confirmed the SU identity
+  `Battle of the Gods` and relative identifier
+  `Map\User\Battle of the Gods.map`.
+- A paired fresh-random and loaded-random sample confirmed the same SU name
+  and relative identifier in both sessions: `RD_LCGSDR30`.
+- Byte-identical project evidence copies were retained below
+  `research/evidence/save-samples/2026-07-14-load-origin/`. The random sample
+  SHA-256 is
+  `cbb3213d7a600b1f9e40070f0570a0f67c19f9cd221ce7b15f653d80c7077fbb`;
+  the fixed/custom sample SHA-256 is
+  `c45f75e3c2b91c52c38f289e0156957c0f168d12e475c8a0c90d0f4b7c82e03f`.
+  The original save files were not modified.
+- Reverse-source inspection established that
+  `CRandomMaps::IsRandomMapFileName` treats a case-sensitive `RD_` prefix,
+  a complete `[ ... ]` wrapper, or a complete `< ... >` wrapper as a random
+  identifier. `CRandomMaps::GenerateRandomMapFileName` creates the `RD_`
+  form, and normal game map loading consults the same predicate.
+- The approved policy supersedes the earlier Phase 3A random-map exclusion:
+  random-map victories are recordable, but their future completed-level UI
+  marker is hidden. Source/type, recording eligibility, and marker visibility
+  are separate policy axes. True online multiplayer remains excluded.
+- The implementation uses only the validated result of
+  `SU.Game.GetMapNameRelativePath()` and a pure replica of the game's bounded
+  identifier rule. It adds no save parser, internal game call, process-memory
+  probe, Hook, or patch.
+- Post-MapInit refinement accepts only a confirmed identity whose session ID
+  equals the active MapInit session. Invalid, stale, conflicting, unavailable,
+  and mismatched-session evidence remains fail-closed.
+- Diagnostic build `0.3.3` still has `CompletionDetection=0`,
+  `CompletionStorage=0`, and `CompletionMarkers=0`. This change validates
+  source and policy classification only; it does not yet persist a victory or
+  render any marker.

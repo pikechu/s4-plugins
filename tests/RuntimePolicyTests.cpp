@@ -84,7 +84,7 @@ int RunRuntimePolicyTests() {
     const auto policy = ReadText(sourceRoot / "config" /
                                  "CampaignCompletionDebug.ini");
     for (const auto* required : {
-             "Version=0.3.2",
+             "Version=0.3.3",
              "DiagnosticMode=NativeVictoryEventCalibration",
              "NativeEventSubscription=1", "NativeTerminalEventId=609",
              "IdentitySource=SettlersUnitedLua",
@@ -108,7 +108,7 @@ int RunRuntimePolicyTests() {
                                   "DiagnosticRuntime.cpp");
     const auto runtimeHeader = ReadText(sourceRoot / "src" / "runtime" /
                                         "DiagnosticRuntime.h");
-    Require(runtime.find("version=0.3.2") != std::string::npos &&
+    Require(runtime.find("version=0.3.3") != std::string::npos &&
                 runtime.find("mode=native-event-calibration") !=
                     std::string::npos,
             "runtime header identifies phase 3B native event calibration");
