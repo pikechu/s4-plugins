@@ -33,6 +33,34 @@ jobs:
         shell: pwsh
         run: ./tools/verify_hook_adapter.ps1 -Binary build/Debug/CampaignCompletionDebug.asi
 
+      - name: Reject Hook hot-path file I/O fixture
+        shell: pwsh
+        run: |
+          $fixture = Join-Path $env:RUNNER_TEMP "campaign-hook-policy"
+          $source = Join-Path $fixture "src"
+          New-Item -ItemType Directory -Path $fixture -Force | Out-Null
+          Copy-Item -LiteralPath src -Destination $source -Recurse
+          $hook = Join-Path $source "hook/FixedMapLoadHook.cpp"
+          $content = [IO.File]::ReadAllText($hook)
+          $signature = "void FixedMapLoadHook::Dispatch"
+          $signatureIndex = $content.IndexOf($signature)
+          if ($signatureIndex -lt 0) { throw "Dispatch signature missing" }
+          $braceIndex = $content.IndexOf('{', $signatureIndex)
+          if ($braceIndex -lt 0) { throw "Dispatch body missing" }
+          $content = $content.Insert($braceIndex + 1, "`n    WriteFile;")
+          [IO.File]::WriteAllText($hook, $content)
+          $accepted = $true
+          try {
+            ./tools/verify_hook_adapter.ps1 `
+              -Binary build/Debug/CampaignCompletionDebug.asi `
+              -SourceRoot $fixture
+          } catch {
+            $accepted = $false
+          }
+          if ($accepted) {
+            throw "Mutated Hook source was unexpectedly accepted"
+          }
+
       - name: Test
         run: ctest --test-dir build -C Debug --output-on-failure
 
