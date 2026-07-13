@@ -2,6 +2,7 @@
 
 #include "S4ModApi.h"
 #include "diagnostics/Logger.h"
+#include "identity/ListAttribution.h"
 #include "runtime/CallbackGate.h"
 #include "runtime/ListenerRemoval.h"
 #include "runtime/PageObservation.h"
@@ -10,8 +11,6 @@
 #include <atomic>
 #include <cstdint>
 #include <mutex>
-#include <optional>
-#include <utility>
 #include <vector>
 
 namespace campaign_completion {
@@ -95,11 +94,10 @@ private:
     CallbackGate callbackGate_;
     std::mutex mutex_;
     PageObservationWindow pageWindow_{1000};
+    ListAttribution listAttribution_{kApprovedTabControls};
     RateLimiter mouseLimiter_{1000};
     RateLimiter guiLimiter_{1000};
     DWORD currentPage_ = S4_GUI_UNKNOWN;
-    std::vector<DWORD> currentPages_;
-    std::optional<std::pair<DWORD, std::vector<DWORD>>> lastCalibrationRelease_;
     std::uint64_t guiElementCount_ = 0;
 };
 

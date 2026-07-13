@@ -13,6 +13,20 @@ bool HasExactFixedMapPages(const PageSnapshot& snapshot) {
 
 }  // namespace
 
+std::string_view FixedMapListKindName(FixedMapListKind kind) noexcept {
+    switch (kind) {
+        case FixedMapListKind::Single:
+            return "single";
+        case FixedMapListKind::Multiplayer:
+            return "multiplayer";
+        case FixedMapListKind::Custom:
+            return "custom";
+        case FixedMapListKind::Unknown:
+        default:
+            return "unknown";
+    }
+}
+
 ListAttribution::ListAttribution(TabControlMapping mapping) noexcept
     : mapping_(mapping) {}
 

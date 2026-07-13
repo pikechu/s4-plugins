@@ -4,6 +4,8 @@
 
 #include <windows.h>
 
+#include <string_view>
+
 namespace campaign_completion {
 
 enum class FixedMapListKind {
@@ -12,6 +14,8 @@ enum class FixedMapListKind {
     Multiplayer,
     Custom,
 };
+
+std::string_view FixedMapListKindName(FixedMapListKind kind) noexcept;
 
 struct TabControlMapping final {
     DWORD single;

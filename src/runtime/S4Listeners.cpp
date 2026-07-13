@@ -5,14 +5,6 @@
 #include <sstream>
 
 namespace campaign_completion {
-namespace {
-
-bool HasExactFixedMapPages(const std::vector<DWORD>& pages) {
-    static const std::vector<DWORD> expected{4, 22, 23, 25};
-    return pages == expected;
-}
-
-}  // namespace
 
 std::atomic<S4Listeners*> S4Listeners::active_{nullptr};
 const std::array<LPS4FRAMECALLBACK, S4_GUI_ENUM_MAXVALUE - 1>
@@ -108,10 +100,7 @@ void S4Listeners::ObserveUiFrame(DWORD page) {
         return;
     }
     currentPage_ = snapshot->primaryPage;
-    currentPages_ = snapshot->activePages;
-    if (!HasExactFixedMapPages(currentPages_)) {
-        lastCalibrationRelease_.reset();
-    }
+    listAttribution_.ObservePages(snapshot.value());
     std::ostringstream message;
     message << "ui-pages active=";
     for (std::size_t index = 0; index < snapshot->activePages.size(); ++index) {
@@ -138,16 +127,17 @@ void S4Listeners::ObserveMouse(DWORD button, INT x, INT y, DWORD message,
     if (logger_ == nullptr) {
         return;
     }
-    if (message == WM_LBUTTONUP && element != nullptr &&
-        HasExactFixedMapPages(currentPages_)) {
-        const auto observation = std::make_pair(element->id, currentPages_);
-        if (!lastCalibrationRelease_.has_value() ||
-            lastCalibrationRelease_.value() != observation) {
-            std::ostringstream calibration;
-            calibration << "tab-calibration element-id=" << element->id
+    if (element != nullptr) {
+        listAttribution_.ObserveClick(message, element->id);
+        const auto listKind = listAttribution_.Current();
+        if (message == WM_LBUTTONUP &&
+            listKind != FixedMapListKind::Unknown) {
+            std::ostringstream attribution;
+            attribution << "fixed-map-list list_kind="
+                        << FixedMapListKindName(listKind)
+                        << " element-id=" << element->id
                         << " active=4,22,23,25";
-            logger_->Write(LogLevel::Info, calibration.str());
-            lastCalibrationRelease_ = observation;
+            logger_->Write(LogLevel::Info, attribution.str());
         }
     }
     if (!mouseLimiter_.Allow(now)) {
