@@ -1,0 +1,457 @@
+# Phase 2.3 fixed-map single-call Hook evidence
+generated_utc=2026-07-13T08:26:49Z
+workspace_commit=44641bf53c3650189be75497b52fd4b81f7c27c5
+exe_sha256=3b561269fb7ce4c281959f8f0db691cebf7cd36a04ad3594461b94290c5d3816
+pdb_sha256=702df42ef4d7e8f6ba39aee96b5c83780c3266a7e9a174f81db13c6934050ae6
+s4modapi_dll_sha256=ed111491b1a6bd2822ccd21fec31adedfb35b6bf311cd568d9ff0e6e2193126f
+s4modapi_header_sha256=31069630faffea89d21359bdc001261fbf4eef3307b7ee900be4d44934a835d5
+s4modapi_lib_sha256=96025df625b7b718737b261278459e28932e7b107cc5c90cd2ecf32df1577a62
+image_base=0x00400000
+call_site_vma=0x004fefa5
+call_site_rva=0x000fefa5
+call_site_file_offset=0x000fe3a5
+call_next_vma=0x004fefaa
+call_bytes=e8 66 23 fb ff
+rel32_unsigned=0xfffb2366
+rel32_signed=-318618
+decoded_target_vma=0x004b1310
+decoded_target_rva=0x000b1310
+callee_stack_cleanup=0x0000000c
+
+## PE sections
+
+/mnt/f/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/games/thesettlers4/S4_Main.exe:     file format pei-i386
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00b13ef0  00401000  00401000  00000400  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .rdata        0023003a  00f15000  00f15000  00b14400  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .data         000e4800  01146000  01146000  00d44600  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  3 .tls          00003d31  01609000  01609000  00e28e00  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  4 DATA          00000078  0160d000  0160d000  00e2cc00  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  5 .gfids        000015e0  0160e000  0160e000  00e2ce00  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  6 .rsrc         00005108  01610000  01610000  00e2e400  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  7 .reloc        000a8a5c  01616000  01616000  00e33600  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+
+## exact call-site file bytes
+ e8 66 23 fb ff
+
+## disassembly fixed-map caller ABI vma=0x004fef8f..0x004fefb0
+
+/mnt/f/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/games/thesettlers4/S4_Main.exe:     file format pei-i386
+
+
+Disassembly of section .text:
+
+004fef8f <.text+0xfdf8f>:
+  4fef8f:	8d 4d d4             	lea    ecx,[ebp-0x2c]
+  4fef92:	e8 c9 df 12 00       	call   0x62cf60
+  4fef97:	6a 01                	push   0x1
+  4fef99:	6a 02                	push   0x2
+  4fef9b:	8d 45 d4             	lea    eax,[ebp-0x2c]
+  4fef9e:	50                   	push   eax
+  4fef9f:	8d 8d 48 fb ff ff    	lea    ecx,[ebp-0x4b8]
+  4fefa5:	e8 66 23 fb ff       	call   0x4b1310
+  4fefaa:	51                   	push   ecx
+  4fefab:	ba 3c 37 03 01       	mov    edx,0x103373c
+
+## disassembly CMapFile load ABI and path layout vma=0x004b1310..0x004b1460
+
+/mnt/f/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/games/thesettlers4/S4_Main.exe:     file format pei-i386
+
+
+Disassembly of section .text:
+
+004b1310 <.text+0xb0310>:
+  4b1310:	55                   	push   ebp
+  4b1311:	8b ec                	mov    ebp,esp
+  4b1313:	53                   	push   ebx
+  4b1314:	56                   	push   esi
+  4b1315:	8b f1                	mov    esi,ecx
+  4b1317:	57                   	push   edi
+  4b1318:	8b 7d 08             	mov    edi,DWORD PTR [ebp+0x8]
+  4b131b:	8d 4e 50             	lea    ecx,[esi+0x50]
+  4b131e:	3b cf                	cmp    ecx,edi
+  4b1320:	74 0a                	je     0x4b132c
+  4b1322:	6a ff                	push   0xffffffff
+  4b1324:	6a 00                	push   0x0
+  4b1326:	57                   	push   edi
+  4b1327:	e8 24 6e fa ff       	call   0x458150
+  4b132c:	8b 45 0c             	mov    eax,DWORD PTR [ebp+0xc]
+  4b132f:	89 46 6c             	mov    DWORD PTR [esi+0x6c],eax
+  4b1332:	c6 46 05 01          	mov    BYTE PTR [esi+0x5],0x1
+  4b1336:	a8 01                	test   al,0x1
+  4b1338:	0f 84 89 00 00 00    	je     0x4b13c7
+  4b133e:	50                   	push   eax
+  4b133f:	57                   	push   edi
+  4b1340:	8d 4e 08             	lea    ecx,[esi+0x8]
+  4b1343:	e8 88 4a 00 00       	call   0x4b5dd0
+  4b1348:	ff 76 48             	push   DWORD PTR [esi+0x48]
+  4b134b:	e8 83 e7 8f 00       	call   0xdafad3
+  4b1350:	83 c4 04             	add    esp,0x4
+  4b1353:	89 46 68             	mov    DWORD PTR [esi+0x68],eax
+  4b1356:	8d 7e 70             	lea    edi,[esi+0x70]
+  4b1359:	ff 76 48             	push   DWORD PTR [esi+0x48]
+  4b135c:	6a 01                	push   0x1
+  4b135e:	6a 04                	push   0x4
+  4b1360:	57                   	push   edi
+  4b1361:	e8 9c dc 8f 00       	call   0xdaf002
+  4b1366:	ff 76 48             	push   DWORD PTR [esi+0x48]
+  4b1369:	8d 45 08             	lea    eax,[ebp+0x8]
+  4b136c:	6a 01                	push   0x1
+  4b136e:	6a 04                	push   0x4
+  4b1370:	50                   	push   eax
+  4b1371:	e8 8c dc 8f 00       	call   0xdaf002
+  4b1376:	8b 45 08             	mov    eax,DWORD PTR [ebp+0x8]
+  4b1379:	83 c4 20             	add    esp,0x20
+  4b137c:	83 f8 1f             	cmp    eax,0x1f
+  4b137f:	74 09                	je     0x4b138a
+  4b1381:	83 f8 28             	cmp    eax,0x28
+  4b1384:	0f 85 98 00 00 00    	jne    0x4b1422
+  4b138a:	8b 46 0c             	mov    eax,DWORD PTR [esi+0xc]
+  4b138d:	8d 4e 0c             	lea    ecx,[esi+0xc]
+  4b1390:	ff 50 10             	call   DWORD PTR [eax+0x10]
+  4b1393:	8b 4e 68             	mov    ecx,DWORD PTR [esi+0x68]
+  4b1396:	6a 00                	push   0x0
+  4b1398:	83 c1 08             	add    ecx,0x8
+  4b139b:	89 45 0c             	mov    DWORD PTR [ebp+0xc],eax
+  4b139e:	51                   	push   ecx
+  4b139f:	ff 76 48             	push   DWORD PTR [esi+0x48]
+  4b13a2:	e8 f6 e0 8f 00       	call   0xdaf49d
+  4b13a7:	83 c4 0c             	add    esp,0xc
+  4b13aa:	80 7d 10 00          	cmp    BYTE PTR [ebp+0x10],0x0
+  4b13ae:	74 6b                	je     0x4b141b
+  4b13b0:	8b 46 68             	mov    eax,DWORD PTR [esi+0x68]
+  4b13b3:	8b ce                	mov    ecx,esi
+  4b13b5:	ff 75 0c             	push   DWORD PTR [ebp+0xc]
+  4b13b8:	83 c0 08             	add    eax,0x8
+  4b13bb:	50                   	push   eax
+  4b13bc:	e8 3f 0a 00 00       	call   0x4b1e00
+  4b13c1:	3b 07                	cmp    eax,DWORD PTR [edi]
+  4b13c3:	74 56                	je     0x4b141b
+  4b13c5:	eb 78                	jmp    0x4b143f
+  4b13c7:	a8 02                	test   al,0x2
+  4b13c9:	74 50                	je     0x4b141b
+  4b13cb:	83 7f 14 08          	cmp    DWORD PTR [edi+0x14],0x8
+  4b13cf:	72 02                	jb     0x4b13d3
+  4b13d1:	8b 3f                	mov    edi,DWORD PTR [edi]
+  4b13d3:	6a 33                	push   0x33
+  4b13d5:	68 e8 da 02 01       	push   0x102dae8
+  4b13da:	6a 1a                	push   0x1a
+  4b13dc:	57                   	push   edi
+  4b13dd:	8d 4e 0c             	lea    ecx,[esi+0xc]
+  4b13e0:	e8 ab d4 17 00       	call   0x62e890
+  4b13e5:	8b 46 0c             	mov    eax,DWORD PTR [esi+0xc]
+  4b13e8:	8d 4e 0c             	lea    ecx,[esi+0xc]
+  4b13eb:	c7 45 08 1f 00 00 00 	mov    DWORD PTR [ebp+0x8],0x1f
+  4b13f2:	ff 50 10             	call   DWORD PTR [eax+0x10]
+  4b13f5:	ff 76 48             	push   DWORD PTR [esi+0x48]
+  4b13f8:	89 46 68             	mov    DWORD PTR [esi+0x68],eax
+  4b13fb:	8d 46 70             	lea    eax,[esi+0x70]
+  4b13fe:	6a 01                	push   0x1
+  4b1400:	6a 04                	push   0x4
+  4b1402:	50                   	push   eax
+  4b1403:	e8 66 e9 8f 00       	call   0xdafd6e
+  4b1408:	ff 76 48             	push   DWORD PTR [esi+0x48]
+  4b140b:	8d 45 08             	lea    eax,[ebp+0x8]
+  4b140e:	6a 01                	push   0x1
+  4b1410:	6a 04                	push   0x4
+  4b1412:	50                   	push   eax
+  4b1413:	e8 56 e9 8f 00       	call   0xdafd6e
+  4b1418:	83 c4 20             	add    esp,0x20
+  4b141b:	5f                   	pop    edi
+  4b141c:	5e                   	pop    esi
+  4b141d:	5b                   	pop    ebx
+  4b141e:	5d                   	pop    ebp
+  4b141f:	c2 0c 00             	ret    0xc
+  4b1422:	8d 4e 08             	lea    ecx,[esi+0x8]
+  4b1425:	e8 16 4a 00 00       	call   0x4b5e40
+  4b142a:	68 94 10 14 01       	push   0x1141094
+  4b142f:	8d 45 10             	lea    eax,[ebp+0x10]
+  4b1432:	c7 45 10 e4 a8 02 01 	mov    DWORD PTR [ebp+0x10],0x102a8e4
+  4b1439:	50                   	push   eax
+  4b143a:	e8 78 62 8c 00       	call   0xd776b7
+  4b143f:	8d 4e 08             	lea    ecx,[esi+0x8]
+  4b1442:	e8 f9 49 00 00       	call   0x4b5e40
+  4b1447:	68 94 10 14 01       	push   0x1141094
+  4b144c:	8d 45 10             	lea    eax,[ebp+0x10]
+  4b144f:	c7 45 10 e4 a8 02 01 	mov    DWORD PTR [ebp+0x10],0x102a8e4
+  4b1456:	50                   	push   eax
+  4b1457:	e8 5b 62 8c 00       	call   0xd776b7
+  4b145c:	cc                   	int3
+  4b145d:	cc                   	int3
+  4b145e:	cc                   	int3
+  4b145f:	cc                   	int3
+
+## disassembly x86 MSVC wide-string length capacity and storage vma=0x00458150..0x00458250
+
+/mnt/f/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/games/thesettlers4/S4_Main.exe:     file format pei-i386
+
+
+Disassembly of section .text:
+
+00458150 <.text+0x57150>:
+  458150:	55                   	push   ebp
+  458151:	8b ec                	mov    ebp,esp
+  458153:	53                   	push   ebx
+  458154:	8b 5d 08             	mov    ebx,DWORD PTR [ebp+0x8]
+  458157:	56                   	push   esi
+  458158:	8b f1                	mov    esi,ecx
+  45815a:	8b 4d 0c             	mov    ecx,DWORD PTR [ebp+0xc]
+  45815d:	57                   	push   edi
+  45815e:	8b 43 10             	mov    eax,DWORD PTR [ebx+0x10]
+  458161:	3b c1                	cmp    eax,ecx
+  458163:	0f 82 e3 00 00 00    	jb     0x45824c
+  458169:	8b 7d 10             	mov    edi,DWORD PTR [ebp+0x10]
+  45816c:	2b c1                	sub    eax,ecx
+  45816e:	3b f8                	cmp    edi,eax
+  458170:	0f 47 f8             	cmova  edi,eax
+  458173:	3b f3                	cmp    esi,ebx
+  458175:	75 33                	jne    0x4581aa
+  458177:	8d 04 39             	lea    eax,[ecx+edi*1]
+  45817a:	39 46 10             	cmp    DWORD PTR [esi+0x10],eax
+  45817d:	0f 82 d3 00 00 00    	jb     0x458256
+  458183:	89 46 10             	mov    DWORD PTR [esi+0x10],eax
+  458186:	83 7e 14 08          	cmp    DWORD PTR [esi+0x14],0x8
+  45818a:	72 04                	jb     0x458190
+  45818c:	8b 16                	mov    edx,DWORD PTR [esi]
+  45818e:	eb 02                	jmp    0x458192
+  458190:	8b d6                	mov    edx,esi
+  458192:	33 ff                	xor    edi,edi
+  458194:	51                   	push   ecx
+  458195:	57                   	push   edi
+  458196:	8b ce                	mov    ecx,esi
+  458198:	66 89 3c 42          	mov    WORD PTR [edx+eax*2],di
+  45819c:	e8 ff fe ff ff       	call   0x4580a0
+  4581a1:	5f                   	pop    edi
+  4581a2:	8b c6                	mov    eax,esi
+  4581a4:	5e                   	pop    esi
+  4581a5:	5b                   	pop    ebx
+  4581a6:	5d                   	pop    ebp
+  4581a7:	c2 0c 00             	ret    0xc
+  4581aa:	81 ff fe ff ff 7f    	cmp    edi,0x7ffffffe
+  4581b0:	0f 87 aa 00 00 00    	ja     0x458260
+  4581b6:	39 7e 14             	cmp    DWORD PTR [esi+0x14],edi
+  4581b9:	73 24                	jae    0x4581df
+  4581bb:	ff 76 10             	push   DWORD PTR [esi+0x10]
+  4581be:	8b ce                	mov    ecx,esi
+  4581c0:	57                   	push   edi
+  4581c1:	e8 2a 63 fe ff       	call   0x43e4f0
+  4581c6:	8b 4d 0c             	mov    ecx,DWORD PTR [ebp+0xc]
+  4581c9:	85 ff                	test   edi,edi
+  4581cb:	74 76                	je     0x458243
+  4581cd:	83 7b 14 08          	cmp    DWORD PTR [ebx+0x14],0x8
+  4581d1:	72 02                	jb     0x4581d5
+  4581d3:	8b 1b                	mov    ebx,DWORD PTR [ebx]
+  4581d5:	83 7e 14 08          	cmp    DWORD PTR [esi+0x14],0x8
+  4581d9:	72 2f                	jb     0x45820a
+  4581db:	8b 16                	mov    edx,DWORD PTR [esi]
+  4581dd:	eb 2d                	jmp    0x45820c
+  4581df:	85 ff                	test   edi,edi
+  4581e1:	75 ea                	jne    0x4581cd
+  4581e3:	83 7e 14 08          	cmp    DWORD PTR [esi+0x14],0x8
+  4581e7:	89 7e 10             	mov    DWORD PTR [esi+0x10],edi
+  4581ea:	72 10                	jb     0x4581fc
+  4581ec:	8b 06                	mov    eax,DWORD PTR [esi]
+  4581ee:	33 c9                	xor    ecx,ecx
+  4581f0:	5f                   	pop    edi
+  4581f1:	66 89 08             	mov    WORD PTR [eax],cx
+  4581f4:	8b c6                	mov    eax,esi
+  4581f6:	5e                   	pop    esi
+  4581f7:	5b                   	pop    ebx
+  4581f8:	5d                   	pop    ebp
+  4581f9:	c2 0c 00             	ret    0xc
+  4581fc:	8b c6                	mov    eax,esi
+  4581fe:	33 c9                	xor    ecx,ecx
+  458200:	5f                   	pop    edi
+  458201:	5e                   	pop    esi
+  458202:	5b                   	pop    ebx
+  458203:	66 89 08             	mov    WORD PTR [eax],cx
+  458206:	5d                   	pop    ebp
+  458207:	c2 0c 00             	ret    0xc
+  45820a:	8b d6                	mov    edx,esi
+  45820c:	85 ff                	test   edi,edi
+  45820e:	74 11                	je     0x458221
+  458210:	8d 04 3f             	lea    eax,[edi+edi*1]
+  458213:	50                   	push   eax
+  458214:	8d 04 4b             	lea    eax,[ebx+ecx*2]
+  458217:	50                   	push   eax
+  458218:	52                   	push   edx
+  458219:	e8 82 ec 91 00       	call   0xd76ea0
+  45821e:	83 c4 0c             	add    esp,0xc
+  458221:	83 7e 14 08          	cmp    DWORD PTR [esi+0x14],0x8
+  458225:	89 7e 10             	mov    DWORD PTR [esi+0x10],edi
+  458228:	72 11                	jb     0x45823b
+  45822a:	8b 06                	mov    eax,DWORD PTR [esi]
+  45822c:	33 c9                	xor    ecx,ecx
+  45822e:	66 89 0c 78          	mov    WORD PTR [eax+edi*2],cx
+  458232:	8b c6                	mov    eax,esi
+  458234:	5f                   	pop    edi
+  458235:	5e                   	pop    esi
+  458236:	5b                   	pop    ebx
+  458237:	5d                   	pop    ebp
+  458238:	c2 0c 00             	ret    0xc
+  45823b:	8b c6                	mov    eax,esi
+  45823d:	33 c9                	xor    ecx,ecx
+  45823f:	66 89 0c 78          	mov    WORD PTR [eax+edi*2],cx
+  458243:	5f                   	pop    edi
+  458244:	8b c6                	mov    eax,esi
+  458246:	5e                   	pop    esi
+  458247:	5b                   	pop    ebx
+  458248:	5d                   	pop    ebp
+  458249:	c2 0c 00             	ret    0xc
+  45824c:	68                   	.byte 0x68
+  45824d:	d4 00                	aam    0x0
+  45824f:	ff                   	.byte 0xff
+
+## disassembly converted path construction vma=0x004fef21..0x004fefa6
+
+/mnt/f/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/games/thesettlers4/S4_Main.exe:     file format pei-i386
+
+
+Disassembly of section .text:
+
+004fef21 <.text+0xfdf21>:
+  4fef21:	8b f1                	mov    esi,ecx
+  4fef23:	83 7e 14 08          	cmp    DWORD PTR [esi+0x14],0x8
+  4fef27:	72 04                	jb     0x4fef2d
+  4fef29:	8b 06                	mov    eax,DWORD PTR [esi]
+  4fef2b:	eb 02                	jmp    0x4fef2f
+  4fef2d:	8b c6                	mov    eax,esi
+  4fef2f:	50                   	push   eax
+  4fef30:	68 20 37 03 01       	push   0x1033720
+  4fef35:	6a 01                	push   0x1
+  4fef37:	e8 b4 35 14 00       	call   0x6424f0
+  4fef3c:	83 c4 0c             	add    esp,0xc
+  4fef3f:	c7 05 bc 47 29 01 00 	mov    DWORD PTR ds:0x12947bc,0x0
+  4fef46:	00 00 00
+  4fef49:	33 c9                	xor    ecx,ecx
+  4fef4b:	c7 05 ec 42 16 01 14 	mov    DWORD PTR ds:0x11642ec,0x14
+  4fef52:	00 00 00
+  4fef55:	b3 01                	mov    bl,0x1
+  4fef57:	e8 94 b8 f7 ff       	call   0x47a7f0
+  4fef5c:	8b d6                	mov    edx,esi
+  4fef5e:	8d 4d d4             	lea    ecx,[ebp-0x2c]
+  4fef61:	e8 7a d4 0b 00       	call   0x5bc3e0
+  4fef66:	51                   	push   ecx
+  4fef67:	c7 45 fc 00 00 00 00 	mov    DWORD PTR [ebp-0x4],0x0
+  4fef6e:	8d 8d 48 fb ff ff    	lea    ecx,[ebp-0x4b8]
+  4fef74:	88 5d fc             	mov    BYTE PTR [ebp-0x4],bl
+  4fef77:	e8 54 21 fb ff       	call   0x4b10d0
+  4fef7c:	68 44 37 03 01       	push   0x1033744
+  4fef81:	6a 01                	push   0x1
+  4fef83:	c6 45 fc 02          	mov    BYTE PTR [ebp-0x4],0x2
+  4fef87:	e8 64 35 14 00       	call   0x6424f0
+  4fef8c:	83 c4 08             	add    esp,0x8
+  4fef8f:	8d 4d d4             	lea    ecx,[ebp-0x2c]
+  4fef92:	e8 c9 df 12 00       	call   0x62cf60
+  4fef97:	6a 01                	push   0x1
+  4fef99:	6a 02                	push   0x2
+  4fef9b:	8d 45 d4             	lea    eax,[ebp-0x2c]
+  4fef9e:	50                   	push   eax
+  4fef9f:	8d 8d 48 fb ff ff    	lea    ecx,[ebp-0x4b8]
+  4fefa5:	e8                   	.byte 0xe8
+
+## S4ModApi hlib declarations
+	// Quick and dirty byte patching class that keeps track of the patched address.
+	// You can implement a custom patch by inheriting from AbstractPatch.
+	// Or include the template to create easy static patches
+	///////////////////////////////////////////////////////////////////////////////
+	class AbstractPatch {
+	public:
+		AbstractPatch();
+		AbstractPatch(UINT64 addr, size_t len);
+		AbstractPatch(UINT64 addr, size_t len, const void* orig);
+		AbstractPatch(const AbstractPatch&) = delete;
+		AbstractPatch& operator=(const AbstractPatch&) = delete;
+		AbstractPatch(AbstractPatch&&);
+		AbstractPatch& operator=(AbstractPatch&&);
+		~AbstractPatch();
+
+		bool patch();
+		bool unpatch();
+
+		// Call this to read the memory and check if the patch is applied. Returns
+		// false if the state is broken (neither applied nor the expected state)
+		bool update();
+
+		bool isPatched() const;
+
+		UINT64 getAddress() const;
+		virtual bool setAddress(UINT64 addr); // change address if patch is not applied yet
+
+	protected:
+		virtual bool applyPatch(HANDLE hProcess) = 0;
+		virtual bool cmpPatch(const void* mem) = 0;
+
+		UINT64 m_addr;
+		bool m_isStrict;
+		bool m_isPatched;
+		void* m_orig;
+		size_t m_len;
+	};
+
+	class Patch : public AbstractPatch {
+	public:
+		struct BYTE5 { const BYTE buf[5]; };
+		Patch();
+		Patch(UINT64 address, const void* patch, size_t len);
+		Patch(UINT64 address, const void* patch, const void* expectedOrig, size_t len);
+		Patch(UINT64 address, DWORD patch); // patch 4 bytes
+		Patch(UINT64 address, DWORD patch, DWORD expectedOrig);
+		Patch(UINT64 address, BYTE patch); // patch 1 bytes
+		Patch(UINT64 address, BYTE patch, BYTE expected); // patch 1 bytes
+		Patch(UINT64 address, BYTE bPatch, DWORD dwPatch, size_t nops = 0); // patch 5 bytes and some nops (0x90) after these 5 bytes
+		Patch(UINT64 address, BYTE bPatch, DWORD dwPatch, const BYTE5* expected, size_t nops = 0);
+
+		~Patch();
+
+		Patch(Patch&&);
+		Patch& operator=(Patch&&);
+
+	protected:
+		virtual bool applyPatch(HANDLE hProcess);
+		virtual bool cmpPatch(const void* mem);
+		void* m_patch;
+	};
+	class JmpPatch : public Patch {
+	public:
+		JmpPatch();
+		JmpPatch(UINT64 address, DWORD jumpTargetAddr, size_t nops = 0);
+		JmpPatch(UINT64 address, DWORD jumpTargetAddr, const BYTE5* expectedOrig, size_t nops = 0);
+		virtual bool setAddress(UINT64 addr); // change address if patch is not applied yet
+		bool setDestination(UINT64 dest); // change destination if patch is not applied yet
+	protected:
+		JmpPatch(BYTE opcode, UINT64 address, DWORD jumpTargetAddr, size_t nops);
+		JmpPatch(BYTE opcode, UINT64 address, DWORD jumpTargetAddr, const BYTE5* expectedOrig, size_t nops);
+	};
+	class CallPatch : public JmpPatch {
+	public:
+		CallPatch();
+		CallPatch(UINT64 address, DWORD jumpTargetAddr, size_t nops = 0);
+		CallPatch(UINT64 address, DWORD jumpTargetAddr, const BYTE5* expectedOrig, size_t nops = 0);
+	};
+	class NopPatch : public AbstractPatch {
+	public:
+		NopPatch();
+		NopPatch(UINT64 address, size_t len = 1);
+		NopPatch(UINT64 address, const void* expected, size_t len);
+	protected:
+		virtual bool applyPatch(HANDLE hProcess);
+		virtual bool cmpPatch(const void* mem);
+	};
+
+## required S4ModApi exports
+	[   7] ??0CallPatch@hlib@@QAE@_KKPBUBYTE5@Patch@1@I@Z
+	[  29] ?isPatched@AbstractPatch@hlib@@QBE_NXZ
+	[  30] ?patch@AbstractPatch@hlib@@QAE_NXZ
+	[  34] ?unpatch@AbstractPatch@hlib@@QAE_NXZ
+	[  35] ?update@AbstractPatch@hlib@@QAE_NXZ

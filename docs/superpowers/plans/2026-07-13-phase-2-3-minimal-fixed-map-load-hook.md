@@ -91,9 +91,10 @@ readonly ORIGINAL_TARGET_RVA=0x000b1310
 readonly EXPECTED_CALL_BYTES="e8 66 23 fb ff"
 readonly S4MODAPI_DLL="$GAME_DIR/S4ModApi.dll"
 
-emit_disassembly 'fixed-map caller ABI' 0x004fef90 0x004fefb0
+emit_disassembly 'fixed-map caller ABI' 0x004fef8f 0x004fefb0
 emit_disassembly 'CMapFile load ABI' 0x004b1310 0x004b1460
-emit_disassembly 'converted path construction' 0x004fef20 0x004fefa6
+emit_disassembly 'x86 MSVC wide-string length capacity and storage' 0x00458150 0x00458250
+emit_disassembly 'converted path construction' 0x004fef21 0x004fefa6
 objdump -h "$EXE"
 objdump -p "$S4MODAPI_DLL" | sed -n '/Export Tables/,/Import Tables/p'
 ```
