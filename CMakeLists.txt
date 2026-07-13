@@ -44,7 +44,10 @@ add_executable(campaign_completion_tests
   src/diagnostics/Logger.cpp
   src/diagnostics/ModuleInventory.cpp
 )
-target_include_directories(campaign_completion_tests PRIVATE src)
+target_include_directories(campaign_completion_tests PRIVATE
+  src
+  third_party/S4ModApi
+)
 target_compile_definitions(campaign_completion_tests PRIVATE
   WIN32_LEAN_AND_MEAN
   NOMINMAX
