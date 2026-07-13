@@ -2,7 +2,6 @@
 
 #include "S4ModApi.h"
 #include "diagnostics/Logger.h"
-#include "identity/FixedMapIdentityProbe.h"
 #include "identity/ListAttribution.h"
 #include "identity/MapIdentityCoordinator.h"
 #include "lua/SuLuaMapBridge.h"
@@ -43,7 +42,6 @@ private:
 
 class S4Listeners final {
 public:
-    bool Start(S4API api, Logger& logger, FixedMapIdentityProbe& probe);
     bool Start(S4API api, Logger& logger,
                MapIdentityCoordinator& coordinator,
                ILuaMapBridge& bridge);
@@ -100,7 +98,6 @@ private:
         uiCallbacks_;
     S4API api_ = nullptr;
     Logger* logger_ = nullptr;
-    FixedMapIdentityProbe* probe_ = nullptr;
     MapIdentityCoordinator* coordinator_ = nullptr;
     ILuaMapBridge* bridge_ = nullptr;
     std::vector<S4HOOK> hooks_;

@@ -12,12 +12,6 @@ const std::array<LPS4FRAMECALLBACK, S4_GUI_ENUM_MAXVALUE - 1>
         std::make_index_sequence<S4_GUI_ENUM_MAXVALUE - 1>{});
 
 bool S4Listeners::Start(S4API api, Logger& logger,
-                        FixedMapIdentityProbe& probe) {
-    probe_ = &probe;
-    return StartPublicListeners(api, logger);
-}
-
-bool S4Listeners::Start(S4API api, Logger& logger,
                         MapIdentityCoordinator& coordinator,
                         ILuaMapBridge& bridge) {
     coordinator_ = &coordinator;
@@ -69,7 +63,6 @@ ListenerStopResult S4Listeners::Stop() {
         });
     api_ = nullptr;
     logger_ = nullptr;
-    probe_ = nullptr;
     coordinator_ = nullptr;
     bridge_ = nullptr;
     return result;
@@ -138,9 +131,6 @@ void S4Listeners::ObserveUiFrame(DWORD page) {
     }
     currentPage_ = snapshot->primaryPage;
     listAttribution_.ObservePages(snapshot.value());
-    if (probe_ != nullptr && snapshot->activePages.size() == 1u) {
-        probe_->ObserveTopLevelPage(snapshot->activePages.front());
-    }
     std::ostringstream message;
     message << "ui-pages active=";
     for (std::size_t index = 0; index < snapshot->activePages.size(); ++index) {
@@ -156,9 +146,6 @@ void S4Listeners::ObserveUiFrame(DWORD page) {
 void S4Listeners::ObserveMapInit() {
     std::lock_guard<std::mutex> lock(mutex_);
     const auto now = GetTickCount64();
-    if (probe_ != nullptr) {
-        probe_->ObserveMapInit(now);
-    }
     if (coordinator_ != nullptr) {
         coordinator_->ObserveMapInit(now);
     }
@@ -194,10 +181,6 @@ void S4Listeners::ObserveMouse(DWORD button, INT x, INT y, DWORD message,
     if (element != nullptr) {
         const bool wasFixedMap =
             listAttribution_.Current() != FixedMapListKind::Unknown;
-        if (probe_ != nullptr && message == WM_LBUTTONUP &&
-            element->id == 2415u && wasFixedMap) {
-            probe_->ObserveBack();
-        }
         if (coordinator_ != nullptr && message == WM_LBUTTONUP &&
             element->id == 2415u && wasFixedMap) {
             coordinator_->ObserveBack();
@@ -206,9 +189,6 @@ void S4Listeners::ObserveMouse(DWORD button, INT x, INT y, DWORD message,
         const auto listKind = listAttribution_.Current();
         if (message == WM_LBUTTONUP &&
             listKind != FixedMapListKind::Unknown) {
-            if (probe_ != nullptr) {
-                probe_->ObserveListKind(listKind, now);
-            }
             if (coordinator_ != nullptr) {
                 coordinator_->ObserveListKind(listKind, now);
             }

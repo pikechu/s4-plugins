@@ -2,9 +2,9 @@
 
 #include "diagnostics/CaptureTrace.h"
 #include "diagnostics/Logger.h"
-#include "hook/FixedMapLoadHook.h"
-#include "hook/HlibCallPatchBackend.h"
-#include "identity/FixedMapIdentityProbe.h"
+#include "identity/MapIdentityCoordinator.h"
+#include "lua/LuaApi.h"
+#include "lua/SuLuaMapBridge.h"
 #include "runtime/S4Listeners.h"
 
 #include <windows.h>
@@ -26,14 +26,12 @@ private:
     CaptureTrace captureTrace_;
     Logger logger_;
     S4Listeners listeners_;
-    HlibCallPatchBackend hookBackend_;
-    FixedMapLoadHook fixedMapHook_;
-    std::unique_ptr<DirectOriginalLoadInvoker> originalInvoker_;
-    std::unique_ptr<FixedMapIdentityProbe> probe_;
+    S4LuaApi luaApi_;
+    S4LuaMapBridge luaBridge_{luaApi_};
+    std::unique_ptr<MapIdentityCoordinator> coordinator_;
     S4API api_ = nullptr;
     std::filesystem::path stopRequestPath_;
     bool started_ = false;
-    bool hookStarted_ = false;
 };
 
 DWORD WINAPI BootstrapThread(void* module);
