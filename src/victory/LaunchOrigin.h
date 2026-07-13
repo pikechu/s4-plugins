@@ -22,6 +22,7 @@ enum class LaunchSource {
     RandomMap,
     OnlineMultiplayer,
     LoadCampaign,
+    LoadSinglePlayerMap,
     LoadMapUnresolved,
     LoadOnlineMultiplayer,
 };
@@ -30,7 +31,6 @@ enum class SessionEligibility {
     Unknown,
     Eligible,
     ExcludedOnlineMultiplayer,
-    ExcludedRandomMap,
 };
 
 struct LaunchOriginSnapshot final {

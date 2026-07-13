@@ -54,9 +54,10 @@ int RunLaunchOriginTests() {
     random.ObservePage(S4_SCREEN_SINGLEPLAYER, 90u);
     random.ObservePage(S4_SCREEN_SINGLEPLAYER_MAPSELECT_RANDOM, 100u);
     random.ObservePage(S4_SCREEN_SINGLEPLAYER_MAPSELECT_USER, 110u);
-    Require(random.ConsumeMapInit(200u).eligibility ==
-                SessionEligibility::ExcludedRandomMap,
-            "random exclusion survives sibling selector callbacks");
+    const auto randomOrigin = random.ConsumeMapInit(200u);
+    Require(randomOrigin.source == LaunchSource::RandomMap &&
+                randomOrigin.eligibility == SessionEligibility::Eligible,
+            "recordable random source survives sibling selector callbacks");
 
     LaunchOriginTracker randomToFixed;
     randomToFixed.ObservePage(S4_SCREEN_SINGLEPLAYER, 90u);

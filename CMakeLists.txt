@@ -31,6 +31,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/runtime/S4Listeners.cpp
     src/runtime/StopRequest.cpp
     src/victory/LaunchOrigin.cpp
+    src/victory/MapSessionPolicy.cpp
     src/victory/SettlementUiProbe.cpp
     src/victory/VictoryEventProbe.cpp
   )
@@ -76,6 +77,7 @@ add_executable(campaign_completion_tests
   tests/LuaMapSessionTests.cpp
   tests/MapIdentityCoordinatorTests.cpp
   tests/LaunchOriginTests.cpp
+  tests/MapSessionPolicyTests.cpp
   tests/SettlementUiProbeTests.cpp
   tests/VictoryEventProbeTests.cpp
   tests/NativeEventAdmissionTests.cpp
@@ -101,6 +103,7 @@ add_executable(campaign_completion_tests
   src/runtime/PageObservation.cpp
   src/runtime/StopRequest.cpp
   src/victory/LaunchOrigin.cpp
+  src/victory/MapSessionPolicy.cpp
   src/victory/SettlementUiProbe.cpp
   src/victory/VictoryEventProbe.cpp
   src/native/NativeEventAdmission.cpp

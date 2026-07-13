@@ -20,6 +20,7 @@ int RunSuLuaMapBridgeTests();
 int RunLuaMapSessionTests();
 int RunMapIdentityCoordinatorTests();
 int RunLaunchOriginTests();
+int RunMapSessionPolicyTests();
 int RunSettlementUiProbeTests();
 int RunVictoryEventProbeTests();
 int RunNativeEventAdmissionTests();
@@ -46,6 +47,7 @@ int main() {
         RunLuaMapSessionTests();
         RunMapIdentityCoordinatorTests();
         RunLaunchOriginTests();
+        RunMapSessionPolicyTests();
         RunSettlementUiProbeTests();
         RunVictoryEventProbeTests();
         RunNativeEventAdmissionTests();

@@ -54,6 +54,8 @@ std::string_view LaunchSourceName(LaunchSource value) noexcept {
             return "online-multiplayer";
         case LaunchSource::LoadCampaign:
             return "load-campaign";
+        case LaunchSource::LoadSinglePlayerMap:
+            return "load-single-player-map";
         case LaunchSource::LoadMapUnresolved:
             return "load-map-unresolved";
         case LaunchSource::LoadOnlineMultiplayer:
@@ -70,8 +72,6 @@ std::string_view SessionEligibilityName(SessionEligibility value) noexcept {
             return "eligible";
         case SessionEligibility::ExcludedOnlineMultiplayer:
             return "excluded-online-multiplayer";
-        case SessionEligibility::ExcludedRandomMap:
-            return "excluded-random-map";
         case SessionEligibility::Unknown:
         default:
             return "unknown";
@@ -131,7 +131,7 @@ void LaunchOriginTracker::ObservePage(DWORD page,
         case S4_SCREEN_SINGLEPLAYER_MAPSELECT_RANDOM:
             if (context_ == NavigationContext::SinglePlayer) {
                 Set(Origin(LaunchSource::RandomMap,
-                           SessionEligibility::ExcludedRandomMap),
+                           SessionEligibility::Eligible),
                     nowMs);
             }
             break;
@@ -280,8 +280,8 @@ void LaunchOriginTracker::Set(LaunchOriginSnapshot value,
         !IsOnline(value.eligibility)) {
         return;
     }
-    if (current_.eligibility == SessionEligibility::ExcludedRandomMap &&
-        value.eligibility == SessionEligibility::Eligible) {
+    if (current_.source == LaunchSource::RandomMap &&
+        value.source != LaunchSource::RandomMap) {
         return;
     }
     current_ = value;
