@@ -111,12 +111,16 @@ Architecture:
 
 ---
 
-## Phase 2 Diagnostic Build
+## Phase 2.1 Diagnostic Build
 
 `CampaignCompletionDebug` is a diagnostic-only bootstrap. It inventories loaded
 modules and records events delivered through public S4ModApi listeners. It does
 not detect victory, save completion state, create completion JSON, or render
 completion markers. It installs no internal game hooks.
+
+Phase 2.1 attributes nested menu pages to their exact public S4ModApi callback
+and supports a controlled runtime stop that waits for in-flight callbacks and
+removes listeners in reverse registration order.
 
 The CI artifact has this layout:
 
@@ -130,11 +134,48 @@ TheSettlers4/
     `-- CampaignCompletionDebug.ini
 ```
 
+Settlers United synchronizes the game `Plugins` directory before launch. With
+the owner's explicit authorization, Phase 2.1 therefore adds only
+`Plugins/CampaignCompletionDebug.asi` inside this archive after backing it up:
+
+```
+C:\Program Files\Settlers United\resources\bin\s4_artifacts\Plugin_SU.zip
+```
+
+Both `S4_Main.exe` and the Settlers United application must be closed before
+install or restore. From the repository root, install a CI-built ASI with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\install_settlers_united_artifact.ps1 -AsiPath "F:\path\to\CampaignCompletionDebug.asi"
+```
+
+The installer creates and verifies
+`research/backups/settlers-united/Plugin_SU.zip.original` plus JSON metadata,
+preserves the hash of every original ZIP entry, and refuses an unrecognized
+installed archive. Proprietary backup binaries and generated metadata under
+`research/backups/` are ignored by Git.
+
+Restore the byte-identical original archive with both applications closed:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\restore_settlers_united_artifact.ps1
+```
+
 When the game runs, the diagnostic plugin may create
-`CampaignCompletion/CampaignCompletion.log`. To remove this diagnostic build,
-delete only `Plugins/CampaignCompletionDebug.asi` and, if desired, the diagnostic
-configuration and log under `CampaignCompletion`. Do not copy research scripts
-or build files into the game directory.
+`CampaignCompletion/CampaignCompletion.log`. To quiesce the loaded diagnostic
+plugin without unloading its ASI, create this one-shot file in the game
+directory:
+
+```powershell
+New-Item -ItemType File -Force "F:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\games\thesettlers4\CampaignCompletion\CampaignCompletionDebug.stop"
+```
+
+The plugin deletes the request after consuming it, rejects new callbacks, waits
+for active callbacks, removes all listeners, releases S4ModApi, and remains
+inert. To uninstall persistently, run the restore command; then, if desired,
+delete only this project's diagnostic configuration and log under
+`CampaignCompletion`. Do not copy research scripts or build files into the game
+directory.
 
 Example game location:
 
@@ -148,8 +189,9 @@ Launch the game through Settlers United.
 
 ## Development Roadmap
 
-Current status: Phase 1 research is complete and the Phase 2 diagnostic bootstrap
-is under validation. No completion-tracking Release plugin exists yet.
+Current status: Phase 1 research and the Phase 2 diagnostic bootstrap are
+complete; Phase 2.1 hardening is under live validation. No completion-tracking
+Release plugin exists yet.
 
 Research and planning documents:
 
@@ -157,6 +199,9 @@ Research and planning documents:
 - [Phase 1 execution plan](docs/superpowers/plans/2026-07-13-phase-1-investigation.md)
 - [Phase 1 investigation report](docs/research/phase-1-investigation-report.md)
 - [Phase 2 diagnostic bootstrap plan](docs/superpowers/plans/2026-07-13-phase-2-diagnostic-bootstrap.md)
+- [Phase 2 diagnostic bootstrap report](docs/research/phase-2-diagnostic-bootstrap-report.md)
+- [Phase 2.1 hardening design](docs/superpowers/specs/2026-07-13-phase-2-1-diagnostic-hardening-design.md)
+- [Phase 2.1 hardening plan](docs/superpowers/plans/2026-07-13-phase-2-1-diagnostic-hardening.md)
 
 ### Phase 1 - Research
 
