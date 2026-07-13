@@ -24,6 +24,16 @@ std::string ReadText(const std::filesystem::path& path) {
             std::istreambuf_iterator<char>()};
 }
 
+std::size_t CountOccurrences(const std::string& text,
+                             const std::string& needle) {
+    std::size_t count = 0u;
+    for (auto position = text.find(needle); position != std::string::npos;
+         position = text.find(needle, position + needle.size())) {
+        ++count;
+    }
+    return count;
+}
+
 }  // namespace
 
 int RunRuntimePolicyTests() {
@@ -147,6 +157,30 @@ int RunRuntimePolicyTests() {
 
     const auto listeners = ReadText(sourceRoot / "src" / "runtime" /
                                     "S4Listeners.cpp");
+    const auto listenerHeader = ReadText(sourceRoot / "src" / "runtime" /
+                                         "S4Listeners.h");
+    Require(listenerHeader.find(
+                "void FinishSettlementIfDue(std::uint64_t nowMs);") !=
+                std::string::npos,
+            "listener declares common settlement deadline operation");
+    const auto uiBegin = listeners.find("void S4Listeners::ObserveUiFrame(");
+    const auto mapBegin = listeners.find("void S4Listeners::ObserveMapInit(");
+    const auto tickBegin = listeners.find("void S4Listeners::ObserveTick(");
+    const auto mouseBegin = listeners.find("void S4Listeners::ObserveMouse(");
+    Require(uiBegin != std::string::npos && mapBegin != std::string::npos &&
+                uiBegin < mapBegin &&
+                listeners.substr(uiBegin, mapBegin - uiBegin)
+                        .find("FinishSettlementIfDue(now);") !=
+                    std::string::npos,
+            "UI frames advance the settlement deadline");
+    Require(tickBegin != std::string::npos && mouseBegin != std::string::npos &&
+                tickBegin < mouseBegin &&
+                listeners.substr(tickBegin, mouseBegin - tickBegin)
+                        .find("FinishSettlementIfDue(now);") !=
+                    std::string::npos,
+            "non-delayed Tick retains settlement deadline fallback");
+    Require(CountOccurrences(listeners, "api_->GetLocalPlayer()") == 1u,
+            "settlement completion reads the local player exactly once");
     Require((runtime + runtimeHeader + listeners)
                 .find("GameDefaultGameEndCheck") == std::string::npos,
             "runtime must never call the behavior-producing end check");
