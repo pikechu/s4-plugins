@@ -70,6 +70,20 @@ jobs:
           Assert-Rejected $luaFixture `
             "Mutated Lua-write source was unexpectedly accepted"
 
+          $endCheckFixture = New-PolicyFixture "campaign-end-check-policy"
+          $listener = Join-Path $endCheckFixture "src/runtime/S4Listeners.cpp"
+          [IO.File]::AppendAllText($listener,
+            "`n// GameDefaultGameEndCheck forbidden behavior fixture`n")
+          Assert-Rejected $endCheckFixture `
+            "GameDefaultGameEndCheck fixture was unexpectedly accepted"
+
+          $luaHandlerFixture = New-PolicyFixture "campaign-lua-handler-policy"
+          $listener = Join-Path $luaHandlerFixture "src/runtime/S4Listeners.cpp"
+          [IO.File]::AppendAllText($listener,
+            "`n// VICTORY_CONDITION_CHECK mutation fixture`n")
+          Assert-Rejected $luaHandlerFixture `
+            "Lua victory-handler fixture was unexpectedly accepted"
+
       - name: Test
         run: ctest --test-dir build -C Debug --output-on-failure
 
