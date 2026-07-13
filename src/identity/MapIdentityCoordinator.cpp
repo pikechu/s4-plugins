@@ -34,6 +34,7 @@ void MapIdentityCoordinator::ObserveBack() noexcept {
     }
     currentList_ = FixedMapListKind::Unknown;
     sessionList_ = FixedMapListKind::Unknown;
+    currentSessionId_ = 0u;
     pending_ = false;
 }
 
@@ -53,11 +54,11 @@ std::uint64_t MapIdentityCoordinator::ObserveMapInit(
     }
 
     sessionList_ = currentList_;
-    const std::uint64_t id = session_.ObserveMapInit(nowMs);
-    pending_ = id != 0u;
-    Emit("map-init-session=" + std::to_string(id) + ";list=" +
+    currentSessionId_ = session_.ObserveMapInit(nowMs);
+    pending_ = currentSessionId_ != 0u;
+    Emit("map-init-session=" + std::to_string(currentSessionId_) + ";list=" +
          std::string(FixedMapListKindName(sessionList_)));
-    return id;
+    return currentSessionId_;
 }
 
 void MapIdentityCoordinator::ObserveTick(bool inGame,
@@ -80,6 +81,7 @@ void MapIdentityCoordinator::Disable() noexcept {
     pending_ = false;
     currentList_ = FixedMapListKind::Unknown;
     sessionList_ = FixedMapListKind::Unknown;
+    currentSessionId_ = 0u;
     session_.Disable();
 }
 
@@ -130,8 +132,6 @@ void MapIdentityCoordinator::EmitResult(
         } else if (name.status == SuMapReadStatus::ValueConflict ||
                    relative.status == SuMapReadStatus::ValueConflict) {
             association = "conflict";
-        } else if (sessionList_ == FixedMapListKind::Unknown) {
-            association = "no-list-epoch";
         } else if (name && relative) {
             association = "confirmed";
         } else if (name && IsUnavailable(relative.status)) {

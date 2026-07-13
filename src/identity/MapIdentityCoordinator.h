@@ -23,6 +23,9 @@ public:
                      std::uint64_t nowMs,
                      ILuaMapBridge& bridge) noexcept;
     void Disable() noexcept;
+    std::uint64_t CurrentSessionId() const noexcept {
+        return currentSessionId_;
+    }
 
 private:
     void Emit(std::string line) noexcept;
@@ -34,6 +37,7 @@ private:
     FixedMapListKind currentList_ = FixedMapListKind::Unknown;
     FixedMapListKind sessionList_ = FixedMapListKind::Unknown;
     std::uint64_t luaGeneration_ = 0u;
+    std::uint64_t currentSessionId_ = 0u;
     bool pending_ = false;
     bool enabled_ = true;
 };
