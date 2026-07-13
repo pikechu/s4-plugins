@@ -19,6 +19,7 @@ int RunSuMapValueTests();
 int RunSuLuaMapBridgeTests();
 int RunLuaMapSessionTests();
 int RunMapIdentityCoordinatorTests();
+int RunLaunchOriginTests();
 
 int main() {
     try {
@@ -39,6 +40,7 @@ int main() {
         RunSuLuaMapBridgeTests();
         RunLuaMapSessionTests();
         RunMapIdentityCoordinatorTests();
+        RunLaunchOriginTests();
         return RunRuntimePolicyTests();
     } catch (const std::exception& error) {
         std::cerr << "FAIL: " << error.what() << '\n';
