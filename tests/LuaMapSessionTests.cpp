@@ -102,6 +102,17 @@ int RunLuaMapSessionTests() {
     Require(lateOpenResult && lateOpenResult->luaGeneration == 1u,
             "first LuaOpen binds an unbound session once");
 
+    QueueBridge loadBridge;
+    loadBridge.Push(Success("Antares", "Map\\User\\Antares.map"));
+    LuaMapSession loaded;
+    loaded.ObserveLuaOpen(1u);
+    loaded.ObserveMapInit(10u);
+    loaded.ObserveLuaOpen(20u);
+    const auto loadedResult = loaded.ObserveTick(true, 20u, loadBridge);
+    Require(loadedResult && loadedResult->luaGeneration == 2u &&
+                loadedResult->name.bytes == "Antares",
+            "post-MapInit LuaOpen rebinds before the first read");
+
     QueueBridge staleBridge;
     LuaMapSession stale;
     stale.ObserveLuaOpen(1u);

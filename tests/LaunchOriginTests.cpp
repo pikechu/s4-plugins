@@ -110,6 +110,30 @@ int RunLaunchOriginTests() {
                 SessionEligibility::ExcludedOnlineMultiplayer,
             "multiplayer load is excluded");
 
+    LaunchOriginTracker explicitLoadedMap;
+    explicitLoadedMap.ObserveLoadTypeControl(2390u, 100u);
+    explicitLoadedMap.ObservePage(S4_SCREEN_LOADGAME_CAMPAIGN, 101u);
+    explicitLoadedMap.ObservePage(S4_SCREEN_LOADGAME_MAP, 102u);
+    explicitLoadedMap.ObservePage(S4_SCREEN_LOADGAME_MULTIPLAYER, 103u);
+    const auto explicitMap = explicitLoadedMap.ConsumeMapInit(200u);
+    Require(explicitMap.source == LaunchSource::LoadMapUnresolved &&
+                explicitMap.eligibility == SessionEligibility::Unknown,
+            "single-player load control survives sibling load pages");
+
+    LaunchOriginTracker explicitLoadedCampaign;
+    explicitLoadedCampaign.ObserveLoadTypeControl(2399u, 100u);
+    explicitLoadedCampaign.ObservePage(S4_SCREEN_LOADGAME_MULTIPLAYER, 101u);
+    Require(explicitLoadedCampaign.ConsumeMapInit(200u).source ==
+                LaunchSource::LoadCampaign,
+            "campaign load control survives multiplayer sibling page");
+
+    LaunchOriginTracker explicitLoadedOnline;
+    explicitLoadedOnline.ObserveLoadTypeControl(2391u, 100u);
+    explicitLoadedOnline.ObservePage(S4_SCREEN_LOADGAME_CAMPAIGN, 101u);
+    Require(explicitLoadedOnline.ConsumeMapInit(200u).eligibility ==
+                SessionEligibility::ExcludedOnlineMultiplayer,
+            "multiplayer load control survives campaign sibling page");
+
     LaunchOriginTracker expired;
     expired.ObservePage(S4_SCREEN_LOADGAME_CAMPAIGN, 1u);
     Require(expired.ConsumeMapInit(1u + kLaunchOriginLeaseMs).source ==
