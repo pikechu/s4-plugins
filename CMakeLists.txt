@@ -18,6 +18,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/hook/HlibCallPatchBackend.cpp
     src/hook/MsvcX86WideString.cpp
     src/identity/FixedMapCaptureState.cpp
+    src/identity/FixedMapIdentityProbe.cpp
     src/identity/ListAttribution.cpp
     src/identity/MapPathValidator.cpp
     src/runtime/CallbackGate.cpp
@@ -69,6 +70,7 @@ add_executable(campaign_completion_tests
   src/hook/FixedMapLoadHook.cpp
   src/hook/MsvcX86WideString.cpp
   src/identity/FixedMapCaptureState.cpp
+  src/identity/FixedMapIdentityProbe.cpp
   src/identity/ListAttribution.cpp
   src/identity/MapPathValidator.cpp
   src/runtime/CallbackGate.cpp

@@ -3,6 +3,9 @@
 #include "runtime/S4Listeners.h"
 
 #include <atomic>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -13,6 +16,12 @@ void Require(bool condition, const char* message) {
     if (!condition) {
         throw std::runtime_error(message);
     }
+}
+
+std::string ReadText(const std::filesystem::path& path) {
+    std::ifstream input(path, std::ios::binary);
+    return {std::istreambuf_iterator<char>(input),
+            std::istreambuf_iterator<char>()};
 }
 
 }  // namespace
@@ -60,5 +69,33 @@ int RunRuntimePolicyTests() {
     Require(campaign_completion::CheckTargetExecutable(approved) ==
                 campaign_completion::CompatibilityResult::HashMismatch,
             "a one-character executable hash mutation must fail closed");
+
+    const auto sourceRoot = std::filesystem::path(__FILE__).parent_path().parent_path();
+    const auto policy = ReadText(sourceRoot / "config" /
+                                 "CampaignCompletionDebug.ini");
+    for (const auto* required : {
+             "Version=0.2.3", "FixedMapLoadHook=1",
+             "HookSiteRva=0x000FEFA5", "HookCount=1",
+             "CodePatchBytes=5", "GameDataWrites=0",
+             "UnrelatedInternalCalls=0", "CompletionDetection=0",
+             "CompletionStorage=0", "CompletionMarkers=0"}) {
+        Require(policy.find(required) != std::string::npos,
+                "phase 2.3 INI policy field missing");
+    }
+    Require(policy.find("MemoryWrites=") == std::string::npos,
+            "misleading generic memory-write policy is forbidden");
+    Require(policy.find("InternalHooks=") == std::string::npos,
+            "obsolete public-only policy is forbidden");
+
+    const auto runtime = ReadText(sourceRoot / "src" / "runtime" /
+                                  "DiagnosticRuntime.cpp");
+    Require(runtime.find("version=0.2.3") != std::string::npos &&
+                runtime.find("hook-mode=single-call-site") != std::string::npos,
+            "runtime header identifies single-call-site phase");
+    const auto hookStop = runtime.find("fixedMapHook_.Stop()");
+    const auto listenerStop = runtime.find("listeners_.Stop()");
+    Require(hookStop != std::string::npos && listenerStop != std::string::npos &&
+                hookStop < listenerStop,
+            "internal hook stop precedes public listener stop");
     return 0;
 }

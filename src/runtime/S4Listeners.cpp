@@ -11,12 +11,14 @@ const std::array<LPS4FRAMECALLBACK, S4_GUI_ENUM_MAXVALUE - 1>
     S4Listeners::uiCallbacks_ = S4Listeners::MakeUiCallbacks(
         std::make_index_sequence<S4_GUI_ENUM_MAXVALUE - 1>{});
 
-bool S4Listeners::Start(S4API api, Logger& logger) {
+bool S4Listeners::Start(S4API api, Logger& logger,
+                        FixedMapIdentityProbe& probe) {
     if (api == nullptr || active_.load() != nullptr) {
         return false;
     }
     api_ = api;
     logger_ = &logger;
+    probe_ = &probe;
     active_.store(this);
 
     const auto addHook = [this](S4HOOK hook) {
@@ -53,6 +55,7 @@ ListenerStopResult S4Listeners::Stop() {
         });
     api_ = nullptr;
     logger_ = nullptr;
+    probe_ = nullptr;
     return result;
 }
 
@@ -101,6 +104,9 @@ void S4Listeners::ObserveUiFrame(DWORD page) {
     }
     currentPage_ = snapshot->primaryPage;
     listAttribution_.ObservePages(snapshot.value());
+    if (probe_ != nullptr && snapshot->activePages.size() == 1u) {
+        probe_->ObserveTopLevelPage(snapshot->activePages.front());
+    }
     std::ostringstream message;
     message << "ui-pages active=";
     for (std::size_t index = 0; index < snapshot->activePages.size(); ++index) {
@@ -115,6 +121,9 @@ void S4Listeners::ObserveUiFrame(DWORD page) {
 
 void S4Listeners::ObserveMapInit() {
     std::lock_guard<std::mutex> lock(mutex_);
+    if (probe_ != nullptr) {
+        probe_->ObserveMapInit(GetTickCount64());
+    }
     if (logger_ != nullptr) {
         logger_->Write(LogLevel::Info, "map-init observed");
     }
@@ -128,10 +137,19 @@ void S4Listeners::ObserveMouse(DWORD button, INT x, INT y, DWORD message,
         return;
     }
     if (element != nullptr) {
+        const bool wasFixedMap =
+            listAttribution_.Current() != FixedMapListKind::Unknown;
+        if (probe_ != nullptr && message == WM_LBUTTONUP &&
+            element->id == 2415u && wasFixedMap) {
+            probe_->ObserveBack();
+        }
         listAttribution_.ObserveClick(message, element->id);
         const auto listKind = listAttribution_.Current();
         if (message == WM_LBUTTONUP &&
             listKind != FixedMapListKind::Unknown) {
+            if (probe_ != nullptr) {
+                probe_->ObserveListKind(listKind, now);
+            }
             std::ostringstream attribution;
             attribution << "fixed-map-list list_kind="
                         << FixedMapListKindName(listKind)

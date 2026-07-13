@@ -74,18 +74,17 @@ int RunFixedMapIdentityProbeTests() {
     probe.Observe(Capture(L"Map\\User\\Multi.map"), 2u, 5000u);
     probe.ObserveMapInit(6000u);
     probe.ObserveListKind(FixedMapListKind::Custom, 7000u);
+    const auto beforeRepeated = records.size();
+    probe.ObserveListKind(FixedMapListKind::Custom, 7100u);
+    probe.ObserveListKind(FixedMapListKind::Custom, 7200u);
+    Require(records.size() == beforeRepeated,
+            "repeated identical list callbacks emit no duplicate");
     probe.Observe(Capture(L"Map\\User\\Custom.map"), 3u, 8000u);
     probe.ObserveMapInit(9000u);
     Require(Contains(records, "list_kind=multiplayer path=Map\\User\\Multi.map"),
             "multiplayer identity remains distinct");
     Require(Contains(records, "list_kind=custom path=Map\\User\\Custom.map"),
             "custom identity remains distinct");
-
-    const auto beforeRepeated = records.size();
-    probe.ObserveListKind(FixedMapListKind::Custom, 9100u);
-    probe.ObserveListKind(FixedMapListKind::Custom, 9200u);
-    Require(records.size() == beforeRepeated,
-            "repeated identical list callbacks emit no duplicate");
 
     probe.ObserveBack();
     probe.ObserveMapInit(9300u);

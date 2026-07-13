@@ -1,6 +1,7 @@
 #include "runtime/DiagnosticRuntime.h"
 
 #include "diagnostics/ModuleInventory.h"
+#include "hook/HookSiteLayout.h"
 #include "runtime/StopRequest.h"
 
 #include <algorithm>
@@ -78,8 +79,8 @@ bool DiagnosticRuntime::Start(HMODULE module) {
     }
 
     std::ostringstream header;
-    header << "CampaignCompletionDebug bootstrap version=0.2.1 pid="
-           << GetCurrentProcessId() << " hook-mode=public-only";
+    header << "CampaignCompletionDebug bootstrap version=0.2.3 pid="
+           << GetCurrentProcessId() << " hook-mode=single-call-site";
     logger_.Write(LogLevel::Info, header.str());
     const auto modules = EnumerateLoadedModules();
     const ModuleInfo* executable = nullptr;
@@ -134,9 +135,44 @@ bool DiagnosticRuntime::Start(HMODULE module) {
         logger_.Close();
         return false;
     }
-    if (!listeners_.Start(api_, logger_)) {
+    probe_ = std::make_unique<FixedMapIdentityProbe>(
+        gameDirectory, [this](std::string record) {
+            logger_.Write(LogLevel::Info, record);
+        });
+    const auto admission = HookSiteLayout::Create(*executable);
+    if (admission) {
+        originalInvoker_ =
+            std::make_unique<DirectOriginalLoadInvoker>(admission.originalTarget);
+        hookStarted_ = fixedMapHook_.Start(admission, hookBackend_,
+                                          *originalInvoker_, *probe_);
+    }
+    if (hookStarted_) {
+        logger_.Write(LogLevel::Info,
+                      "fixed-map hook installed count=1 code-bytes=5");
+    } else {
+        std::ostringstream disabled;
+        disabled << "fixed-map hook disabled admission-failure="
+                 << static_cast<int>(admission.failure);
+        logger_.Write(LogLevel::Warning, disabled.str());
+    }
+
+    if (!listeners_.Start(api_, logger_, *probe_)) {
+        if (hookStarted_) {
+            const auto rollback = fixedMapHook_.Stop();
+            hookStarted_ = rollback != PatchFailure::None;
+            if (rollback != PatchFailure::None) {
+                logger_.Write(LogLevel::Error,
+                              "fixed-map hook rollback verification failed");
+                stopRequestPath_ = gameDirectory / L"CampaignCompletion" /
+                                   L"CampaignCompletionDebug.stop";
+                started_ = true;
+                return true;
+            }
+        }
         api_->Release();
         api_ = nullptr;
+        probe_.reset();
+        originalInvoker_.reset();
         logger_.Close();
         return false;
     }
@@ -144,7 +180,7 @@ bool DiagnosticRuntime::Start(HMODULE module) {
     stopRequestPath_ = gameDirectory / L"CampaignCompletion" /
                        L"CampaignCompletionDebug.stop";
     started_ = true;
-    logger_.Write(LogLevel::Info, "diagnostic runtime started; no internal hooks installed");
+    logger_.Write(LogLevel::Info, "diagnostic runtime started");
     return true;
 }
 
@@ -174,6 +210,19 @@ void DiagnosticRuntime::Stop() {
     if (!started_) {
         return;
     }
+    if (probe_ != nullptr) {
+        probe_->Disable();
+    }
+    if (hookStarted_) {
+        const auto hookResult = fixedMapHook_.Stop();
+        hookStarted_ = hookResult != PatchFailure::None;
+        std::ostringstream hookSummary;
+        hookSummary << "fixed-map hook stop result="
+                    << static_cast<int>(hookResult);
+        logger_.Write(hookResult == PatchFailure::None ? LogLevel::Info
+                                                       : LogLevel::Error,
+                      hookSummary.str());
+    }
     const auto result = listeners_.Stop();
     if (api_ != nullptr) {
         api_->Release();
@@ -186,6 +235,10 @@ void DiagnosticRuntime::Stop() {
     logger_.Write(LogLevel::Info, summary.str());
     logger_.Write(LogLevel::Info, "diagnostic runtime stopped");
     logger_.Close();
+    if (!hookStarted_) {
+        probe_.reset();
+        originalInvoker_.reset();
+    }
     started_ = false;
 }
 

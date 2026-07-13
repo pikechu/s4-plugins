@@ -2,6 +2,7 @@
 
 #include "S4ModApi.h"
 #include "diagnostics/Logger.h"
+#include "identity/FixedMapIdentityProbe.h"
 #include "identity/ListAttribution.h"
 #include "runtime/CallbackGate.h"
 #include "runtime/ListenerRemoval.h"
@@ -40,7 +41,7 @@ private:
 
 class S4Listeners final {
 public:
-    bool Start(S4API api, Logger& logger);
+    bool Start(S4API api, Logger& logger, FixedMapIdentityProbe& probe);
     ListenerStopResult Stop();
 
 private:
@@ -90,6 +91,7 @@ private:
         uiCallbacks_;
     S4API api_ = nullptr;
     Logger* logger_ = nullptr;
+    FixedMapIdentityProbe* probe_ = nullptr;
     std::vector<S4HOOK> hooks_;
     CallbackGate callbackGate_;
     std::mutex mutex_;
