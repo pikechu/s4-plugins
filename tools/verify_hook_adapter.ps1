@@ -10,7 +10,20 @@ if (-not (Test-Path -LiteralPath $Binary -PathType Leaf)) {
     throw "Hook adapter binary missing: $Binary"
 }
 
-$exports = @(& dumpbin.exe /NOLOGO /EXPORTS $Binary 2>&1)
+$vswhere = Join-Path ${env:ProgramFiles(x86)} `
+    "Microsoft Visual Studio/Installer/vswhere.exe"
+if (-not (Test-Path -LiteralPath $vswhere -PathType Leaf)) {
+    throw "vswhere.exe is unavailable"
+}
+$dumpbin = @(& $vswhere -latest -products * `
+    -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+    -find "VC\Tools\MSVC\**\bin\Hostx64\x86\dumpbin.exe")[0]
+if ([string]::IsNullOrWhiteSpace($dumpbin) -or
+    -not (Test-Path -LiteralPath $dumpbin -PathType Leaf)) {
+    throw "Win32 dumpbin.exe is unavailable"
+}
+
+$exports = @(& $dumpbin /NOLOGO /EXPORTS $Binary 2>&1)
 if ($LASTEXITCODE -ne 0) {
     throw "dumpbin /EXPORTS failed"
 }
@@ -21,7 +34,7 @@ if ($exportRows.Count -ne 1) {
     throw "Expected exactly one exported CampaignCompletionFixedMapAdapter, found $($exportRows.Count)"
 }
 
-$disassembly = @(& dumpbin.exe /NOLOGO /DISASM $Binary 2>&1)
+$disassembly = @(& $dumpbin /NOLOGO /DISASM $Binary 2>&1)
 if ($LASTEXITCODE -ne 0) {
     throw "dumpbin /DISASM failed"
 }
