@@ -317,8 +317,9 @@ void S4Listeners::ObserveTick(BOOL delayed) {
             coordinator_->ObserveTick(inGame, now, *bridge_);
         if (identity.has_value() &&
             identity->sessionId == activeSessionId_) {
-            activeOrigin_ =
-                RefineLaunchOrigin(activeOrigin_, identity->relative);
+            activeOrigin_ = RefineActiveSessionOrigin(
+                activeSessionId_, activeOrigin_, identity->sessionId,
+                identity->relative);
             if (phase3Trace_ != nullptr) {
                 phase3Trace_->Write(
                     Phase3TraceChannel::Origin,

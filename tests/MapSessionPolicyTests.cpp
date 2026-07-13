@@ -81,6 +81,17 @@ int RunMapSessionPolicyTests() {
                 unknownRandom.eligibility == SessionEligibility::Eligible,
             "confirmed random identity resolves a missed random selector");
 
+    const auto mismatched = RefineActiveSessionOrigin(
+        3u, loaded, 2u, L"RD_LCGSDR30");
+    Require(mismatched.source == LaunchSource::LoadMapUnresolved &&
+                mismatched.eligibility == SessionEligibility::Unknown,
+            "an identity from another session is ignored");
+    const auto matched = RefineActiveSessionOrigin(
+        3u, loaded, 3u, L"RD_LCGSDR30");
+    Require(matched.source == LaunchSource::RandomMap &&
+                matched.eligibility == SessionEligibility::Eligible,
+            "an identity from the active session refines origin");
+
     const LaunchOriginSnapshot campaign{
         LaunchSource::Campaign, SessionEligibility::Eligible};
     Require(ShouldRecordVictory(campaign) &&

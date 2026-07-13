@@ -29,6 +29,17 @@ LaunchOriginSnapshot RefineLaunchOrigin(
     return origin;
 }
 
+LaunchOriginSnapshot RefineActiveSessionOrigin(
+    std::uint64_t activeSessionId,
+    LaunchOriginSnapshot origin,
+    std::uint64_t identitySessionId,
+    std::wstring_view relativeIdentifier) noexcept {
+    if (activeSessionId == 0u || identitySessionId != activeSessionId) {
+        return origin;
+    }
+    return RefineLaunchOrigin(origin, relativeIdentifier);
+}
+
 bool ShouldRecordVictory(LaunchOriginSnapshot origin) noexcept {
     return origin.eligibility == SessionEligibility::Eligible;
 }
