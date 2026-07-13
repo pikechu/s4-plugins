@@ -84,7 +84,9 @@ int RunRuntimePolicyTests() {
     const auto policy = ReadText(sourceRoot / "config" /
                                  "CampaignCompletionDebug.ini");
     for (const auto* required : {
-             "Version=0.3.0", "DiagnosticMode=VictoryUiCalibration",
+             "Version=0.3.1",
+             "DiagnosticMode=NativeVictoryEventCalibration",
+             "NativeEventSubscription=1", "NativeTerminalEventId=609",
              "IdentitySource=SettlersUnitedLua",
              "PublicSettlementUiProbe=1", "LaunchOriginTracking=1",
              "LoadOriginRecovery=1", "InternalVictoryHook=0",
@@ -93,7 +95,7 @@ int RunRuntimePolicyTests() {
              "CompletionDetection=0", "CompletionStorage=0",
              "CompletionMarkers=0", "CaptureTraceRoot="}) {
         Require(policy.find(required) != std::string::npos,
-                "phase 3A INI policy field missing");
+                "phase 3B INI policy field missing");
     }
     Require(policy.find("CaptureTraceRoot=F:") == std::string::npos,
             "packaged trace root must remain empty");
