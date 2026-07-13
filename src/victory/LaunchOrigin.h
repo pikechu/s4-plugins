@@ -48,10 +48,17 @@ public:
     void Disable() noexcept;
 
 private:
+    enum class NavigationContext {
+        Unknown,
+        SinglePlayer,
+        OnlineMultiplayer,
+    };
+
     void Set(LaunchOriginSnapshot value, std::uint64_t nowMs) noexcept;
 
     LaunchOriginSnapshot current_{};
     std::uint64_t observedAtMs_ = 0u;
+    NavigationContext context_ = NavigationContext::Unknown;
     bool enabled_ = true;
 };
 

@@ -84,49 +84,64 @@ void LaunchOriginTracker::ObservePage(DWORD page,
         return;
     }
 
+    if (page == S4_SCREEN_MAINMENU) {
+        ObserveBack();
+        return;
+    }
+
+    if (page == S4_SCREEN_SINGLEPLAYER) {
+        context_ = NavigationContext::SinglePlayer;
+        Set(Origin(LaunchSource::SinglePlayerMap,
+                   SessionEligibility::Eligible),
+            nowMs);
+        return;
+    }
+
+    if (page == S4_SCREEN_MULTIPLAYER) {
+        context_ = NavigationContext::OnlineMultiplayer;
+        Set(Origin(LaunchSource::OnlineMultiplayer,
+                   SessionEligibility::ExcludedOnlineMultiplayer),
+            nowMs);
+        return;
+    }
+
     if (IsCampaignPage(page)) {
+        context_ = NavigationContext::SinglePlayer;
         Set(Origin(LaunchSource::Campaign, SessionEligibility::Eligible),
             nowMs);
         return;
     }
 
     switch (page) {
-        case S4_SCREEN_MAINMENU:
-        case S4_SCREEN_SINGLEPLAYER:
         case S4_SCREEN_LOADGAME:
             ObserveBack();
             break;
         case S4_SCREEN_SINGLEPLAYER_MAPSELECT_SINGLE:
-        case S4_SCREEN_SINGLEPLAYER_LOBBY:
-            Set(Origin(LaunchSource::SinglePlayerMap,
-                       SessionEligibility::Eligible),
-                nowMs);
-            break;
         case S4_SCREEN_SINGLEPLAYER_MAPSELECT_MULTI:
-            Set(Origin(LaunchSource::SinglePlayerMultiplayerMap,
-                       SessionEligibility::Eligible),
-                nowMs);
-            break;
         case S4_SCREEN_SINGLEPLAYER_MAPSELECT_USER:
-            Set(Origin(LaunchSource::SinglePlayerCustomMap,
-                       SessionEligibility::Eligible),
-                nowMs);
+        case S4_SCREEN_SINGLEPLAYER_LOBBY:
+            if (context_ == NavigationContext::SinglePlayer) {
+                Set(Origin(LaunchSource::SinglePlayerMap,
+                           SessionEligibility::Eligible),
+                    nowMs);
+            }
             break;
         case S4_SCREEN_SINGLEPLAYER_MAPSELECT_RANDOM:
-            if (!IsOnline(current_.eligibility)) {
+            if (context_ == NavigationContext::SinglePlayer) {
                 Set(Origin(LaunchSource::RandomMap,
                            SessionEligibility::ExcludedRandomMap),
                     nowMs);
             }
             break;
-        case S4_SCREEN_MULTIPLAYER:
         case S4_SCREEN_MULTIPLAYER_MAPSELECT_MULTI:
         case S4_SCREEN_MULTIPLAYER_MAPSELECT_RANDOM:
         case S4_SCREEN_MULTIPLAYER_MAPSELECT_USER:
         case S4_SCREEN_MULTIPLAYER_LOBBY:
-            Set(Origin(LaunchSource::OnlineMultiplayer,
-                       SessionEligibility::ExcludedOnlineMultiplayer),
-                nowMs);
+            if (context_ == NavigationContext::OnlineMultiplayer) {
+                Set(Origin(LaunchSource::OnlineMultiplayer,
+                           SessionEligibility::ExcludedOnlineMultiplayer),
+                    nowMs);
+            }
             break;
         case S4_SCREEN_LOADGAME_CAMPAIGN:
             Set(Origin(LaunchSource::LoadCampaign,
@@ -158,6 +173,7 @@ void LaunchOriginTracker::ObserveListKind(FixedMapListKind kind,
     // Settlers IV may draw in the same frame.
     current_ = {};
     observedAtMs_ = 0u;
+    context_ = NavigationContext::SinglePlayer;
 
     switch (kind) {
         case FixedMapListKind::Single:
@@ -185,6 +201,7 @@ void LaunchOriginTracker::ObserveBack() noexcept {
     if (enabled_) {
         current_ = {};
         observedAtMs_ = 0u;
+        context_ = NavigationContext::Unknown;
     }
 }
 
@@ -201,12 +218,14 @@ LaunchOriginSnapshot LaunchOriginTracker::ConsumeMapInit(
             : LaunchOriginSnapshot{};
     current_ = {};
     observedAtMs_ = 0u;
+    context_ = NavigationContext::Unknown;
     return result;
 }
 
 void LaunchOriginTracker::Disable() noexcept {
     current_ = {};
     observedAtMs_ = 0u;
+    context_ = NavigationContext::Unknown;
     enabled_ = false;
 }
 
