@@ -134,7 +134,7 @@ void MapIdentityCoordinator::EmitResult(
             association = "no-list-epoch";
         } else if (name && relative) {
             association = "confirmed";
-        } else if (name) {
+        } else if (name && IsUnavailable(relative.status)) {
             association = "name-only";
         } else if (IsUnavailable(name.status) &&
                    IsUnavailable(relative.status)) {
