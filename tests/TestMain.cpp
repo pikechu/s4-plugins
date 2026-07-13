@@ -22,6 +22,7 @@ int RunMapIdentityCoordinatorTests();
 int RunLaunchOriginTests();
 int RunSettlementUiProbeTests();
 int RunVictoryEventProbeTests();
+int RunNativeEventAdmissionTests();
 int RunPhase3TraceTests();
 
 int main() {
@@ -46,6 +47,7 @@ int main() {
         RunLaunchOriginTests();
         RunSettlementUiProbeTests();
         RunVictoryEventProbeTests();
+        RunNativeEventAdmissionTests();
         RunPhase3TraceTests();
         return RunRuntimePolicyTests();
     } catch (const std::exception& error) {
