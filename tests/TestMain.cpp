@@ -3,11 +3,13 @@
 
 int RunLoggerTests();
 int RunModuleInventoryTests();
+int RunRuntimePolicyTests();
 
 int main() {
     try {
         RunLoggerTests();
-        return RunModuleInventoryTests();
+        RunModuleInventoryTests();
+        return RunRuntimePolicyTests();
     } catch (const std::exception& error) {
         std::cerr << "FAIL: " << error.what() << '\n';
         return 1;

@@ -40,6 +40,7 @@ add_executable(campaign_completion_tests
   tests/TestMain.cpp
   tests/LoggerTests.cpp
   tests/ModuleInventoryTests.cpp
+  tests/RuntimePolicyTests.cpp
   src/diagnostics/Logger.cpp
   src/diagnostics/ModuleInventory.cpp
 )
