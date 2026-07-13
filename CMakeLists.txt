@@ -51,6 +51,7 @@ endif()
 
 add_executable(campaign_completion_tests
   tests/TestMain.cpp
+  tests/CaptureTraceTests.cpp
   tests/FixedMapCaptureStateTests.cpp
   tests/FixedMapIdentityProbeTests.cpp
   tests/FixedMapLoadHookTests.cpp
