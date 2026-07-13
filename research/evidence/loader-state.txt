@@ -1,0 +1,11 @@
+﻿# Settlers United baseline loader state
+generated_utc=2026-07-13T03:39:28Z
+process_name=S4_Main.exe
+process_id=36956
+executable_path=
+parent_process_id=16760
+command_line=
+collection_mode=ObserveOnly
+module_count=0
+module_error=OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_VM_READ) failed; win32_error=5. Module load state is Unknown, not absent.
+
