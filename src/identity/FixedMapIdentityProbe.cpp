@@ -42,21 +42,54 @@ std::string_view PathFailureName(MapPathFailure failure) noexcept {
     return "unknown";
 }
 
+std::string_view WideFailureName(WideCaptureFailure failure) noexcept {
+    switch (failure) {
+        case WideCaptureFailure::None: return "none";
+        case WideCaptureFailure::NullObject: return "null-object";
+        case WideCaptureFailure::HeaderUnreadable: return "header-unreadable";
+        case WideCaptureFailure::LengthExceedsCapacity:
+            return "length-exceeds-capacity";
+        case WideCaptureFailure::LengthLimitExceeded:
+            return "length-limit-exceeded";
+        case WideCaptureFailure::CapacityLimitExceeded:
+            return "capacity-limit-exceeded";
+        case WideCaptureFailure::NullStorage: return "null-storage";
+        case WideCaptureFailure::AddressOverflow: return "address-overflow";
+        case WideCaptureFailure::StorageUnreadable:
+            return "storage-unreadable";
+        case WideCaptureFailure::MissingTerminator:
+            return "missing-terminator";
+        case WideCaptureFailure::AllocationFailure:
+            return "allocation-failure";
+    }
+    return "unknown";
+}
+
 }  // namespace
 
 FixedMapIdentityProbe::FixedMapIdentityProbe(std::filesystem::path gameRoot,
-                                             RecordSink recordSink)
-    : validator_(std::move(gameRoot)), recordSink_(std::move(recordSink)) {}
+                                             RecordSink recordSink,
+                                             TraceSink traceSink)
+    : validator_(std::move(gameRoot)),
+      recordSink_(std::move(recordSink)),
+      traceSink_(std::move(traceSink)) {}
 
 void FixedMapIdentityProbe::Observe(CapturedWidePath capture,
                                     std::uint64_t sequence,
                                     std::uint64_t nowMs) {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (disabled_ || !capture) {
+    if (disabled_) {
         return;
     }
-    if (pending_.size() >= kMaximumRawCaptures) {
+    if (adapterEntered_ >= kMaximumRawCaptures) {
         rawOverflow_ = true;
+        return;
+    }
+    ++adapterEntered_;
+    if (!capture) {
+        if (firstWideFailure_ == WideCaptureFailure::None) {
+            firstWideFailure_ = capture.failure;
+        }
         return;
     }
     pending_.push_back({std::move(capture), sequence, nowMs});
@@ -71,6 +104,8 @@ void FixedMapIdentityProbe::ObserveListKind(FixedMapListKind listKind,
     }
     currentKind_ = listKind;
     pending_.clear();
+    adapterEntered_ = 0;
+    firstWideFailure_ = WideCaptureFailure::None;
     rawOverflow_ = false;
     state_.BeginMenuEpoch(listKind, nowMs);
     Emit(std::string("fixed-map list_kind=") +
@@ -84,6 +119,8 @@ void FixedMapIdentityProbe::ObserveBack() {
     }
     currentKind_ = FixedMapListKind::Unknown;
     pending_.clear();
+    adapterEntered_ = 0;
+    firstWideFailure_ = WideCaptureFailure::None;
     rawOverflow_ = false;
     state_.InvalidateMenuEpoch();
 }
@@ -100,10 +137,15 @@ void FixedMapIdentityProbe::ObserveMapInit(std::uint64_t nowMs) {
         return;
     }
 
+    const auto adapterEntered = adapterEntered_;
+    const auto firstWideFailure = firstWideFailure_;
+    const bool wideCaptureSucceeded = !pending_.empty();
     MapPathFailure pathFailure = MapPathFailure::None;
+    bool pathValidated = false;
     for (const auto& raw : pending_) {
         const auto validated = validator_.ValidateWide(raw.capture.value);
         if (validated) {
+            pathValidated = true;
             state_.ObserveCapture(validated.relativePath, raw.sequence,
                                   raw.capturedAtMs);
         } else if (pathFailure == MapPathFailure::None) {
@@ -119,6 +161,37 @@ void FixedMapIdentityProbe::ObserveMapInit(std::uint64_t nowMs) {
     }
     rawOverflow_ = false;
 
+    EmitTrace("adapter-entered=" + std::to_string(adapterEntered));
+    if (wideCaptureSucceeded) {
+        EmitTrace("wide-capture=success");
+        if (pathValidated) {
+            EmitTrace("path-validation=success");
+        } else if (pathFailure != MapPathFailure::None) {
+            EmitTrace("path-validation=" +
+                      std::string(PathFailureName(pathFailure)));
+        }
+    } else if (firstWideFailure != WideCaptureFailure::None) {
+        EmitTrace("wide-capture=" +
+                  std::string(WideFailureName(firstWideFailure)));
+    }
+
+    std::string association;
+    if (identity.failure == CaptureFailure::Overflow) {
+        association = "overflow";
+    } else if (identity.confidence == IdentityConfidence::Confirmed) {
+        association = "confirmed";
+    } else if (wideCaptureSucceeded && !pathValidated &&
+               pathFailure != MapPathFailure::None) {
+        association = "path-" + std::string(PathFailureName(pathFailure));
+    } else if (!wideCaptureSucceeded &&
+               firstWideFailure != WideCaptureFailure::None) {
+        association =
+            "wide-" + std::string(WideFailureName(firstWideFailure));
+    } else {
+        association = std::string(CaptureFailureName(identity.failure));
+    }
+    EmitTrace("map-init-association=" + association);
+
     std::ostringstream record;
     if (identity.confidence == IdentityConfidence::Confirmed) {
         record << "identity confirmed list_kind="
@@ -130,12 +203,18 @@ void FixedMapIdentityProbe::ObserveMapInit(std::uint64_t nowMs) {
                identity.failure == CaptureFailure::NoCandidate) {
         record << "identity unknown reason=path-"
                << PathFailureName(pathFailure);
+    } else if (firstWideFailure != WideCaptureFailure::None &&
+               identity.failure == CaptureFailure::NoCandidate) {
+        record << "identity unknown reason=wide-"
+               << WideFailureName(firstWideFailure);
     } else {
         record << "identity unknown reason="
                << CaptureFailureName(identity.failure);
     }
     Emit(record.str());
     currentKind_ = FixedMapListKind::Unknown;
+    adapterEntered_ = 0;
+    firstWideFailure_ = WideCaptureFailure::None;
 }
 
 void FixedMapIdentityProbe::Disable() {
@@ -145,6 +224,8 @@ void FixedMapIdentityProbe::Disable() {
     }
     disabled_ = true;
     pending_.clear();
+    adapterEntered_ = 0;
+    firstWideFailure_ = WideCaptureFailure::None;
     rawOverflow_ = false;
     state_.InvalidateMenuEpoch();
     Emit("fixed-map probe disabled");
@@ -157,6 +238,12 @@ void FixedMapIdentityProbe::Emit(std::string record) {
     lastRecord_ = record;
     if (recordSink_) {
         recordSink_(std::move(record));
+    }
+}
+
+void FixedMapIdentityProbe::EmitTrace(std::string record) {
+    if (traceSink_) {
+        traceSink_(std::move(record));
     }
 }
 

@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <filesystem>
 #include <functional>
@@ -18,8 +19,11 @@ namespace campaign_completion {
 class FixedMapIdentityProbe final : public IRawCaptureSink {
 public:
     using RecordSink = std::function<void(std::string)>;
+    using TraceSink = std::function<void(std::string)>;
 
-    FixedMapIdentityProbe(std::filesystem::path gameRoot, RecordSink recordSink);
+    FixedMapIdentityProbe(std::filesystem::path gameRoot,
+                          RecordSink recordSink,
+                          TraceSink traceSink = {});
 
     void Observe(CapturedWidePath capture, std::uint64_t sequence,
                  std::uint64_t nowMs) override;
@@ -37,14 +41,18 @@ private:
     };
 
     void Emit(std::string record);
+    void EmitTrace(std::string record);
 
     std::mutex mutex_;
     MapPathValidator validator_;
     FixedMapCaptureState state_;
     RecordSink recordSink_;
+    TraceSink traceSink_;
     std::vector<RawCapture> pending_;
     std::string lastRecord_;
     FixedMapListKind currentKind_ = FixedMapListKind::Unknown;
+    std::size_t adapterEntered_ = 0;
+    WideCaptureFailure firstWideFailure_ = WideCaptureFailure::None;
     bool rawOverflow_ = false;
     bool disabled_ = false;
 };
