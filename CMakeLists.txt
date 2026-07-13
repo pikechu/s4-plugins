@@ -14,6 +14,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/diagnostics/Logger.cpp
     src/diagnostics/ModuleInventory.cpp
     src/hook/HookSiteLayout.cpp
+    src/hook/MsvcX86WideString.cpp
     src/identity/ListAttribution.cpp
     src/runtime/CallbackGate.cpp
     src/runtime/DiagnosticRuntime.cpp
@@ -56,6 +57,7 @@ add_executable(campaign_completion_tests
   src/diagnostics/Logger.cpp
   src/diagnostics/ModuleInventory.cpp
   src/hook/HookSiteLayout.cpp
+  src/hook/MsvcX86WideString.cpp
   src/identity/ListAttribution.cpp
   src/runtime/CallbackGate.cpp
   src/runtime/ListenerRemoval.cpp
