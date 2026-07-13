@@ -26,6 +26,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/runtime/PageObservation.cpp
     src/runtime/S4Listeners.cpp
     src/runtime/StopRequest.cpp
+    src/victory/LaunchOrigin.cpp
   )
 
   target_include_directories(CampaignCompletionDebug PRIVATE
@@ -87,6 +88,7 @@ add_executable(campaign_completion_tests
   src/runtime/ListenerRemoval.cpp
   src/runtime/PageObservation.cpp
   src/runtime/StopRequest.cpp
+  src/victory/LaunchOrigin.cpp
 )
 target_include_directories(campaign_completion_tests PRIVATE
   src
