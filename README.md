@@ -180,8 +180,8 @@ Created for the Settlers IV community.
 
 Thanks to:
 
-- Settlers United developers
-- S4ModApi contributors
+- Settlers United developers and contributors
+- S4ModApi developers and contributors
 - The Settlers IV modding community
 - ChatGPT for project planning, architecture design, and development assistance
 
@@ -189,4 +189,6 @@ Thanks to:
 
 ## License
 
-MIT License
+This project is licensed under the MIT License.
+
+See [LICENSE](LICENSE) for details.
