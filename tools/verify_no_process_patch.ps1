@@ -61,6 +61,40 @@ if (-not $targetMatch.Success) {
     throw "CampaignCompletionDebug SHARED target block is missing"
 }
 $targetBody = $targetMatch.Groups['body'].Value
+$requiredNativeFiles = @(
+    'src/native/NativeEventAdmission.cpp',
+    'src/native/NativeEventRegistration.cpp',
+    'src/native/NativeVictoryEventSubscriber.cpp',
+    'src/victory/VictoryEventProbe.cpp'
+)
+foreach ($file in $requiredNativeFiles) {
+    $count = [regex]::Matches(
+        $targetBody, [regex]::Escape($file),
+        [Text.RegularExpressions.RegexOptions]::IgnoreCase).Count
+    if ($count -ne 1) {
+        throw "Required native event source must be linked exactly once: $file (found $count)"
+    }
+}
+$admittedNativeSources = [Collections.Generic.HashSet[string]]::new(
+    [StringComparer]::OrdinalIgnoreCase)
+foreach ($file in $requiredNativeFiles) {
+    if ($file.StartsWith('src/native/', [StringComparison]::OrdinalIgnoreCase)) {
+        [void]$admittedNativeSources.Add($file)
+    }
+}
+$linkedNativeSources = [regex]::Matches(
+    $targetBody, '(?im)^\s*(?<path>src/native/[^\s\)]+\.(?:cpp|cxx|cc))\s*$')
+foreach ($match in $linkedNativeSources) {
+    $file = $match.Groups['path'].Value
+    if (-not $admittedNativeSources.Contains($file)) {
+        throw "Unadmitted native source is linked into CampaignCompletionDebug: $file"
+    }
+}
+$linkedHookSource = [regex]::Match(
+    $targetBody, '(?im)^\s*src/hook/[^\s\)]+\.(?:cpp|cxx|cc)\s*$')
+if ($linkedHookSource.Success) {
+    throw "A src/hook source is linked into CampaignCompletionDebug: $($linkedHookSource.Value.Trim())"
+}
 $hookEraFiles = @(
     'src/hook/HookSiteLayout.cpp',
     'src/hook/FixedMapLoadHook.cpp',
@@ -163,4 +197,4 @@ foreach ($api in $forbiddenLuaWrites) {
     }
 }
 
-Write-Host "Verified PE32 public calibration ASI, zero internal victory behavior, zero process patches, and read-only Lua bridge."
+Write-Host "Verified PE32 native event calibration ASI, zero process patches, and read-only Lua bridge."

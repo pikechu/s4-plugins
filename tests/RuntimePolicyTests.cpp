@@ -158,6 +158,14 @@ int RunRuntimePolicyTests() {
     Require(asiBegin != std::string::npos && asiEnd != std::string::npos,
             "diagnostic ASI source block is present");
     const auto asiSources = cmake.substr(asiBegin, asiEnd - asiBegin);
+    for (const auto* requiredSource : {
+             "src/native/NativeEventAdmission.cpp",
+             "src/native/NativeEventRegistration.cpp",
+             "src/native/NativeVictoryEventSubscriber.cpp",
+             "src/victory/VictoryEventProbe.cpp"}) {
+        Require(asiSources.find(requiredSource) != std::string::npos,
+                "native event production source is missing from the ASI");
+    }
     for (const auto* forbiddenSource : {
              "HookSiteLayout.cpp", "FixedMapLoadHook.cpp",
              "HlibCallPatchBackend.cpp", "MsvcX86WideString.cpp"}) {
