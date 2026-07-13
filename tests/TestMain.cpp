@@ -17,6 +17,7 @@ int RunRuntimePolicyTests();
 int RunStopRequestTests();
 int RunSuMapValueTests();
 int RunSuLuaMapBridgeTests();
+int RunLuaMapSessionTests();
 
 int main() {
     try {
@@ -35,6 +36,7 @@ int main() {
         RunStopRequestTests();
         RunSuMapValueTests();
         RunSuLuaMapBridgeTests();
+        RunLuaMapSessionTests();
         return RunRuntimePolicyTests();
     } catch (const std::exception& error) {
         std::cerr << "FAIL: " << error.what() << '\n';
