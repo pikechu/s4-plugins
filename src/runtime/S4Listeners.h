@@ -10,6 +10,7 @@
 #include <atomic>
 #include <cstdint>
 #include <mutex>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -97,6 +98,8 @@ private:
     RateLimiter mouseLimiter_{1000};
     RateLimiter guiLimiter_{1000};
     DWORD currentPage_ = S4_GUI_UNKNOWN;
+    std::vector<DWORD> currentPages_;
+    std::optional<std::pair<DWORD, std::vector<DWORD>>> lastCalibrationRelease_;
     std::uint64_t guiElementCount_ = 0;
 };
 
