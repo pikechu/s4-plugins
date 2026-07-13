@@ -86,7 +86,7 @@ void FixedMapLoadHook::Dispatch(void* mapFile, const void* pathObject,
     if (entered) {
         const auto sequence = nextSequence_.fetch_add(1u);
         auto capture = CaptureMsvcX86WideString(pathObject, 512u);
-        if (capture && sink_ != nullptr) {
+        if (sink_ != nullptr) {
             try {
                 sink_->Observe(std::move(capture), sequence, GetTickCount64());
             } catch (...) {
