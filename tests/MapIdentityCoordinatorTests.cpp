@@ -116,8 +116,11 @@ int RunMapIdentityCoordinatorTests() {
     noList.coordinator.ObserveLuaOpen(10u);
     noList.coordinator.ObserveMapInit(20u);
     noList.coordinator.ObserveTick(true, 70u, noListBridge);
-    Require(Contains(noList.trace, "identity-association=no-list-epoch"),
-            "valid values without an explicit list never confirm");
+    Require(Contains(noList.trace, "map-init-session=1;list=unknown") &&
+                Contains(noList.trace, "identity-association=confirmed"),
+            "campaign and load identity confirm without a fixed-list epoch");
+    Require(noList.coordinator.CurrentSessionId() == 1u,
+            "coordinator exposes the active map-init session");
 
     Harness nameOnly;
     QueueBridge nameOnlyBridge;
@@ -187,6 +190,11 @@ int RunMapIdentityCoordinatorTests() {
     Require(backedOut.trace.size() == beforeBack &&
                 backedOutBridge.readCount == 0u,
             "Back invalidates attribution and the pending session");
+    Require(backedOut.coordinator.CurrentSessionId() == 0u,
+            "Back clears the active map-init session ID");
+    backedOut.coordinator.ObserveListKind(FixedMapListKind::Single, 54u);
+    Require(backedOut.coordinator.ObserveMapInit(55u) == 2u,
+            "Back does not reset the monotonic map-init session counter");
 
     Harness disabled;
     QueueBridge disabledBridge;
