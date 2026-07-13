@@ -129,6 +129,7 @@ private:
     std::uint64_t activeSessionId_ = 0u;
     bool inGameSeen_ = false;
     bool settlementStarted_ = false;
+    bool nativeReinsertPending_ = false;
     std::atomic<NativeSubscriptionState> lastNativeState_{
         NativeSubscriptionState::Idle};
 

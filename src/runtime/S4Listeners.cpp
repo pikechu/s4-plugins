@@ -143,6 +143,7 @@ ListenerStopResult S4Listeners::Stop() {
     activeSessionId_ = 0u;
     inGameSeen_ = false;
     settlementStarted_ = false;
+    nativeReinsertPending_ = false;
     lastNativeState_.store(NativeSubscriptionState::Idle,
                            std::memory_order_release);
     return result;
@@ -248,6 +249,7 @@ void S4Listeners::ObserveMapInit() {
     }
     inGameSeen_ = false;
     settlementStarted_ = false;
+    nativeReinsertPending_ = true;
     if (victoryProbe_ != nullptr) {
         victoryProbe_->BeginSession(activeSessionId_);
     }
@@ -290,6 +292,24 @@ void S4Listeners::ObserveTick(BOOL delayed) {
     const bool inGame =
         api_->IsCurrentlyOnScreen(S4_SCREEN_INGAME) != FALSE;
     const auto now = GetTickCount64();
+    if (inGame && nativeReinsertPending_ && nativeSubscriber_ != nullptr &&
+        nativeSubscriber_->state() == NativeSubscriptionState::Attached) {
+        nativeReinsertPending_ = false;
+        const bool reinserted =
+            nativeSubscriber_->ReinsertAtFrontOnGameThread();
+        if (phase3Trace_ != nullptr) {
+            phase3Trace_->Write(
+                Phase3TraceChannel::NativeEvent,
+                reinserted ? "native-subscription=reinserted-front"
+                           : "native-subscription=reinsert-front-failed");
+        }
+        if (logger_ != nullptr) {
+            logger_->Write(
+                reinserted ? LogLevel::Info : LogLevel::Error,
+                reinserted ? "native subscriber reinserted at list front"
+                           : "native subscriber list reorder failed");
+        }
+    }
     if (coordinator_ != nullptr && bridge_ != nullptr) {
         coordinator_->ObserveTick(inGame, now, *bridge_);
     }
