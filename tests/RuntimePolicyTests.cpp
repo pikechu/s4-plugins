@@ -74,14 +74,14 @@ int RunRuntimePolicyTests() {
     const auto policy = ReadText(sourceRoot / "config" /
                                  "CampaignCompletionDebug.ini");
     for (const auto* required : {
-             "Version=0.2.4", "FixedMapLoadHook=1",
-             "HookSiteRva=0x000FEFA5", "HookCount=1",
-             "CodePatchBytes=5", "GameDataWrites=0",
+             "Version=0.2.5", "IdentitySource=SettlersUnitedLua",
+             "FixedMapLoadHook=0", "HookCount=0",
+             "CodePatchBytes=0", "LuaWrites=0", "GameDataWrites=0",
              "UnrelatedInternalCalls=0", "CompletionDetection=0",
              "CompletionStorage=0", "CompletionMarkers=0",
              "CaptureTraceRoot="}) {
         Require(policy.find(required) != std::string::npos,
-                "phase 2.4 INI policy field missing");
+                "phase 2.5 INI policy field missing");
     }
     Require(policy.find("CaptureTraceRoot=F:") == std::string::npos,
             "packaged trace root must remain empty");
@@ -92,17 +92,47 @@ int RunRuntimePolicyTests() {
 
     const auto runtime = ReadText(sourceRoot / "src" / "runtime" /
                                   "DiagnosticRuntime.cpp");
-    Require(runtime.find("version=0.2.4") != std::string::npos &&
-                runtime.find("hook-mode=single-call-site") != std::string::npos,
-            "runtime header identifies phase 2.4 single-call-site mode");
-    const auto hookStop = runtime.find("fixedMapHook_.Stop()");
+    const auto runtimeHeader = ReadText(sourceRoot / "src" / "runtime" /
+                                        "DiagnosticRuntime.h");
+    Require(runtime.find("version=0.2.5") != std::string::npos &&
+                runtime.find("identity-mode=su-lua-read-only") !=
+                    std::string::npos,
+            "runtime header identifies phase 2.5 read-only Lua mode");
+    for (const auto* forbidden : {
+             "FixedMapLoadHook", "HlibCallPatchBackend", "HookSiteLayout",
+             "fixedMapHook_", "hookBackend_", "originalInvoker_",
+             "hookStarted_", "PatchFailure", "Start(admission"}) {
+        Require((runtime + runtimeHeader).find(forbidden) ==
+                    std::string::npos,
+                "runtime must not own, start, or stop a process Hook");
+    }
+    Require(runtimeHeader.find("S4LuaApi") != std::string::npos &&
+                runtimeHeader.find("S4LuaMapBridge") != std::string::npos &&
+                runtimeHeader.find("MapIdentityCoordinator") !=
+                    std::string::npos,
+            "runtime owns the production SU Lua identity pipeline");
+    const auto coordinatorDisable = runtime.find("coordinator_->Disable()");
     const auto listenerStop = runtime.find("listeners_.Stop()");
     const auto traceClose = runtime.find("captureTrace_.Close()");
-    Require(hookStop != std::string::npos && listenerStop != std::string::npos &&
-                hookStop < listenerStop,
-            "internal hook stop precedes public listener stop");
+    Require(coordinatorDisable != std::string::npos &&
+                listenerStop != std::string::npos &&
+                coordinatorDisable < listenerStop,
+            "coordinator is disabled before public listener stop");
     Require(traceClose != std::string::npos && listenerStop < traceClose,
-            "capture trace closes after hook and public listeners");
+            "capture trace closes after public listeners");
+
+    const auto cmake = ReadText(sourceRoot / "CMakeLists.txt");
+    const auto asiBegin = cmake.find("add_library(CampaignCompletionDebug");
+    const auto asiEnd = cmake.find("target_include_directories", asiBegin);
+    Require(asiBegin != std::string::npos && asiEnd != std::string::npos,
+            "diagnostic ASI source block is present");
+    const auto asiSources = cmake.substr(asiBegin, asiEnd - asiBegin);
+    for (const auto* forbiddenSource : {
+             "HookSiteLayout.cpp", "FixedMapLoadHook.cpp",
+             "HlibCallPatchBackend.cpp", "MsvcX86WideString.cpp"}) {
+        Require(asiSources.find(forbiddenSource) == std::string::npos,
+                "Hook-era source must not be linked into the 0.2.5 ASI");
+    }
 
     const auto listeners = ReadText(sourceRoot / "src" / "runtime" /
                                     "S4Listeners.cpp");
