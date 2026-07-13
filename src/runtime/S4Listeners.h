@@ -2,10 +2,13 @@
 
 #include "S4ModApi.h"
 #include "diagnostics/Logger.h"
+#include "runtime/PageObservation.h"
 
+#include <array>
 #include <atomic>
 #include <cstdint>
 #include <mutex>
+#include <utility>
 #include <vector>
 
 namespace campaign_completion {
@@ -39,23 +42,37 @@ public:
     void Stop();
 
 private:
-    static HRESULT S4HCALL OnUiFrame(LPDIRECTDRAWSURFACE7, INT32, LPVOID);
+    template <DWORD Page>
+    static HRESULT S4HCALL OnUiFrameFor(LPDIRECTDRAWSURFACE7, INT32, LPVOID) {
+        DispatchUiFrame(Page);
+        return S_OK;
+    }
+
+    template <std::size_t... Index>
+    static constexpr auto MakeUiCallbacks(std::index_sequence<Index...>) {
+        return std::array<LPS4FRAMECALLBACK, sizeof...(Index)>{
+            &OnUiFrameFor<static_cast<DWORD>(Index + 1)>...};
+    }
+
+    static void DispatchUiFrame(DWORD page);
     static HRESULT S4HCALL OnMapInit(LPVOID, LPVOID);
     static HRESULT S4HCALL OnMouse(DWORD, INT, INT, DWORD, HWND, LPCS4UIELEMENT);
     static HRESULT S4HCALL OnGuiElement(LPS4GUIDRAWBLTPARAMS, BOOL);
 
-    void ObserveUiFrame();
+    void ObserveUiFrame(DWORD page);
     void ObserveMapInit();
     void ObserveMouse(DWORD button, INT x, INT y, DWORD message,
                       LPCS4UIELEMENT element);
     void ObserveGuiElement(LPS4GUIDRAWBLTPARAMS element);
 
     static std::atomic<S4Listeners*> active_;
+    static const std::array<LPS4FRAMECALLBACK, S4_GUI_ENUM_MAXVALUE - 1>
+        uiCallbacks_;
     S4API api_ = nullptr;
     Logger* logger_ = nullptr;
     std::vector<S4HOOK> hooks_;
     std::mutex mutex_;
-    RateLimiter pageLimiter_{1000};
+    PageObservationWindow pageWindow_{1000};
     RateLimiter mouseLimiter_{1000};
     RateLimiter guiLimiter_{1000};
     DWORD currentPage_ = S4_GUI_UNKNOWN;

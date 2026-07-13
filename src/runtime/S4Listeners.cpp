@@ -7,6 +7,9 @@
 namespace campaign_completion {
 
 std::atomic<S4Listeners*> S4Listeners::active_{nullptr};
+const std::array<LPS4FRAMECALLBACK, S4_GUI_ENUM_MAXVALUE - 1>
+    S4Listeners::uiCallbacks_ = S4Listeners::MakeUiCallbacks(
+        std::make_index_sequence<S4_GUI_ENUM_MAXVALUE - 1>{});
 
 bool S4Listeners::Start(S4API api, Logger& logger) {
     if (api == nullptr || active_.load() != nullptr) {
@@ -27,7 +30,7 @@ bool S4Listeners::Start(S4API api, Logger& logger) {
     bool success = addHook(api_->AddMapInitListener(&OnMapInit));
     for (DWORD page = 1; page < S4_GUI_ENUM_MAXVALUE; ++page) {
         success = addHook(api_->AddUIFrameListener(
-                      &OnUiFrame, static_cast<S4_GUI_ENUM>(page))) &&
+                      uiCallbacks_[page - 1], static_cast<S4_GUI_ENUM>(page))) &&
                   success;
     }
     success = addHook(api_->AddMouseListener(&OnMouse)) && success;
@@ -55,11 +58,10 @@ void S4Listeners::Stop() {
     logger_ = nullptr;
 }
 
-HRESULT S4HCALL S4Listeners::OnUiFrame(LPDIRECTDRAWSURFACE7, INT32, LPVOID) {
+void S4Listeners::DispatchUiFrame(DWORD page) {
     if (auto* active = active_.load(); active != nullptr) {
-        active->ObserveUiFrame();
+        active->ObserveUiFrame(page);
     }
-    return S_OK;
 }
 
 HRESULT S4HCALL S4Listeners::OnMapInit(LPVOID, LPVOID) {
@@ -84,21 +86,23 @@ HRESULT S4HCALL S4Listeners::OnGuiElement(LPS4GUIDRAWBLTPARAMS element, BOOL) {
     return S_OK;
 }
 
-void S4Listeners::ObserveUiFrame() {
+void S4Listeners::ObserveUiFrame(DWORD page) {
     const auto now = GetTickCount64();
     std::lock_guard<std::mutex> lock(mutex_);
-    if (!pageLimiter_.Allow(now) || api_ == nullptr || logger_ == nullptr) {
+    const auto snapshot = pageWindow_.Observe(page, now);
+    if (!snapshot.has_value() || logger_ == nullptr) {
         return;
     }
-    currentPage_ = S4_GUI_UNKNOWN;
-    for (DWORD page = 1; page < S4_GUI_ENUM_MAXVALUE; ++page) {
-        if (api_->IsCurrentlyOnScreen(static_cast<S4_GUI_ENUM>(page)) != FALSE) {
-            currentPage_ = page;
-            break;
-        }
-    }
+    currentPage_ = snapshot->primaryPage;
     std::ostringstream message;
-    message << "ui-frame page=" << currentPage_;
+    message << "ui-pages active=";
+    for (std::size_t index = 0; index < snapshot->activePages.size(); ++index) {
+        if (index != 0) {
+            message << ',';
+        }
+        message << snapshot->activePages[index];
+    }
+    message << " primary=" << currentPage_;
     logger_->Write(LogLevel::Info, message.str());
 }
 

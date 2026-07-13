@@ -14,6 +14,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/diagnostics/Logger.cpp
     src/diagnostics/ModuleInventory.cpp
     src/runtime/DiagnosticRuntime.cpp
+    src/runtime/PageObservation.cpp
     src/runtime/S4Listeners.cpp
   )
 
@@ -44,6 +45,7 @@ add_executable(campaign_completion_tests
   tests/RuntimePolicyTests.cpp
   src/diagnostics/Logger.cpp
   src/diagnostics/ModuleInventory.cpp
+  src/runtime/PageObservation.cpp
 )
 target_include_directories(campaign_completion_tests PRIVATE
   src
