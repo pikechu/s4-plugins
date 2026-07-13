@@ -29,41 +29,46 @@ jobs:
       - name: Build
         run: cmake --build build --config Debug --parallel
 
-      - name: Verify fixed-map hook adapter ABI
+      - name: Verify zero-patch read-only Lua policy
         shell: pwsh
         run: |
-          ./tools/verify_hook_adapter.ps1 `
+          ./tools/verify_no_process_patch.ps1 `
             -Binary build/Debug/CampaignCompletionDebug.asi `
-            -FixedMapHookSource src/hook/FixedMapLoadHook.cpp
+            -SourceRoot .
 
-      - name: Reject Hook hot-path file I/O fixture
+      - name: Reject process-patch and Lua-write fixtures
         shell: pwsh
         run: |
-          $fixture = Join-Path $env:RUNNER_TEMP "campaign-hook-policy"
-          $source = Join-Path $fixture "src"
-          New-Item -ItemType Directory -Path $fixture -Force | Out-Null
-          Copy-Item -LiteralPath src -Destination $source -Recurse
-          $hook = Join-Path $source "hook/FixedMapLoadHook.cpp"
-          $content = [IO.File]::ReadAllText($hook)
-          $signature = "void FixedMapLoadHook::Dispatch"
-          $signatureIndex = $content.IndexOf($signature)
-          if ($signatureIndex -lt 0) { throw "Dispatch signature missing" }
-          $braceIndex = $content.IndexOf('{', $signatureIndex)
-          if ($braceIndex -lt 0) { throw "Dispatch body missing" }
-          $content = $content.Insert($braceIndex + 1, "`n    WriteFile;")
-          [IO.File]::WriteAllText($hook, $content)
-          $accepted = $true
-          try {
-            ./tools/verify_hook_adapter.ps1 `
-              -Binary build/Debug/CampaignCompletionDebug.asi `
-              -SourceRoot $fixture `
-              -FixedMapHookSource $hook
-          } catch {
-            $accepted = $false
+          function New-PolicyFixture([string]$name) {
+            $root = Join-Path $env:RUNNER_TEMP $name
+            New-Item -ItemType Directory -Path $root -Force | Out-Null
+            Copy-Item -LiteralPath CMakeLists.txt -Destination $root
+            Copy-Item -LiteralPath src -Destination (Join-Path $root "src") -Recurse
+            return $root
           }
-          if ($accepted) {
-            throw "Mutated Hook source was unexpectedly accepted"
+          function Assert-Rejected([string]$root, [string]$message) {
+            $accepted = $true
+            try {
+              ./tools/verify_no_process_patch.ps1 `
+                -Binary build/Debug/CampaignCompletionDebug.asi `
+                -SourceRoot $root
+            } catch {
+              $accepted = $false
+            }
+            if ($accepted) { throw $message }
           }
+
+          $patchFixture = New-PolicyFixture "campaign-process-patch-policy"
+          $runtime = Join-Path $patchFixture "src/runtime/DiagnosticRuntime.cpp"
+          [IO.File]::AppendAllText($runtime, "`n// hlib::CallPatch mutation fixture`n")
+          Assert-Rejected $patchFixture `
+            "Mutated process-patch source was unexpectedly accepted"
+
+          $luaFixture = New-PolicyFixture "campaign-lua-write-policy"
+          $bridge = Join-Path $luaFixture "src/lua/SuLuaMapBridge.cpp"
+          [IO.File]::AppendAllText($bridge, "`n// lua_setglobal mutation fixture`n")
+          Assert-Rejected $luaFixture `
+            "Mutated Lua-write source was unexpectedly accepted"
 
       - name: Test
         run: ctest --test-dir build -C Debug --output-on-failure
