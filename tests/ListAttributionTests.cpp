@@ -25,8 +25,13 @@ int RunListAttributionTests() {
     using campaign_completion::ListAttribution;
     using campaign_completion::PageSnapshot;
     using campaign_completion::TabControlMapping;
+    using campaign_completion::kApprovedTabControls;
 
-    constexpr TabControlMapping mapping{2450, 2451, 2415};
+    constexpr TabControlMapping mapping = kApprovedTabControls;
+    Require(mapping.single == 2449, "approved single-player calibration ID");
+    Require(mapping.multiplayer == 2450,
+            "approved multiplayer calibration ID");
+    Require(mapping.custom == 2451, "approved custom calibration ID");
     ListAttribution attribution(mapping);
 
     attribution.ObservePages(FixedMapPages());
@@ -64,5 +69,12 @@ int RunListAttributionTests() {
     attribution.Reset();
     Require(attribution.Current() == FixedMapListKind::Unknown,
             "explicit reset clears attribution");
+
+    constexpr TabControlMapping ambiguousMapping{2449, 2449, 2451};
+    ListAttribution ambiguous(ambiguousMapping);
+    ambiguous.ObservePages(FixedMapPages());
+    ambiguous.ObserveClick(WM_LBUTTONUP, 2449);
+    Require(ambiguous.Current() == FixedMapListKind::Unknown,
+            "ambiguous control mapping fails closed");
     return 0;
 }
