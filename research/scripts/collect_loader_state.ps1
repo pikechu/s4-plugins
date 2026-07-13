@@ -130,4 +130,5 @@ $lines.Add("module_count=$($sortedModules.Count)")
 if ($moduleError) { $lines.Add("module_error=$moduleError") }
 $lines.Add('')
 $sortedModules | ForEach-Object { $lines.Add($_) }
-$lines | Set-Content -LiteralPath $outputPath -Encoding utf8
+$utf8WithBom = New-Object Text.UTF8Encoding $true
+[IO.File]::WriteAllText($outputPath, (($lines -join "`n") + "`n"), $utf8WithBom)

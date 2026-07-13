@@ -31,7 +31,10 @@ emit_named_declarations() {
     local pattern
     pattern='S4CreateInterface|S4ApiCreate|AddFrameListener|AddUIFrameListener|AddMapInitListener|AddMouseListener|AddTickListener|AddGuiBltListener|AddGuiElementBltListener|AddGuiClearListener|GetHoveringUiElement|IsCurrentlyOnScreen|CreateCustomUiElement|GetLocalPlayer|HasPlayerLost|GameDefaultGameEndCheck'
     printf '\n## PUBLIC_DECLARATIONS\n'
-    rg -n -C 2 "$pattern" "$header" "$implementation_header" | sed "s|$VENDOR_DIR/||g"
+    local source
+    for source in "$header" "$implementation_header"; do
+        rg -n -C 2 "$pattern" "$source" | sed "s|$VENDOR_DIR/||g"
+    done
 }
 
 emit_type_block() {

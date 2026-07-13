@@ -69,4 +69,5 @@ $records | Sort-Object -Unique | ForEach-Object {
     $lines.Add($_)
 }
 
-$lines | Set-Content -LiteralPath $outputPath -Encoding utf8
+$utf8WithBom = New-Object Text.UTF8Encoding $true
+[IO.File]::WriteAllText($outputPath, (($lines -join "`n") + "`n"), $utf8WithBom)

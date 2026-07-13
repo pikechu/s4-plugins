@@ -1,5 +1,5 @@
 ﻿# Settlers United baseline loader state
-generated_utc=2026-07-13T03:39:28Z
+generated_utc=2026-07-13T03:43:30Z
 process_name=S4_Main.exe
 process_id=36956
 executable_path=
