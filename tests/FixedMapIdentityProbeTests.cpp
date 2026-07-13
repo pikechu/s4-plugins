@@ -87,7 +87,7 @@ int RunFixedMapIdentityProbeTests() {
     probe.ObserveMapInit(3000u);
     Require(Contains(records, "identity confirmed list_kind=single"),
             "single identity confirmed");
-    Require(Contains(records, "path=Map\\User\\A.map sequence=1 epoch=1"),
+    Require(Contains(records, "path=Map\\User\\A.map sequence=1 epoch=3"),
             "single record has stable identity fields");
 
     probe.ObserveListKind(FixedMapListKind::Multiplayer, 4000u);
