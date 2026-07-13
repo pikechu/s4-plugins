@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <string>
 
 namespace {
 
@@ -16,12 +17,14 @@ class FakeRegistration final
 public:
     bool Register(void* handle) noexcept override {
         ++registerCalls;
+        operations += "register;";
         lastRegistered = handle;
         return registerResult;
     }
 
     bool Unregister(void* handle) noexcept override {
         ++unregisterCalls;
+        operations += "unregister;";
         lastUnregistered = handle;
         return unregisterResult;
     }
@@ -30,6 +33,7 @@ public:
     bool unregisterResult = true;
     unsigned registerCalls = 0u;
     unsigned unregisterCalls = 0u;
+    std::string operations;
     void* lastRegistered = nullptr;
     void* lastUnregistered = nullptr;
 };
@@ -148,6 +152,26 @@ int RunNativeVictoryEventSubscriberTests() {
         Require(registrar.registerCalls == 0u &&
                     registrar.unregisterCalls == 0u,
                 "pre-attach cancellation makes no native call");
+    }
+
+    {
+        FakeRegistration registrar;
+        VictoryEventProbe probe;
+        NativeVictoryEventSubscriber subscriber;
+        Require(subscriber.Prepare(registrar, probe),
+                "reorder fixture prepares");
+        subscriber.ServiceOnGameThread();
+        registrar.operations.clear();
+
+        Require(subscriber.ReinsertAtFrontOnGameThread(),
+                "attached subscriber can move to the list front");
+        Require(registrar.operations == "unregister;register;",
+                "reorder removes the old node before pushing it to the front");
+        Require(registrar.lastUnregistered == &subscriber &&
+                    registrar.lastRegistered == &subscriber,
+                "reorder operates on the same subscriber object");
+        Require(subscriber.state() == NativeSubscriptionState::Attached,
+                "successful reorder remains attached");
     }
 
     {
