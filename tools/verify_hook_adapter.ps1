@@ -33,23 +33,44 @@ $exportRows = @($exports | Where-Object {
 if ($exportRows.Count -ne 1) {
     throw "Expected exactly one exported CampaignCompletionFixedMapAdapter, found $($exportRows.Count)"
 }
+$exportMatch = [regex]::Match(
+    $exportRows[0], "^\s*\d+\s+[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s+")
+if (-not $exportMatch.Success) {
+    throw "Could not parse adapter RVA from export row: $($exportRows[0])"
+}
+$adapterRva = [Convert]::ToUInt64($exportMatch.Groups[1].Value, 16)
+
+$headers = @(& $dumpbin /NOLOGO /HEADERS $Binary 2>&1)
+if ($LASTEXITCODE -ne 0) {
+    throw "dumpbin /HEADERS failed"
+}
+$imageBaseRow = @($headers | Where-Object {
+    $_ -match "^\s*[0-9A-Fa-f]+\s+image base\s*$"
+})
+if ($imageBaseRow.Count -ne 1) {
+    throw "Could not identify one PE image base"
+}
+$imageBaseMatch = [regex]::Match(
+    $imageBaseRow[0], "^\s*([0-9A-Fa-f]+)\s+image base\s*$")
+$imageBase = [Convert]::ToUInt64($imageBaseMatch.Groups[1].Value, 16)
+$adapterAddress = "{0:X8}" -f ($imageBase + $adapterRva)
 
 $disassembly = @(& $dumpbin /NOLOGO /DISASM $Binary 2>&1)
 if ($LASTEXITCODE -ne 0) {
     throw "dumpbin /DISASM failed"
 }
-$symbolRows = @(
+$addressRows = @(
     for ($index = 0; $index -lt $disassembly.Count; ++$index) {
-        if ($disassembly[$index] -match "CampaignCompletionFixedMapAdapter") {
+        if ($disassembly[$index] -match "^\s*$adapterAddress\s*:") {
             $index
         }
     }
 )
-if ($symbolRows.Count -lt 1) {
-    throw "Adapter symbol not found in disassembly"
+if ($addressRows.Count -ne 1) {
+    throw "Adapter address $adapterAddress not found exactly once in disassembly"
 }
 
-$start = $symbolRows[0]
+$start = $addressRows[0]
 $end = [Math]::Min($start + 300, $disassembly.Count - 1)
 for ($index = $start + 1; $index -le $end; ++$index) {
     if ($disassembly[$index] -match "\bENDP\b") {
