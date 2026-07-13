@@ -2,6 +2,8 @@
 
 #include "S4ModApi.h"
 #include "diagnostics/Logger.h"
+#include "runtime/CallbackGate.h"
+#include "runtime/ListenerRemoval.h"
 #include "runtime/PageObservation.h"
 
 #include <array>
@@ -39,9 +41,27 @@ private:
 class S4Listeners final {
 public:
     bool Start(S4API api, Logger& logger);
-    void Stop();
+    ListenerStopResult Stop();
 
 private:
+    class CallbackLease final {
+    public:
+        explicit CallbackLease(S4Listeners* owner) : owner_(owner) {
+            if (owner_ == nullptr || !owner_->callbackGate_.TryEnter()) {
+                owner_ = nullptr;
+            }
+        }
+        ~CallbackLease() {
+            if (owner_ != nullptr) {
+                owner_->callbackGate_.Leave();
+            }
+        }
+        explicit operator bool() const noexcept { return owner_ != nullptr; }
+
+    private:
+        S4Listeners* owner_;
+    };
+
     template <DWORD Page>
     static HRESULT S4HCALL OnUiFrameFor(LPDIRECTDRAWSURFACE7, INT32, LPVOID) {
         DispatchUiFrame(Page);
@@ -71,6 +91,7 @@ private:
     S4API api_ = nullptr;
     Logger* logger_ = nullptr;
     std::vector<S4HOOK> hooks_;
+    CallbackGate callbackGate_;
     std::mutex mutex_;
     PageObservationWindow pageWindow_{1000};
     RateLimiter mouseLimiter_{1000};

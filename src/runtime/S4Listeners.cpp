@@ -42,30 +42,32 @@ bool S4Listeners::Start(S4API api, Logger& logger) {
     return success;
 }
 
-void S4Listeners::Stop() {
-    if (api_ != nullptr) {
-        for (auto hook = hooks_.rbegin(); hook != hooks_.rend(); ++hook) {
-            if (FAILED(api_->RemoveListener(*hook)) && logger_ != nullptr) {
-                logger_->Write(LogLevel::Warning, "RemoveListener failed");
-            }
-        }
-    }
-    hooks_.clear();
+ListenerStopResult S4Listeners::Stop() {
     if (active_.load() == this) {
         active_.store(nullptr);
     }
+    callbackGate_.CloseAndWait();
+    const auto result = RemoveListenersInReverse(
+        hooks_, [this](S4HOOK hook) {
+            return api_ != nullptr ? api_->RemoveListener(hook) : E_POINTER;
+        });
     api_ = nullptr;
     logger_ = nullptr;
+    return result;
 }
 
 void S4Listeners::DispatchUiFrame(DWORD page) {
-    if (auto* active = active_.load(); active != nullptr) {
+    auto* active = active_.load();
+    CallbackLease lease(active);
+    if (lease) {
         active->ObserveUiFrame(page);
     }
 }
 
 HRESULT S4HCALL S4Listeners::OnMapInit(LPVOID, LPVOID) {
-    if (auto* active = active_.load(); active != nullptr) {
+    auto* active = active_.load();
+    CallbackLease lease(active);
+    if (lease) {
         active->ObserveMapInit();
     }
     return S_OK;
@@ -73,14 +75,18 @@ HRESULT S4HCALL S4Listeners::OnMapInit(LPVOID, LPVOID) {
 
 HRESULT S4HCALL S4Listeners::OnMouse(DWORD button, INT x, INT y, DWORD message,
                                      HWND, LPCS4UIELEMENT element) {
-    if (auto* active = active_.load(); active != nullptr) {
+    auto* active = active_.load();
+    CallbackLease lease(active);
+    if (lease) {
         active->ObserveMouse(button, x, y, message, element);
     }
     return S_OK;
 }
 
 HRESULT S4HCALL S4Listeners::OnGuiElement(LPS4GUIDRAWBLTPARAMS element, BOOL) {
-    if (auto* active = active_.load(); active != nullptr) {
+    auto* active = active_.load();
+    CallbackLease lease(active);
+    if (lease) {
         active->ObserveGuiElement(element);
     }
     return S_OK;

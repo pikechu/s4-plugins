@@ -1,6 +1,7 @@
 #include "runtime/DiagnosticRuntime.h"
 
 #include "diagnostics/ModuleInventory.h"
+#include "runtime/StopRequest.h"
 
 #include <algorithm>
 #include <cwctype>
@@ -76,8 +77,10 @@ bool DiagnosticRuntime::Start(HMODULE module) {
         return false;
     }
 
-    logger_.Write(LogLevel::Info,
-                  "CampaignCompletionDebug bootstrap version=0.2.0 hook-mode=public-only");
+    std::ostringstream header;
+    header << "CampaignCompletionDebug bootstrap version=0.2.1 pid="
+           << GetCurrentProcessId() << " hook-mode=public-only";
+    logger_.Write(LogLevel::Info, header.str());
     const auto modules = EnumerateLoadedModules();
     const ModuleInfo* executable = nullptr;
     for (const auto& loaded : modules) {
@@ -138,9 +141,32 @@ bool DiagnosticRuntime::Start(HMODULE module) {
         return false;
     }
 
+    stopRequestPath_ = gameDirectory / L"CampaignCompletion" /
+                       L"CampaignCompletionDebug.stop";
     started_ = true;
     logger_.Write(LogLevel::Info, "diagnostic runtime started; no internal hooks installed");
     return true;
+}
+
+void DiagnosticRuntime::RunControlLoop() {
+    constexpr DWORD kControlIntervalMs = 100;
+    while (true) {
+        std::filesystem::path requestPath;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            if (!started_) {
+                return;
+            }
+            requestPath = stopRequestPath_;
+        }
+
+        if (ConsumeStopRequest(requestPath)) {
+            logger_.Write(LogLevel::Info, "controlled stop requested");
+            Stop();
+            return;
+        }
+        Sleep(kControlIntervalMs);
+    }
 }
 
 void DiagnosticRuntime::Stop() {
@@ -148,18 +174,26 @@ void DiagnosticRuntime::Stop() {
     if (!started_) {
         return;
     }
-    listeners_.Stop();
+    const auto result = listeners_.Stop();
     if (api_ != nullptr) {
         api_->Release();
         api_ = nullptr;
     }
+    std::ostringstream summary;
+    summary << "listeners stopped registered=" << result.registered
+            << " removed=" << result.removed
+            << " failures=" << result.failures;
+    logger_.Write(LogLevel::Info, summary.str());
     logger_.Write(LogLevel::Info, "diagnostic runtime stopped");
     logger_.Close();
     started_ = false;
 }
 
 DWORD WINAPI BootstrapThread(void* module) {
-    RuntimeInstance().Start(static_cast<HMODULE>(module));
+    auto& runtime = RuntimeInstance();
+    if (runtime.Start(static_cast<HMODULE>(module))) {
+        runtime.RunControlLoop();
+    }
     return 0;
 }
 
