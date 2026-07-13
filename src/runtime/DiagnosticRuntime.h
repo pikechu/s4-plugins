@@ -1,5 +1,6 @@
 #pragma once
 
+#include "diagnostics/CaptureTrace.h"
 #include "diagnostics/Logger.h"
 #include "hook/FixedMapLoadHook.h"
 #include "hook/HlibCallPatchBackend.h"
@@ -22,6 +23,7 @@ public:
 
 private:
     std::mutex mutex_;
+    CaptureTrace captureTrace_;
     Logger logger_;
     S4Listeners listeners_;
     HlibCallPatchBackend hookBackend_;

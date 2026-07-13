@@ -8,6 +8,7 @@
 #include <cwctype>
 #include <filesystem>
 #include <iomanip>
+#include <iterator>
 #include <sstream>
 #include <string>
 
@@ -72,14 +73,15 @@ bool DiagnosticRuntime::Start(HMODULE module) {
     modulePath.resize(length);
     const auto pluginDirectory = std::filesystem::path(modulePath).parent_path();
     const auto gameDirectory = pluginDirectory.parent_path();
-    const auto logPath = gameDirectory / L"CampaignCompletion" /
-                         L"CampaignCompletion.log";
+    const auto campaignDirectory = gameDirectory / L"CampaignCompletion";
+    const auto logPath = campaignDirectory / L"CampaignCompletion.log";
+    const auto iniPath = campaignDirectory / L"CampaignCompletionDebug.ini";
     if (!logger_.Open(logPath)) {
         return false;
     }
 
     std::ostringstream header;
-    header << "CampaignCompletionDebug bootstrap version=0.2.3 pid="
+    header << "CampaignCompletionDebug bootstrap version=0.2.4 pid="
            << GetCurrentProcessId() << " hook-mode=single-call-site";
     logger_.Write(LogLevel::Info, header.str());
     const auto modules = EnumerateLoadedModules();
@@ -135,10 +137,13 @@ bool DiagnosticRuntime::Start(HMODULE module) {
         logger_.Close();
         return false;
     }
+
     probe_ = std::make_unique<FixedMapIdentityProbe>(
-        gameDirectory, [this](std::string record) {
+        gameDirectory,
+        [this](std::string record) {
             logger_.Write(LogLevel::Info, record);
-        });
+        },
+        [this](std::string record) { captureTrace_.Write(record); });
     const auto admission = HookSiteLayout::Create(*executable);
     if (admission) {
         originalInvoker_ =
@@ -177,6 +182,15 @@ bool DiagnosticRuntime::Start(HMODULE module) {
         return false;
     }
 
+    wchar_t traceRoot[32768]{};
+    const DWORD traceLength = GetPrivateProfileStringW(
+        L"Diagnostic", L"CaptureTraceRoot", L"", traceRoot,
+        static_cast<DWORD>(std::size(traceRoot)), iniPath.c_str());
+    if (traceLength > 0u &&
+        traceLength < static_cast<DWORD>(std::size(traceRoot) - 1u)) {
+        captureTrace_.Open(traceRoot, GetCurrentProcessId());
+    }
+
     stopRequestPath_ = gameDirectory / L"CampaignCompletion" /
                        L"CampaignCompletionDebug.stop";
     started_ = true;
@@ -213,8 +227,10 @@ void DiagnosticRuntime::Stop() {
     if (probe_ != nullptr) {
         probe_->Disable();
     }
+    bool hookStoppedCleanly = !hookStarted_;
     if (hookStarted_) {
         const auto hookResult = fixedMapHook_.Stop();
+        hookStoppedCleanly = hookResult == PatchFailure::None;
         hookStarted_ = hookResult != PatchFailure::None;
         std::ostringstream hookSummary;
         hookSummary << "fixed-map hook stop result="
@@ -234,6 +250,11 @@ void DiagnosticRuntime::Stop() {
             << " failures=" << result.failures;
     logger_.Write(LogLevel::Info, summary.str());
     logger_.Write(LogLevel::Info, "diagnostic runtime stopped");
+    captureTrace_.Write(
+        hookStoppedCleanly && result.failures == 0u
+            ? "controlled-stop-flush=success"
+            : "controlled-stop-flush=failed");
+    captureTrace_.Close();
     logger_.Close();
     if (!hookStarted_) {
         probe_.reset();
