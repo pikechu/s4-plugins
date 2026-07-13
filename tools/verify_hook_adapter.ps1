@@ -71,15 +71,20 @@ if ($addressRows.Count -ne 1) {
 }
 
 $start = $addressRows[0]
-$entryWindowEnd = [Math]::Min($start + 8, $disassembly.Count - 1)
-$entryWindow = @($disassembly[$start..$entryWindowEnd])
-$jump = @($entryWindow | Where-Object {
-    $_ -match "\bjmp\s+([0-9A-Fa-f]{8})\b"
-})
-if ($jump.Count -eq 1) {
-    $jumpMatch = [regex]::Match(
-        $jump[0], "\bjmp\s+([0-9A-Fa-f]{8})\b")
-    $implementationAddress = $jumpMatch.Groups[1].Value.ToUpperInvariant()
+$thunkMatch = [regex]::Match(
+    $disassembly[$start],
+    "^\s*[0-9A-Fa-f]{8}\s*:\s+E9\s+([0-9A-Fa-f]{2})\s+([0-9A-Fa-f]{2})\s+([0-9A-Fa-f]{2})\s+([0-9A-Fa-f]{2})\b")
+if ($thunkMatch.Success) {
+    $relativeBits = [Convert]::ToUInt64($thunkMatch.Groups[1].Value, 16) +
+        ([Convert]::ToUInt64($thunkMatch.Groups[2].Value, 16) -shl 8) +
+        ([Convert]::ToUInt64($thunkMatch.Groups[3].Value, 16) -shl 16) +
+        ([Convert]::ToUInt64($thunkMatch.Groups[4].Value, 16) -shl 24)
+    $relative = [int64]$relativeBits
+    if (($relativeBits -band 0x80000000) -ne 0) {
+        $relative -= 0x100000000
+    }
+    $implementationAddress = "{0:X8}" -f (
+        [int64]($imageBase + $adapterRva) + 5 + $relative)
     $implementationRows = @(
         for ($index = 0; $index -lt $disassembly.Count; ++$index) {
             if ($disassembly[$index] -match "^\s*$implementationAddress\s*:") {
