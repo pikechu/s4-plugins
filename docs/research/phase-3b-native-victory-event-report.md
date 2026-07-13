@@ -117,3 +117,51 @@ Collect the remaining controls one at a time and verify game responsiveness afte
 2. Controlled stop: native detachment precedes public-listener removal and trace flush succeeds.
 
 Completion storage and completed-level markers remain disabled until these live controls pass.
+
+## Load-session attribution correction and deployment
+
+The first read-save victory control captured event `609` with
+`local-result=won`, `wparam=1`, and duplicate count `0`, but it was rejected as
+a complete control because origin and identity recovery failed closed. The
+load selector exposes pages `31`, `32`, and `33` as simultaneous siblings, so
+page-order observation incorrectly retained the online-multiplayer sibling.
+MapInit also preceded the new LuaOpen generation, causing the identity session
+to bind the previous generation and report `stale-generation`.
+
+Read-only reverse-source evidence maps the load-type controls to the game's
+native state transitions: control `2390` selects single-player saves, `2391`
+selects multiplayer saves, and `2399` selects campaign saves. Commit
+`1cb983cc975e9cf45e24e5527aeb1230ef5350c1` therefore treats the explicit
+control as stronger evidence than sibling load pages. A Lua generation may
+replace the MapInit binding only before the first read attempt; replacement
+after reading begins remains terminal `stale-generation`.
+
+- RED workflow `29272108934` failed at Build on the missing explicit-load
+  observer introduced by the regression test.
+- The first GREEN candidate workflow `29272334386` passed Build and policy but
+  exposed an old stale-generation test whose pre-read assumption contradicted
+  the observed load ordering.
+- Final workflow `29272707020` passed Win32 `/W4 /WX` Build, policy and mutation
+  checks, all CTest cases, packaging, PE32/package verification, and artifact
+  upload.
+- Downloaded inner package SHA-256:
+  `bc19772faadcdaa167d357b53f22d2b916fca6afa7d9a2b992c8d96774ea7ead`.
+  It contains exactly the ASI and frozen INI.
+- Deployed ASI SHA-256:
+  `59497cc3211112b76a267b546f986ab4be5da0159416b6d05751daaa395cc15f`;
+  the file is PE32 Intel 80386.
+- Installed `Plugin_SU.zip` SHA-256:
+  `9169a76671a9af1ae4eade2df29f6f152bc870933788912c2adef267de36d225`;
+  size `1702433` bytes.
+- The immutable original archive remains SHA-256
+  `807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265`,
+  size `1176944` bytes, with its original timestamp unchanged.
+- Independent entry verification found all seven original non-target entries
+  byte-identical and exactly one authorized CampaignCompletion ASI entry.
+- The live INI remains SHA-256
+  `3c445e5949ac26028498c85dc6081993b083c554fd93f011986777ef4c0b8136`.
+  No archive temporary sibling or inert Settlers United-side INI remains.
+
+The corrected deployment still has completion detection, storage, and markers
+disabled. Repeat the read-save victory control to validate recovered origin,
+confirmed map identity, and event `609` in the same session.
