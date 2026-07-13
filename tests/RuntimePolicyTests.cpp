@@ -177,6 +177,11 @@ int RunRuntimePolicyTests() {
                                     "S4Listeners.cpp");
     const auto listenerHeader = ReadText(sourceRoot / "src" / "runtime" /
                                          "S4Listeners.h");
+    Require(listeners.find("RefineLaunchOrigin") != std::string::npos &&
+                listeners.find("identity->sessionId") != std::string::npos &&
+                listeners.find("activeSessionId_") != std::string::npos &&
+                listeners.find("origin-refinement=") != std::string::npos,
+            "confirmed identity must refine only the active runtime session");
     Require(listenerHeader.find(
                 "void FinishSettlementIfDue(std::uint64_t nowMs);") !=
                 std::string::npos,

@@ -15,8 +15,9 @@ constexpr std::array<const wchar_t*, 5u> kFileNames{
     L"origin.trace", L"identity.trace", L"settlement-ui.trace",
     L"native-event.trace", L"decision.trace"};
 
-constexpr std::array<std::string_view, 3u> kOriginPrefixes{
-    "origin-source=", "origin-eligibility=", "origin-status="};
+constexpr std::array<std::string_view, 4u> kOriginPrefixes{
+    "origin-source=", "origin-eligibility=", "origin-status=",
+    "origin-refinement="};
 constexpr std::array<std::string_view, 8u> kIdentityPrefixes{
     "lua-open-generation=", "map-init-session=", "su-map-name-status=",
     "su-map-relative-status=", "su-map-name=", "su-map-relative=",

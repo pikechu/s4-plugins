@@ -1,5 +1,7 @@
 #include "runtime/S4Listeners.h"
 
+#include "victory/MapSessionPolicy.h"
+
 #include <windows.h>
 
 #include <sstream>
@@ -311,7 +313,27 @@ void S4Listeners::ObserveTick(BOOL delayed) {
         }
     }
     if (coordinator_ != nullptr && bridge_ != nullptr) {
-        coordinator_->ObserveTick(inGame, now, *bridge_);
+        const auto identity =
+            coordinator_->ObserveTick(inGame, now, *bridge_);
+        if (identity.has_value() &&
+            identity->sessionId == activeSessionId_) {
+            activeOrigin_ =
+                RefineLaunchOrigin(activeOrigin_, identity->relative);
+            if (phase3Trace_ != nullptr) {
+                phase3Trace_->Write(
+                    Phase3TraceChannel::Origin,
+                    "origin-refinement=session-" +
+                        std::to_string(identity->sessionId) + ";source-" +
+                        std::string(LaunchSourceName(activeOrigin_.source)) +
+                        ";eligibility-" +
+                        std::string(SessionEligibilityName(
+                            activeOrigin_.eligibility)) +
+                        ";ui-" +
+                        (ShouldShowCompletionMarker(activeOrigin_)
+                             ? "visible"
+                             : "hidden"));
+            }
+        }
     }
     FinishSettlementIfDue(now);
 }

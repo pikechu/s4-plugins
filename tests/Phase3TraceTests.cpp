@@ -45,6 +45,10 @@ int RunPhase3TraceTests() {
     Require(first.Write(Phase3TraceChannel::Origin,
                         "origin-eligibility=eligible"),
             "origin allowlist accepts eligibility");
+    Require(first.Write(
+                Phase3TraceChannel::Origin,
+                "origin-refinement=session-3;source-random-map;eligibility-eligible;ui-hidden"),
+            "origin allowlist accepts bounded identity refinement");
     Require(first.Write(Phase3TraceChannel::Identity,
                         "identity-association=confirmed"),
             "identity allowlist accepts association");
