@@ -29,6 +29,10 @@ jobs:
       - name: Build
         run: cmake --build build --config Debug --parallel
 
+      - name: Verify fixed-map hook adapter ABI
+        shell: pwsh
+        run: ./tools/verify_hook_adapter.ps1 -Binary build/Debug/CampaignCompletionDebug.asi
+
       - name: Test
         run: ctest --test-dir build -C Debug --output-on-failure
 
