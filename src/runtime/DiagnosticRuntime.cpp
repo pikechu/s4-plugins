@@ -235,8 +235,7 @@ bool DiagnosticRuntime::Start(HMODULE module) {
         }
 
         markerTrace_ = std::make_unique<MarkerCalibrationTrace>();
-        const bool markerTraceOpen = markerTrace_->Open(
-            paths_->dataDirectory, GetCurrentProcessId());
+        const bool markerTraceOpen = markerTrace_->Open(paths_->dataDirectory, GetCurrentProcessId());
         if (!markerTraceOpen) {
             logger_.Write(
                 LogLevel::Warning,
