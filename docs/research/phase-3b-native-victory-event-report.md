@@ -249,3 +249,28 @@ recordable, but its future completed-level marker is suppressed.
 
 This sample passes the loaded-fixed negative-control gate: an ordinary loaded
 map is recordable and remains eligible for its future completed-level marker.
+
+## 2026-07-14 fixed Custom Maps victory after negative control
+
+- The process trace shows that the user left loaded session `2`, returned to
+  the selector, explicitly selected the Custom Maps tab, and started a new
+  `Battle of the Gods` game. This produced MapInit session `3`; the following
+  victory must not be attributed to loaded session `2`.
+- The fresh start was intentional: the user needed a new game so that the
+  UBO(test) `AI resign` helper could produce the victory sample. A loaded-save
+  victory is a separate test and must be won manually inside the loaded
+  session; restarting with `AI resign` cannot validate that path.
+- Session `3` recorded `single-player-map/eligible`, list kind `custom`, and
+  confirmed SU identity `Battle of the Gods` with relative identifier
+  `Map\User\Battle of the Gods.map`.
+- Post-identity policy remained
+  `source-single-player-map;eligibility-eligible;ui-visible`.
+- Native terminal event `609` then recorded
+  `local-result=won;wparam=1;lparam=0;game-tick=145` for session `3`, with
+  duplicate count `0`.
+- PID `10700` remained responsive and public callbacks continued after the
+  victory window appeared.
+
+This is an accepted fresh Custom Maps fixed-map victory sample. It validates
+the deployed identity, source-policy, and local-winner event chain in one
+session, but it is not labeled as a loaded-map victory.
