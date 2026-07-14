@@ -228,3 +228,24 @@ the marker.
 
 This sample passes the loaded-random source-policy gate: a random-map save is
 recordable, but its future completed-level marker is suppressed.
+
+## 2026-07-14 loaded-fixed negative control
+
+- Without restarting PID `10700`, the user returned to the menu and loaded the
+  paired fixed/custom save.
+- MapInit session `2` initially recorded
+  `load-map-unresolved/unknown`.
+- The same session returned successful SU values: name
+  `Battle of the Gods`, relative identifier
+  `Map\User\Battle of the Gods.map`, and
+  `identity-association=confirmed`.
+- The bounded post-identity record was exactly
+  `origin-refinement=session-2;source-load-single-player-map;eligibility-eligible;ui-visible`.
+- The random identifier rule therefore did not misclassify the ordinary
+  game-relative path. The paired session `1` and session `2` observations
+  exercise both sides of the same deployed classifier in one process.
+- The native subscriber was reinserted for session `2`, and UI/GUI callbacks
+  continued while PID `10700` remained responsive.
+
+This sample passes the loaded-fixed negative-control gate: an ordinary loaded
+map is recordable and remains eligible for its future completed-level marker.
