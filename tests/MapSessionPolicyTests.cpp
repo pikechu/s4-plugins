@@ -47,13 +47,46 @@ int RunMapSessionPolicyTests() {
 
     const auto fixed = RefineLaunchOrigin(
         loaded, L"Map\\User\\Battle of the Gods.map");
-    Require(fixed.source == LaunchSource::LoadSinglePlayerMap &&
+    Require(fixed.source == LaunchSource::SinglePlayerCustomMap &&
                 fixed.eligibility == SessionEligibility::Eligible,
-            "a confirmed ordinary load becomes eligible");
+            "a confirmed custom-map load becomes eligible and canonical");
     Require(ShouldRecordVictory(fixed),
             "an ordinary loaded-map victory is recorded");
     Require(ShouldShowCompletionMarker(fixed),
             "an ordinary loaded-map completion marker is visible");
+
+    struct CategoryCase final {
+        std::wstring_view relative;
+        LaunchSource expected;
+    };
+    for (const auto& value : {
+             CategoryCase{L"Map\\Singleplayer\\Aeneas.map",
+                          LaunchSource::SinglePlayerMap},
+             CategoryCase{L"map/multiplayer/Alien.map",
+                          LaunchSource::SinglePlayerMultiplayerMap},
+             CategoryCase{L"MAP\\USER\\Antares.map",
+                          LaunchSource::SinglePlayerCustomMap}}) {
+        const auto direct = RefineLaunchOrigin(
+            {LaunchSource::SinglePlayerMap,
+             SessionEligibility::Eligible},
+            value.relative);
+        const auto loadedCategory = RefineLaunchOrigin(
+            {LaunchSource::LoadMapUnresolved,
+             SessionEligibility::Unknown},
+            value.relative);
+        Require(direct.source == value.expected &&
+                    loadedCategory.source == value.expected &&
+                    direct.eligibility == SessionEligibility::Eligible &&
+                    loadedCategory.eligibility ==
+                        SessionEligibility::Eligible,
+                "direct and loaded fixed maps use one canonical category");
+    }
+
+    const auto prefixBoundary = RefineLaunchOrigin(
+        loaded, L"Map\\Userland\\X.map");
+    Require(prefixBoundary.source == LaunchSource::SinglePlayerMap &&
+                prefixBoundary.eligibility == SessionEligibility::Eligible,
+            "category matching requires a complete directory component");
 
     const LaunchOriginSnapshot online{
         LaunchSource::LoadOnlineMultiplayer,
@@ -68,6 +101,12 @@ int RunMapSessionPolicyTests() {
             "online multiplayer is not recorded");
     Require(!ShouldShowCompletionMarker(onlineAfterIdentity),
             "online multiplayer has no completion marker");
+    const auto onlineCustom = RefineLaunchOrigin(
+        online, L"Map\\User\\Antares.map");
+    Require(onlineCustom.source == LaunchSource::LoadOnlineMultiplayer &&
+                onlineCustom.eligibility ==
+                    SessionEligibility::ExcludedOnlineMultiplayer,
+            "online exclusion wins over custom-map identity");
 
     const LaunchOriginSnapshot unknown{};
     const auto unknownFixed =
@@ -97,5 +136,11 @@ int RunMapSessionPolicyTests() {
     Require(ShouldRecordVictory(campaign) &&
                 ShouldShowCompletionMarker(campaign),
             "campaign victories are recordable and visible");
+    const auto loadedCampaign = RefineLaunchOrigin(
+        {LaunchSource::LoadCampaign, SessionEligibility::Eligible},
+        L"Map\\Campaign\\roman01.map");
+    Require(loadedCampaign.source == LaunchSource::Campaign &&
+                loadedCampaign.eligibility == SessionEligibility::Eligible,
+            "direct and loaded campaigns use one canonical category");
     return 0;
 }
