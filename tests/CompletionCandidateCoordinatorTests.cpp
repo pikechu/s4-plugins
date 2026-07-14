@@ -1,4 +1,5 @@
 #include "completion/CompletionCandidateCoordinator.h"
+#include "victory/MapSessionPolicy.h"
 
 #include <stdexcept>
 #include <string>
@@ -36,10 +37,17 @@ campaign_completion::ConfirmedMapIdentity FixedIdentity(
 int RunCompletionCandidateCoordinatorTests() {
     using namespace campaign_completion;
 
-    const LaunchOriginSnapshot loaded{
-        LaunchSource::LoadSinglePlayerMap, SessionEligibility::Eligible};
-    const LaunchOriginSnapshot direct{
-        LaunchSource::SinglePlayerCustomMap, SessionEligibility::Eligible};
+    const auto loaded = RefineLaunchOrigin(
+        {LaunchSource::LoadMapUnresolved,
+         SessionEligibility::Unknown},
+        L"Map\\User\\Battle of the Gods.map");
+    const auto direct = RefineLaunchOrigin(
+        {LaunchSource::SinglePlayerMap,
+         SessionEligibility::Eligible},
+        L"Map\\User\\Battle of the Gods.map");
+    Require(loaded.source == LaunchSource::SinglePlayerCustomMap &&
+                direct.source == loaded.source,
+            "direct and loaded candidates share canonical custom source");
 
     CompletionCandidateCoordinator victoryFirst(
         [] { return std::string("2026-07-14T01:57:38Z"); });
@@ -62,10 +70,10 @@ int RunCompletionCandidateCoordinatorTests() {
                 loadedCandidate->record.displayName == "Battle of the Gods",
             "candidate retains readable confirmed identity");
     Require(loadedCandidate->record.launchSource ==
-                LaunchSource::LoadSinglePlayerMap &&
+                LaunchSource::SinglePlayerCustomMap &&
                 loadedCandidate->record.completedAtUtc ==
                     "2026-07-14T01:57:38Z",
-            "candidate retains accepted source and gate time");
+            "candidate retains canonical source and gate time");
     Require(!victoryFirst.ObserveVictory(
                 Event(4u, NativeLocalResult::Won)),
             "duplicate victory must not emit twice");

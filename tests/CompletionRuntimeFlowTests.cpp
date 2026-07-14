@@ -1,4 +1,5 @@
 #include "completion/CompletionAdmission.h"
+#include "victory/MapSessionPolicy.h"
 
 #include <stdexcept>
 #include <string>
@@ -37,10 +38,17 @@ campaign_completion::ConfirmedMapIdentity Fixed(std::uint64_t sessionId) {
 int RunCompletionRuntimeFlowTests() {
     using namespace campaign_completion;
 
-    const LaunchOriginSnapshot loaded{
-        LaunchSource::LoadSinglePlayerMap, SessionEligibility::Eligible};
-    const LaunchOriginSnapshot direct{
-        LaunchSource::SinglePlayerCustomMap, SessionEligibility::Eligible};
+    const auto loaded = RefineLaunchOrigin(
+        {LaunchSource::LoadMapUnresolved,
+         SessionEligibility::Unknown},
+        L"Map\\User\\Battle of the Gods.map");
+    const auto direct = RefineLaunchOrigin(
+        {LaunchSource::SinglePlayerMap,
+         SessionEligibility::Eligible},
+        L"Map\\User\\Battle of the Gods.map");
+    Require(loaded.source == LaunchSource::SinglePlayerCustomMap &&
+                direct.source == loaded.source,
+            "direct and loaded runtime flows share canonical custom source");
     const LaunchOriginSnapshot online{
         LaunchSource::OnlineMultiplayer,
         SessionEligibility::ExcludedOnlineMultiplayer};
@@ -63,7 +71,9 @@ int RunCompletionRuntimeFlowTests() {
                 "matching event 609 win must submit");
         Require(submitted.size() == 1u &&
                     submitted.front().record.stableId ==
-                        "map:map\\user\\battle of the gods.map",
+                        "map:map\\user\\battle of the gods.map" &&
+                    submitted.front().record.launchSource ==
+                        LaunchSource::SinglePlayerCustomMap,
                 "runtime seam submits the confirmed fixed map exactly once");
         Require(!admission.ObserveVictory(Event(4u, NativeLocalResult::Won)) &&
                     submitted.size() == 1u,
@@ -84,7 +94,9 @@ int RunCompletionRuntimeFlowTests() {
                     Event(5u, NativeLocalResult::Won)),
                 "victory-first flow must wait for identity");
         Require(admission.ObserveIdentity(Fixed(5u), direct) &&
-                    submitted.size() == 1u,
+                    submitted.size() == 1u &&
+                    submitted.front().record.launchSource ==
+                        LaunchSource::SinglePlayerCustomMap,
                 "victory-first flow must submit after matching identity");
     }
 
