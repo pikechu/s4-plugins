@@ -11,6 +11,7 @@
 #include <iterator>
 #include <sstream>
 #include <string>
+#include <string_view>
 
 namespace campaign_completion {
 namespace {
@@ -91,9 +92,9 @@ bool DiagnosticRuntime::Start(HMODULE module) {
     }
 
     std::ostringstream header;
-    header << "CampaignCompletionDebug bootstrap version=0.4.0 pid="
+    header << "CampaignCompletionDebug bootstrap version=0.5.0 pid="
            << GetCurrentProcessId()
-           << " mode=completion-persistence";
+           << " mode=fixed-map-row-calibration";
     logger_.Write(LogLevel::Info, header.str());
     const auto modules = EnumerateLoadedModules();
     const ModuleInfo* executable = nullptr;
@@ -233,6 +234,24 @@ bool DiagnosticRuntime::Start(HMODULE module) {
             return false;
         }
 
+        markerTrace_ = std::make_unique<MarkerCalibrationTrace>();
+        const bool markerTraceOpen = markerTrace_->Open(
+            paths_->dataDirectory, GetCurrentProcessId());
+        if (!markerTraceOpen) {
+            logger_.Write(
+                LogLevel::Warning,
+                "marker calibration trace unavailable; calibration disabled");
+        }
+        markerIndex_ = std::make_unique<CompletionMarkerIndex>();
+        markerIndex_->Publish(store_->Snapshot());
+        markerCalibration_ = std::make_unique<FixedMapRowCalibration>(
+            *markerIndex_, [this](std::string_view record) {
+                return markerTrace_ != nullptr && markerTrace_->Write(record);
+            });
+        if (!markerTraceOpen) {
+            markerCalibration_->Disable();
+        }
+
         worker_ = std::make_unique<CompletionWorker>(
             *store_, [this](LogLevel level, std::string line) {
                 logger_.Write(level, line);
@@ -269,7 +288,8 @@ bool DiagnosticRuntime::Start(HMODULE module) {
 
     if (!listeners_.Start(api_, logger_, *coordinator_, luaBridge_, origin_,
                           settlement_, nativeSubscriber_, victoryProbe_,
-                          *completionAdmission_, phase3Trace_)) {
+                          *completionAdmission_, phase3Trace_,
+                          *markerCalibration_)) {
         AbortStart();
         return false;
     }
@@ -345,6 +365,9 @@ bool DiagnosticRuntime::TryControlledStop() {
         }
         origin_.Disable();
         settlement_.Disable();
+        if (markerCalibration_ != nullptr) {
+            markerCalibration_->Disable();
+        }
         victoryProbe_.Disable();
         const auto result = listeners_.Stop();
         listenerStopFailures_ = result.failures;
@@ -386,6 +409,12 @@ void DiagnosticRuntime::Stop() {
     completionAdmission_.reset();
     completionCoordinator_.reset();
     worker_.reset();
+    markerCalibration_.reset();
+    markerIndex_.reset();
+    if (markerTrace_ != nullptr) {
+        markerTrace_->Close();
+    }
+    markerTrace_.reset();
     store_.reset();
     fileOps_.reset();
     nativeRegistration_.reset();
@@ -405,6 +434,9 @@ void DiagnosticRuntime::AbortStart() noexcept {
         if (completionAdmission_ != nullptr) {
             completionAdmission_->Disable();
         }
+        if (markerCalibration_ != nullptr) {
+            markerCalibration_->Disable();
+        }
         listeners_.Stop();
         if (worker_ != nullptr) {
             worker_->StopAndDrain(std::chrono::milliseconds(5000));
@@ -412,6 +444,12 @@ void DiagnosticRuntime::AbortStart() noexcept {
         completionAdmission_.reset();
         completionCoordinator_.reset();
         worker_.reset();
+        markerCalibration_.reset();
+        markerIndex_.reset();
+        if (markerTrace_ != nullptr) {
+            markerTrace_->Close();
+        }
+        markerTrace_.reset();
         store_.reset();
         fileOps_.reset();
         if (api_ != nullptr) {

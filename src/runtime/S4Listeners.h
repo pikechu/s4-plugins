@@ -7,6 +7,7 @@
 #include "identity/ListAttribution.h"
 #include "identity/MapIdentityCoordinator.h"
 #include "lua/SuLuaMapBridge.h"
+#include "marker/FixedMapRowCalibration.h"
 #include "native/NativeVictoryEventSubscriber.h"
 #include "runtime/CallbackGate.h"
 #include "runtime/ListenerRemoval.h"
@@ -55,7 +56,8 @@ public:
                NativeVictoryEventSubscriber& subscriber,
                VictoryEventProbe& victoryProbe,
                CompletionAdmission& completionAdmission,
-               Phase3Trace& phase3Trace);
+               Phase3Trace& phase3Trace,
+               FixedMapRowCalibration& markerCalibration);
     ListenerStopResult Stop();
 
 private:
@@ -78,8 +80,9 @@ private:
     };
 
     template <DWORD Page>
-    static HRESULT S4HCALL OnUiFrameFor(LPDIRECTDRAWSURFACE7, INT32, LPVOID) {
-        DispatchUiFrame(Page);
+    static HRESULT S4HCALL OnUiFrameFor(LPDIRECTDRAWSURFACE7 surface,
+                                        INT32 pillarboxWidth, LPVOID) {
+        DispatchUiFrame(Page, surface, pillarboxWidth);
         return S_OK;
     }
 
@@ -89,14 +92,16 @@ private:
             &OnUiFrameFor<static_cast<DWORD>(Index + 1)>...};
     }
 
-    static void DispatchUiFrame(DWORD page);
+    static void DispatchUiFrame(DWORD page, LPDIRECTDRAWSURFACE7 surface,
+                                INT32 pillarboxWidth);
     static HRESULT S4HCALL OnMapInit(LPVOID, LPVOID);
     static HRESULT S4HCALL OnLuaOpen();
     static HRESULT S4HCALL OnTick(DWORD, BOOL, BOOL);
     static HRESULT S4HCALL OnMouse(DWORD, INT, INT, DWORD, HWND, LPCS4UIELEMENT);
     static HRESULT S4HCALL OnGuiElement(LPS4GUIDRAWBLTPARAMS, BOOL);
 
-    void ObserveUiFrame(DWORD page);
+    void ObserveUiFrame(DWORD page, LPDIRECTDRAWSURFACE7 surface,
+                        INT32 pillarboxWidth);
     void ObserveMapInit();
     void ObserveLuaOpen();
     void ObserveTick(BOOL delayed);
@@ -119,6 +124,7 @@ private:
     VictoryEventProbe* victoryProbe_ = nullptr;
     CompletionAdmission* completionAdmission_ = nullptr;
     Phase3Trace* phase3Trace_ = nullptr;
+    FixedMapRowCalibration* markerCalibration_ = nullptr;
     std::vector<S4HOOK> hooks_;
     CallbackGate callbackGate_;
     std::mutex mutex_;

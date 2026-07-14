@@ -4,27 +4,30 @@
 #include "completion/CompletionStore.h"
 #include "completion/CompletionWorker.h"
 #include "completion/Win32CompletionFileOps.h"
-#include "diagnostics/Phase3Trace.h"
 #include "diagnostics/Logger.h"
+#include "diagnostics/MarkerCalibrationTrace.h"
+#include "diagnostics/Phase3Trace.h"
 #include "identity/MapIdentityCoordinator.h"
 #include "lua/LuaApi.h"
 #include "lua/SuLuaMapBridge.h"
+#include "marker/CompletionMarkerIndex.h"
+#include "marker/FixedMapRowCalibration.h"
 #include "native/NativeEventAdmission.h"
 #include "native/NativeEventRegistration.h"
 #include "native/NativeVictoryEventSubscriber.h"
-#include "runtime/S4Listeners.h"
 #include "runtime/PluginPaths.h"
+#include "runtime/S4Listeners.h"
 #include "victory/LaunchOrigin.h"
 #include "victory/SettlementUiProbe.h"
 #include "victory/VictoryEventProbe.h"
 
 #include <windows.h>
 
-#include <filesystem>
 #include <atomic>
 #include <cstddef>
-#include <mutex>
+#include <filesystem>
 #include <memory>
+#include <mutex>
 
 namespace campaign_completion {
 
@@ -44,6 +47,9 @@ private:
     Logger logger_;
     std::unique_ptr<Win32CompletionFileOps> fileOps_;
     std::unique_ptr<CompletionStore> store_;
+    std::unique_ptr<MarkerCalibrationTrace> markerTrace_;
+    std::unique_ptr<CompletionMarkerIndex> markerIndex_;
+    std::unique_ptr<FixedMapRowCalibration> markerCalibration_;
     std::unique_ptr<CompletionWorker> worker_;
     std::unique_ptr<CompletionCandidateCoordinator> completionCoordinator_;
     std::unique_ptr<CompletionAdmission> completionAdmission_;

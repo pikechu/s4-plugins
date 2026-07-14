@@ -16,7 +16,7 @@ inline constexpr std::size_t kMaximumCompletionStringUnits = 1024u;
 inline constexpr std::string_view kCompletionRecordSource =
     "native-event-609";
 inline constexpr std::string_view kCompletionGameVersion = "2.50.1516.0";
-inline constexpr std::string_view kCompletionPluginVersion = "0.4.0";
+inline constexpr std::string_view kCompletionPluginVersion = "0.5.0";
 
 enum class CompletionMapKind {
     Fixed,
