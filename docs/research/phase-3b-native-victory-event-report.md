@@ -165,3 +165,41 @@ after reading begins remains terminal `stale-generation`.
 The corrected deployment still has completion detection, storage, and markers
 disabled. Repeat the read-save victory control to validate recovered origin,
 confirmed map identity, and event `609` in the same session.
+
+## 2026-07-14 random-map recording-policy deployment
+
+- Approved source commit:
+  `a73f123f5c10f021114430fa1726c3a05713078c`; GitHub Actions run
+  `29276366546` completed successfully.
+- GitHub artifact ID `8289546752` has SHA-256
+  `3d67f68b6bb7ee137a6a68324723b2ac06dd58d060c7fd2658328f2b9a2a036d`.
+  The independently downloaded artifact matched this digest exactly.
+- The package contained exactly
+  `Plugins/CampaignCompletionDebug.asi` and
+  `CampaignCompletion/CampaignCompletionDebug.ini`.
+- Deployed ASI SHA-256:
+  `2d451df8d3ebb4fde2bafbf99318bf1cf9a0890324c1b82f913d715e1878447e`;
+  it is PE32 Intel 80386.
+- Installed `Plugin_SU.zip` SHA-256:
+  `90a35a2e94a226b0bef904f1d5d73a780b0af1a3f04e3f8fbcd1139be6bfdfb6`;
+  size `1703917` bytes.
+- The immutable original archive remains SHA-256
+  `807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265`,
+  size `1176944` bytes, with timestamp
+  `2026-05-10T08:38:14.0000000Z` unchanged.
+- Independent ZIP inspection found all seven original non-target entries
+  byte-identical, eight total entries, and exactly one
+  `Plugins/CampaignCompletionDebug.asi` entry whose hash matches the frozen
+  ASI.
+- The live game-side INI SHA-256 is
+  `88737dad30a5981085ec31bb797fe793ef3242644f15f66e812a7c075b6385c1`.
+  It identifies version `0.3.3`, uses only the project trace root, and retains
+  `CompletionDetection=0`, `CompletionStorage=0`, and
+  `CompletionMarkers=0`.
+- Fresh process checks before and after deployment found neither `S4_Main` nor
+  Settlers United running. No authorized archive or INI temporary sibling
+  remained.
+
+This diagnostic build classifies fresh and loaded random maps as recordable
+but marker-hidden policy inputs. It still does not persist completion or draw
+the marker.
