@@ -2,6 +2,7 @@
 
 #include "victory/MapSessionPolicy.h"
 
+#include <algorithm>
 #include <array>
 #include <cstdio>
 #include <limits>
@@ -76,6 +77,37 @@ unsigned ParseDecimal(std::string_view value,
 }
 
 }  // namespace
+
+std::optional<std::wstring> StrictUtf8ToWide(
+    std::string_view value) noexcept {
+    if (value.size() >
+        static_cast<std::size_t>((std::numeric_limits<int>::max)())) {
+        return std::nullopt;
+    }
+    if (value.empty()) {
+        return std::wstring{};
+    }
+    const int length = static_cast<int>(value.size());
+    const int required = MultiByteToWideChar(
+        CP_UTF8, MB_ERR_INVALID_CHARS, value.data(), length, nullptr, 0);
+    if (required <= 0) {
+        return std::nullopt;
+    }
+    try {
+        std::wstring result(static_cast<std::size_t>(required), L'\0');
+        if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS,
+                                value.data(), length, result.data(),
+                                required) != required) {
+            return std::nullopt;
+        }
+        if (std::find(result.begin(), result.end(), L'\0') != result.end()) {
+            return std::nullopt;
+        }
+        return result;
+    } catch (...) {
+        return std::nullopt;
+    }
+}
 
 std::optional<std::string> WideToStrictUtf8(
     std::wstring_view value) noexcept {

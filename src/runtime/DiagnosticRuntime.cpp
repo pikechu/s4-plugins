@@ -61,6 +61,8 @@ const char* StoreModeName(CompletionStoreMode mode) noexcept {
             return "writable-loaded";
         case CompletionStoreMode::ReadOnlyBackup:
             return "read-only-backup";
+        case CompletionStoreMode::ReadOnlyNormalizationFailed:
+            return "read-only-normalization-failed";
         case CompletionStoreMode::ReadOnlyUnavailable:
             return "read-only-unavailable";
     }
@@ -201,15 +203,25 @@ bool DiagnosticRuntime::Start(HMODULE module) {
                 << " records=" << load.recordCount
                 << " failure=" << static_cast<unsigned>(load.failure)
                 << " error=" << load.error;
-        logger_.Write(load.mode == CompletionStoreMode::ReadOnlyBackup
-                          ? LogLevel::Warning
-                          : LogLevel::Info,
+        const bool readOnlyWarning =
+            load.mode == CompletionStoreMode::ReadOnlyBackup ||
+            load.mode ==
+                CompletionStoreMode::ReadOnlyNormalizationFailed;
+        logger_.Write(readOnlyWarning ? LogLevel::Warning : LogLevel::Info,
                       storage.str());
         if (load.mode == CompletionStoreMode::ReadOnlyBackup) {
             logger_.Write(
                 LogLevel::Warning,
                 "completion-store loaded backup read-only; automatic repair "
                 "and future writes are disabled; manual handling required");
+        }
+        if (load.mode ==
+            CompletionStoreMode::ReadOnlyNormalizationFailed) {
+            logger_.Write(
+                LogLevel::Warning,
+                "completion-store normalization failed; original data "
+                "loaded read-only; future writes are disabled; manual "
+                "handling required");
         }
         if (load.mode == CompletionStoreMode::Uninitialized ||
             load.mode == CompletionStoreMode::ReadOnlyUnavailable) {

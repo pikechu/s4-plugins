@@ -14,6 +14,7 @@ enum class CompletionStoreMode {
     WritableEmpty,
     WritableLoaded,
     ReadOnlyBackup,
+    ReadOnlyNormalizationFailed,
     ReadOnlyUnavailable,
 };
 
@@ -57,6 +58,10 @@ public:
     CompletionDatabaseSnapshot Snapshot() const;
 
 private:
+    CompletionAddResult CommitSnapshot(
+        CompletionDatabaseSnapshot candidate,
+        std::set<std::string> candidateIds,
+        bool replaceExisting) noexcept;
     void Publish(CompletionDatabaseSnapshot snapshot);
 
     ICompletionFileOps& files_;

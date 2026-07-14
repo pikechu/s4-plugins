@@ -36,6 +36,8 @@ struct CompletionRecord final {
 };
 
 std::optional<std::string> WideToStrictUtf8(std::wstring_view value) noexcept;
+std::optional<std::wstring> StrictUtf8ToWide(
+    std::string_view value) noexcept;
 std::optional<std::string> BuildStableMapId(
     std::wstring_view relative) noexcept;
 CompletionMapKind CompletionKindFor(std::wstring_view relative) noexcept;

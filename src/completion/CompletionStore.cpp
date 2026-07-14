@@ -1,5 +1,7 @@
 #include "completion/CompletionStore.h"
 
+#include "victory/MapSessionPolicy.h"
+
 #include <type_traits>
 #include <utility>
 
@@ -49,10 +51,52 @@ CompletionLoadResult CompletionStore::Load() noexcept {
         if (mainRead.status == CompletionFileStatus::Success) {
             mainJson = DecodeCompletionJson(mainRead.bytes);
             if (mainJson) {
-                Publish(std::move(mainJson.snapshot));
-                mode_ = CompletionStoreMode::WritableLoaded;
-                return LoadResult(mode_, CompletionJsonFailure::None,
-                                  ERROR_SUCCESS, snapshot_.records.size());
+                auto original = std::move(mainJson.snapshot);
+                auto normalized = original;
+                bool changed = false;
+                for (auto& record : normalized.records) {
+                    const auto relative =
+                        StrictUtf8ToWide(record.relativeId);
+                    if (!relative.has_value()) {
+                        Publish(std::move(original));
+                        mode_ = CompletionStoreMode::
+                            ReadOnlyNormalizationFailed;
+                        return LoadResult(
+                            mode_, CompletionJsonFailure::Utf8,
+                            ERROR_INVALID_DATA, snapshot_.records.size());
+                    }
+                    const auto canonical = CanonicalCompletionSource(
+                        record.launchSource, *relative);
+                    if (canonical != record.launchSource) {
+                        record.launchSource = canonical;
+                        changed = true;
+                    }
+                }
+                if (!changed) {
+                    Publish(std::move(original));
+                    mode_ = CompletionStoreMode::WritableLoaded;
+                    return LoadResult(
+                        mode_, CompletionJsonFailure::None,
+                        ERROR_SUCCESS, snapshot_.records.size());
+                }
+
+                std::set<std::string> normalizedIds;
+                for (const auto& record : normalized.records) {
+                    normalizedIds.insert(record.stableId);
+                }
+                const auto commit = CommitSnapshot(
+                    std::move(normalized), std::move(normalizedIds), true);
+                if (commit.status == CompletionAddStatus::Committed) {
+                    return LoadResult(
+                        mode_, CompletionJsonFailure::None,
+                        ERROR_SUCCESS, snapshot_.records.size());
+                }
+                Publish(std::move(original));
+                mode_ =
+                    CompletionStoreMode::ReadOnlyNormalizationFailed;
+                return LoadResult(
+                    mode_, CompletionJsonFailure::None, commit.error,
+                    snapshot_.records.size());
             }
         }
 
@@ -125,6 +169,20 @@ CompletionAddResult CompletionStore::AddIfAbsent(
         candidate.records.push_back(record);
         std::set<std::string> candidateIds = stableIds_;
         candidateIds.insert(record.stableId);
+        return CommitSnapshot(
+            std::move(candidate), std::move(candidateIds),
+            mode_ == CompletionStoreMode::WritableLoaded);
+    } catch (...) {
+        return AddFailure(CompletionTransactionStage::Encode,
+                          ERROR_OUTOFMEMORY);
+    }
+}
+
+CompletionAddResult CompletionStore::CommitSnapshot(
+    CompletionDatabaseSnapshot candidate,
+    std::set<std::string> candidateIds,
+    bool replaceExisting) noexcept {
+    try {
         const auto encoded = EncodeCompletionJson(candidate);
         if (!encoded.has_value()) {
             return AddFailure(CompletionTransactionStage::Encode,
@@ -153,7 +211,7 @@ CompletionAddResult CompletionStore::AddIfAbsent(
         }
 
         CompletionWriteResult commit{};
-        if (mode_ == CompletionStoreMode::WritableLoaded) {
+        if (replaceExisting) {
             commit = files_.ReplaceWithBackup(main_, temporary_, backup_);
         } else {
             commit = files_.MoveFirstWriteThrough(temporary_, main_);
