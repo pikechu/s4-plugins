@@ -6,11 +6,10 @@ The `0.4.0` completion-persistence implementation passed its final Win32
 build, policy, test, packaging, and artifact checks at commit
 `b550375e9d321b981f35384929a781e31f8a44ef`.
 
-No deployment was performed. The game must remain closed until the user
-approves guarded deployment of this verified `0.4.0` artifact.
-
-The currently deployed `0.3.3` binary still resolves the former root-level
-configuration location and must not be used with the migrated directory.
+The build-verification phase itself performed no deployment. After the user
+subsequently approved guarded deployment, this exact verified `0.4.0` ASI and
+INI were installed; the evidence and still-pending live gates are recorded
+below.
 
 ## Final CI evidence
 
@@ -118,10 +117,48 @@ No unresolved critical or important review findings remain. The CI annotation
 about GitHub Actions Node 20 deprecation is external to the plugin build and
 did not affect the result.
 
-## Deployment boundary
+## Guarded deployment on 2026-07-14
 
-This report and all downloaded artifacts are project files only. No game file,
-live ASI, live configuration, or Settlers United archive was changed. A future
-deployment must separately confirm the game is closed, preserve and verify the
-existing immutable archive backup and migrated configuration backup, and use
-the already guarded exact archive-replacement workflow.
+After the user explicitly approved deployment, the first non-elevated archive
+replacement attempt was rejected by Windows before the authorized temporary
+sibling could be created. Post-failure hashes proved that the archive,
+metadata, live INI, and immutable backup were unchanged and that no temporary
+file remained. The user then ran the same guarded installer from an elevated
+PowerShell session.
+
+Before replacement, neither `S4_Main` nor Settlers United was running. The
+migrated live configuration directory was copied and hash-verified at:
+
+```text
+research/backups/campaign-completion/
+  2026-07-14-pre-v0.4.0-deployment/Plugins/CampaignCompletion/
+```
+
+Deployment evidence:
+
+- installed `Plugin_SU.zip` SHA-256:
+  `f712fd1c7485768e60688d0209ab4d50162cc544e604dc329eaf2107a17fd1be`;
+- immutable original archive SHA-256:
+  `807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265`;
+- embedded ASI SHA-256:
+  `b50fc1c9ae49ddeecedfa83496a1b59cc4ddcc6f47e9fb555af45502ec675096`;
+- installed INI SHA-256:
+  `573a99ce24026b43901b0c4914b1b06ae6a6eb08f82826926695c88544ef5b2a`.
+
+An independent read-only ZIP audit verified all seven original archive entries
+byte-for-byte and found exactly one additional authorized entry,
+`Plugins/CampaignCompletionDebug.asi`. The archive contains eight unique
+entries after deployment. Backup metadata matches the installed archive and
+embedded ASI. The temporary archive sibling is absent, the former root-level
+`<game>\CampaignCompletion` directory is absent, and both relevant processes
+remained closed throughout postflight verification.
+
+Deployment is complete, but live game acceptance is still pending. It is not
+yet a live GO.
+
+## Original build-time deployment boundary
+
+At build-report creation time, the report and downloaded artifacts were
+project files only and no deployment had occurred. The later approved guarded
+deployment is recorded above; no file outside its authorized archive, ASI, and
+configuration scope was changed.
