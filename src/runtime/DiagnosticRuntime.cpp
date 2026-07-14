@@ -63,19 +63,11 @@ bool DiagnosticRuntime::Start(HMODULE module) {
         return false;
     }
 
-    std::wstring modulePath(32768, L'\0');
-    const DWORD length = GetModuleFileNameW(
-        module, modulePath.data(), static_cast<DWORD>(modulePath.size()));
-    if (length == 0 || length == static_cast<DWORD>(modulePath.size())) {
+    paths_ = ResolvePluginPaths(module);
+    if (!paths_.has_value()) {
         return false;
     }
-    modulePath.resize(length);
-    const auto pluginDirectory = std::filesystem::path(modulePath).parent_path();
-    const auto gameDirectory = pluginDirectory.parent_path();
-    const auto campaignDirectory = gameDirectory / L"CampaignCompletion";
-    const auto logPath = campaignDirectory / L"CampaignCompletion.log";
-    const auto iniPath = campaignDirectory / L"CampaignCompletionDebug.ini";
-    if (!logger_.Open(logPath)) {
+    if (!logger_.Open(paths_->log)) {
         return false;
     }
 
@@ -141,7 +133,7 @@ bool DiagnosticRuntime::Start(HMODULE module) {
     wchar_t traceRoot[32768]{};
     const DWORD traceLength = GetPrivateProfileStringW(
         L"Diagnostic", L"CaptureTraceRoot", L"", traceRoot,
-        static_cast<DWORD>(std::size(traceRoot)), iniPath.c_str());
+        static_cast<DWORD>(std::size(traceRoot)), paths_->ini.c_str());
     if (traceLength > 0u &&
         traceLength < static_cast<DWORD>(std::size(traceRoot) - 1u)) {
         if (!phase3Trace_.Open(traceRoot, GetCurrentProcessId())) {
@@ -213,8 +205,7 @@ bool DiagnosticRuntime::Start(HMODULE module) {
         return false;
     }
 
-    stopRequestPath_ = gameDirectory / L"CampaignCompletion" /
-                       L"CampaignCompletionDebug.stop";
+    stopRequestPath_ = paths_->stop;
     started_ = true;
     controlledStopRequested_.store(false, std::memory_order_release);
     logger_.Write(LogLevel::Info, "diagnostic runtime started");
@@ -300,6 +291,7 @@ void DiagnosticRuntime::Stop() {
     nativeRegistration_.reset();
     nativeAdmission_ = {};
     coordinator_.reset();
+    paths_.reset();
     started_ = false;
     controlledStopRequested_.store(false, std::memory_order_release);
 }

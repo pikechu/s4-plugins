@@ -9,6 +9,7 @@
 #include "native/NativeEventRegistration.h"
 #include "native/NativeVictoryEventSubscriber.h"
 #include "runtime/S4Listeners.h"
+#include "runtime/PluginPaths.h"
 #include "victory/LaunchOrigin.h"
 #include "victory/SettlementUiProbe.h"
 #include "victory/VictoryEventProbe.h"
@@ -46,6 +47,7 @@ private:
     NativeVictoryEventSubscriber nativeSubscriber_;
     VictoryEventProbe victoryProbe_;
     S4API api_ = nullptr;
+    std::optional<PluginPaths> paths_;
     std::filesystem::path stopRequestPath_;
     bool started_ = false;
     std::atomic<bool> controlledStopRequested_{false};

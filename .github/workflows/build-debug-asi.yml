@@ -127,7 +127,7 @@ jobs:
             $_.FullName.Substring($inspection.Length + 1).Replace('\', '/')
           } | Sort-Object)
           $expected = @(
-            "CampaignCompletion/CampaignCompletionDebug.ini"
+            "Plugins/CampaignCompletion/CampaignCompletionDebug.ini"
             "Plugins/CampaignCompletionDebug.asi"
           ) | Sort-Object
           if (Compare-Object $actual $expected) {

@@ -34,7 +34,7 @@ if (Test-Path -LiteralPath $archive) {
 }
 
 $plugins = New-Item -ItemType Directory -Path (Join-Path $staging "Plugins") -Force
-$settings = New-Item -ItemType Directory -Path (Join-Path $staging "CampaignCompletion") -Force
+$settings = New-Item -ItemType Directory -Path (Join-Path $plugins "CampaignCompletion") -Force
 Copy-Item -LiteralPath $asi -Destination (Join-Path $plugins "CampaignCompletionDebug.asi")
 Copy-Item -LiteralPath $configuration -Destination (Join-Path $settings "CampaignCompletionDebug.ini")
 

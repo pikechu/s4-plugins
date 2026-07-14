@@ -28,6 +28,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/runtime/DiagnosticRuntime.cpp
     src/runtime/ListenerRemoval.cpp
     src/runtime/PageObservation.cpp
+    src/runtime/PluginPaths.cpp
     src/runtime/S4Listeners.cpp
     src/runtime/StopRequest.cpp
     src/victory/LaunchOrigin.cpp
@@ -102,6 +103,7 @@ add_executable(campaign_completion_tests
   src/runtime/CallbackGate.cpp
   src/runtime/ListenerRemoval.cpp
   src/runtime/PageObservation.cpp
+  src/runtime/PluginPaths.cpp
   src/runtime/StopRequest.cpp
   src/victory/LaunchOrigin.cpp
   src/victory/MapSessionPolicy.cpp
