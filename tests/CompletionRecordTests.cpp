@@ -93,10 +93,10 @@ int RunCompletionRecordTests() {
 
     CompletionRecord record{};
     Require(record.recordSource == "native-event-609",
-            "record source must be fixed for version 0.4.0");
+            "record source must remain fixed for version 0.5.0");
     Require(record.gameVersion == "2.50.1516.0",
             "game version must be persisted exactly");
-    Require(record.pluginVersion == "0.4.0",
+    Require(record.pluginVersion == "0.5.0",
             "plugin version must be persisted exactly");
     return 0;
 }
