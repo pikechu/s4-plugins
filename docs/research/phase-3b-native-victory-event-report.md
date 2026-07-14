@@ -203,3 +203,28 @@ confirmed map identity, and event `609` in the same session.
 This diagnostic build classifies fresh and loaded random maps as recordable
 but marker-hidden policy inputs. It still does not persist completion or draw
 the marker.
+
+## 2026-07-14 loaded-random live validation
+
+- The user launched the deployed `0.3.3` build and loaded the paired random
+  save. The active process was PID `10700` and remained responsive throughout
+  inspection.
+- The synchronized game-side `CampaignCompletionDebug.asi` SHA-256 was
+  `2d451df8d3ebb4fde2bafbf99318bf1cf9a0890324c1b82f913d715e1878447e`,
+  exactly equal to the frozen CI ASI. The game trace independently listed the
+  module as loaded.
+- MapInit session `1` initially recorded
+  `load-map-unresolved/unknown`.
+- The same session returned successful SU values with both name and relative
+  identifier equal to `RD_LCGSDR30`, followed by
+  `identity-association=confirmed`.
+- The bounded post-identity record was exactly
+  `origin-refinement=session-1;source-random-map;eligibility-eligible;ui-hidden`.
+- The native event subscriber attached and was reinserted at the front after
+  game initialization. No terminal event was expected or emitted during this
+  source-classification sample.
+- UI-frame and GUI-element callbacks continued after the refinement, providing
+  an independent responsiveness signal.
+
+This sample passes the loaded-random source-policy gate: a random-map save is
+recordable, but its future completed-level marker is suppressed.
