@@ -30,6 +30,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/lua/LuaApi.cpp
     src/lua/SuLuaMapBridge.cpp
     src/marker/CompletionMarkerIndex.cpp
+    src/marker/FixedMapRowCalibration.cpp
     src/native/NativeEventAdmission.cpp
     src/native/NativeEventRegistration.cpp
     src/native/NativeVictoryEventSubscriber.cpp
@@ -128,6 +129,7 @@ add_executable(campaign_completion_tests
   src/identity/SuMapValue.cpp
   src/lua/SuLuaMapBridge.cpp
   src/marker/CompletionMarkerIndex.cpp
+  src/marker/FixedMapRowCalibration.cpp
   src/runtime/CallbackGate.cpp
   src/runtime/ListenerRemoval.cpp
   src/runtime/PageObservation.cpp
