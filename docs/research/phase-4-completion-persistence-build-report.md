@@ -261,3 +261,36 @@ The archive deployment is complete. Live startup and automatic normalization
 of the existing Antares record remain pending; that acceptance must verify that
 only `launch_source` changes to `single-player-custom-map` while the stable ID,
 record count, and original completion timestamp remain unchanged.
+
+## Canonical map-category live acceptance
+
+The user started the game after guarded deployment. `S4_Main` PID `27108`
+remained responsive. The plugin's in-process module inventory confirmed the
+loaded `CampaignCompletionDebug.asi` SHA-256 as
+`3b403e94e26435f8cce36c52098b4787a3e66a137f1a61c0adc4a5a02ffbe502`,
+and the runtime reported a compatible executable followed by
+`completion-store mode=writable-loaded records=2 failure=0 error=0` and
+`diagnostic runtime started`. No new warning or error was emitted.
+
+The normalization transaction produced:
+
+- main database SHA-256:
+  `b372009a13739c9eafea5841c71eba8bbe91cac81e4e2a7e7b478191adfccc54`;
+- backup database SHA-256:
+  `c06a8e920c314ccccdd5826218a1ab4e99e5ac0a4cde1143d06ac54a2c555764`,
+  exactly the pre-start main database; and
+- no `completed_maps.json.tmp` sibling.
+
+Both snapshots parse as schema version `1`. Record count remained `2`.
+Field-by-field comparison found:
+
+- Aeneas: no field changed; first completion remained
+  `2026-07-14T03:53:50Z`.
+- Antares: only `launch_source` changed from `single-player-map` to
+  `single-player-custom-map`; stable ID remained
+  `map:map\user\antares.map` and first completion remained
+  `2026-07-14T03:56:57Z`.
+
+This satisfies the live acceptance gate for canonical map-category
+normalization. Direct and loaded instances can now converge on the same
+persisted category without rewriting completion identity or time.
