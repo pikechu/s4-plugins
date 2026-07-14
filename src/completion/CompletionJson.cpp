@@ -41,6 +41,10 @@ bool IsAllowedLaunchSource(LaunchSource source) noexcept {
     return false;
 }
 
+bool IsAllowedPluginVersion(std::string_view version) noexcept {
+    return version == "0.4.0" || version == kCompletionPluginVersion;
+}
+
 std::optional<LaunchSource> ParseLaunchSource(
     std::string_view value) noexcept {
     for (const auto source : {
@@ -75,7 +79,7 @@ CompletionJsonFailure ValidateRecord(
     }
     if (record.recordSource != kCompletionRecordSource ||
         record.gameVersion != kCompletionGameVersion ||
-        record.pluginVersion != kCompletionPluginVersion ||
+        !IsAllowedPluginVersion(record.pluginVersion) ||
         !IsValidUtcCompletionTime(record.completedAtUtc) ||
         !IsAllowedLaunchSource(record.launchSource)) {
         return CompletionJsonFailure::InvalidRecord;

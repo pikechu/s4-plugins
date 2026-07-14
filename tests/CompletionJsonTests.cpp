@@ -87,7 +87,12 @@ int RunCompletionJsonTests() {
 
     const auto compact = DecodeCompletionJson(ValidJson());
     Require(compact && compact.snapshot.records.size() == 1u,
-            "decoder must accept schema-valid compact JSON");
+            "decoder must preserve schema-valid 0.4.0 records");
+    RequireFailure(
+        ReplaceOnce(ValidJson(), "\"plugin_version\":\"0.4.0\"",
+                    "\"plugin_version\":\"0.3.3\""),
+        CompletionJsonFailure::InvalidRecord,
+        "decoder must reject pre-persistence plugin versions");
 
     RequireFailure(std::string(kMaximumCompletionJsonBytes + 1u, ' '),
                    CompletionJsonFailure::Oversized,
