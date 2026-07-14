@@ -50,7 +50,7 @@ int RunCompletionRecordTests() {
             "lone high surrogate must be rejected");
     Require(!WideToStrictUtf8(loneLow),
             "lone low surrogate must be rejected");
-    Require(WideToStrictUtf8(L"战役") ==
+    Require(WideToStrictUtf8(L"\u6218\u5F79") ==
                 std::optional<std::string>("\xE6\x88\x98\xE5\xBD\xB9"),
             "non-ASCII text must use strict UTF-8");
 
