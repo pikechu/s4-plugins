@@ -89,6 +89,7 @@ add_executable(campaign_completion_tests
   tests/PluginPathsTests.cpp
   tests/CompletionRecordTests.cpp
   tests/CompletionCandidateCoordinatorTests.cpp
+  tests/CompletionJsonTests.cpp
   src/diagnostics/CaptureTrace.cpp
   src/diagnostics/Logger.cpp
   src/diagnostics/ModuleInventory.cpp

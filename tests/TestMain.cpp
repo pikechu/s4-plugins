@@ -29,6 +29,7 @@ int RunPhase3TraceTests();
 int RunPluginPathsTests();
 int RunCompletionRecordTests();
 int RunCompletionCandidateCoordinatorTests();
+int RunCompletionJsonTests();
 
 int main() {
     try {
@@ -59,6 +60,7 @@ int main() {
         RunPluginPathsTests();
         RunCompletionRecordTests();
         RunCompletionCandidateCoordinatorTests();
+        RunCompletionJsonTests();
         return RunRuntimePolicyTests();
     } catch (const std::exception& error) {
         std::cerr << "FAIL: " << error.what() << '\n';
