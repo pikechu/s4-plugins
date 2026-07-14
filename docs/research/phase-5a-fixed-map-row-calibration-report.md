@@ -137,14 +137,122 @@ actions runtime and did not affect the plugin result.
 
 ## Deployment and live gate
 
-No game or Settlers United file was changed during this build audit. The game
-was running, so no deployment was attempted.
+After the user reported that the game and Settlers United were closed and
+explicitly approved deployment, the process gate found neither `S4_Main` nor
+Settlers United. Before any replacement, the current project-owned live data
+directory was copied and verified file-by-file at:
 
-Guarded deployment requires the user to close the game and Settlers United and
-explicitly approve installation of the exact audited ASI/INI above. After
-deployment, the live test must establish repeatable Aeneas and Antares row
-signatures, frame order, scrolling behavior, category isolation, trace bounds,
-responsiveness, and normal shutdown before Phase 5A can be declared live GO.
+```text
+research/backups/campaign-completion/
+  2026-07-14-pre-v0.5.0-row-calibration/Plugins/CampaignCompletion/
+```
 
-Until that evidence exists, `CompletionMarkers` stays `0` and no Phase 5B
-rendering constants may be guessed.
+The backup contains four files and `1366583` bytes. Its INI SHA-256 is
+`573a99ce24026b43901b0c4914b1b06ae6a6eb08f82826926695c88544ef5b2a`;
+its database SHA-256 is
+`b372009a13739c9eafea5841c71eba8bbe91cac81e4e2a7e7b478191adfccc54`.
+
+The first non-elevated guarded archive attempt was denied before it could
+create the authorized temporary sibling. Post-failure verification found the
+archive and metadata unchanged and no leaked sibling. The same existing
+installer was then run elevated. Deployment and independent postflight values:
+
+- immutable original archive SHA-256:
+  `807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265`;
+- installed archive SHA-256:
+  `2770385ae23e3caf6c8f6c786b4d8c9903fb979f1363ef56e3552fb40aa41745`;
+- installed archive size: `1770734` bytes;
+- embedded ASI SHA-256:
+  `c2177bc473dfdcb30b9f2f1d08c3257cbe858ec618e2844da2cddc2b47dc3326`;
+- installed INI SHA-256:
+  `d90a2a0014769567abbcec4be8a2eab6a66289a1732578c3a828ed31f9a2a220`.
+
+All seven protected original ZIP entries remained byte-identical. The archive
+contains exactly those seven entries plus the one authorized
+`Plugins/CampaignCompletionDebug.asi` entry. The INI was replaced through a
+hash-verified same-directory temporary sibling. Both temporary siblings were
+absent afterward, and the completion database retained its predeployment hash.
+
+## Live calibration evidence
+
+The user launched through Settlers United and performed each approved action
+individually. The live module inventory identified the loaded ASI as the exact
+audited candidate:
+
+```text
+PID: 31908
+ASI SHA-256: c2177bc473dfdcb30b9f2f1d08c3257cbe858ec618e2844da2cddc2b47dc3326
+Runtime: version=0.5.0 mode=fixed-map-row-calibration
+Store: writable-loaded, records=2, failure=0, error=0
+```
+
+The final trace and copied log are stored only below the untracked evidence
+directory `artifacts/phase-5a-row-calibration/live/pid-31908/`:
+
+| Evidence | Bytes | SHA-256 |
+|---|---:|---|
+| `step-16-final.trace` | 14556 | `26dc584d8e558283bd30f0915616a5d55729b3d57ab3de02e5500a0014e82f44` |
+| `CampaignCompletion-pid-31908.log` | 1449805 | `97a334a4ab17c72aa5fb3e7a72af462a312bb18ccfac6f7c1f57b2e60686e1a3` |
+
+The copied files are byte-identical to their closed-process sources. The trace
+contains 112 records: five state records, 54 unique candidate observations,
+and 53 frame boundaries. One frame legitimately covers two consecutive
+candidate callbacks; range validation proved that every candidate is covered
+by a later frame record. There are zero malformed, ambiguous, wrong-category,
+out-of-surface, out-of-order, or uncovered observations.
+
+Observed state sequence:
+
+```text
+pages-fixed;list-unknown;generation-1
+pages-fixed;list-single;generation-2
+pages-fixed;list-custom;generation-3
+pages-fixed;list-multiplayer;generation-4
+pages-other;list-unknown;generation-5
+```
+
+Accepted public row signature and frame metadata:
+
+- surface: `800 x 600`;
+- fixed-list frame: page `4`, pillarbox `274`;
+- row container: `0`;
+- row x/width/height: `115 / 271 / 30`;
+- observed row y slots: `142, 173, 204, 235, 266, 297`, a `31`-pixel pitch;
+- state-dependent text style: `1` or `2`;
+- slot-dependent value link: `2417` through `2422`;
+- Aeneas: 18 `match-unique` observations, only under `list-single`;
+- Antares: 36 `match-unique` observations, only under `list-custom`.
+
+The value link is a visible-slot property, not map identity. During the Antares
+scroll it changed with the row position (`2422` at y `297`, `2421` at y `266`,
+`2419` at y `204`, `2418` at y `173`, and `2417` at y `142`). Rendering must
+therefore use the current matched row rectangle and must never key completion
+identity from `valueLink`.
+
+Aeneas, the first map, disappeared under discrete scrolling and reproduced its
+original `115,142,271,30` signature after returning and repainting. Antares
+provided direct motion evidence: its rectangle moved through the visible slots,
+stopped producing candidates when fully out of view, and returned at the new
+current slots rather than reusing a stale rectangle. Normal, hover, and selected
+states preserved identity and geometry; selection changed only the text style.
+
+The Multiplayer Maps control recorded `list-multiplayer`; opening and scrolling
+that list produced no Aeneas or Antares candidate. The final trace used only
+`14556` of the `262144`-byte cap. The current-session log contains no warning,
+error, timeout, overflow, ambiguity, listener, storage, or calibration failure.
+The database SHA-256 remained
+`b372009a13739c9eafea5841c71eba8bbe91cac81e4e2a7e7b478191adfccc54`.
+The user reported normal responsiveness throughout and a normal game/SU exit;
+the final process gate found both processes closed.
+
+## Phase 5A decision
+
+**GO.** Every Phase 5A live criterion is satisfied. The evidence supports a
+Phase 5B renderer that consumes the current exact candidate rectangle and draws
+at the following public frame boundary, applies the pillarbox offset exactly
+once, ignores `valueLink` as identity, and publishes completion-index updates
+only after persistence commits.
+
+The deployed Phase 5A configuration intentionally still has
+`CompletionMarkers=0`. No marker-rendering behavior is enabled by this GO; a
+separate reviewed and tested Phase 5B implementation remains required.
