@@ -14,6 +14,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/diagnostics/CaptureTrace.cpp
     src/diagnostics/Logger.cpp
     src/diagnostics/ModuleInventory.cpp
+    src/diagnostics/MarkerCalibrationTrace.cpp
     src/diagnostics/Phase3Trace.cpp
     src/completion/CompletionRecord.cpp
     src/completion/CompletionAdmission.cpp
@@ -103,6 +104,7 @@ add_executable(campaign_completion_tests
   src/diagnostics/CaptureTrace.cpp
   src/diagnostics/Logger.cpp
   src/diagnostics/ModuleInventory.cpp
+  src/diagnostics/MarkerCalibrationTrace.cpp
   src/diagnostics/Phase3Trace.cpp
   src/completion/CompletionRecord.cpp
   src/completion/CompletionAdmission.cpp
