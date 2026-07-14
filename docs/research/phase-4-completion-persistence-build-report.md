@@ -218,6 +218,46 @@ byte-identical to the repository configuration. Independent binary inspection
 identifies the ASI as a six-section PE32 Intel 80386 DLL and finds the expected
 `CampaignCompletionDebugStop` export.
 
-This follow-up build has not been deployed. Candidate inspection and report
-creation changed only project-owned files; guarded archive replacement remains
-blocked until the game is closed and the user approves the deployment step.
+Candidate inspection and the initial follow-up report changed only
+project-owned files. The later user-approved guarded deployment is recorded
+below.
+
+## Canonical map-category guarded deployment
+
+After the user reported that the game was closed and explicitly approved
+deployment, a fresh process gate found neither `S4_Main` nor Settlers United.
+The hash-gated wrapper required all of these exact preconditions before calling
+the existing `SettlersUnitedArtifact` installer:
+
+- installed archive:
+  `f712fd1c7485768e60688d0209ab4d50162cc544e604dc329eaf2107a17fd1be`;
+- immutable original archive:
+  `807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265`;
+- candidate ASI:
+  `3b403e94e26435f8cce36c52098b4787a3e66a137f1a61c0adc4a5a02ffbe502`;
+- live INI:
+  `573a99ce24026b43901b0c4914b1b06ae6a6eb08f82826926695c88544ef5b2a`;
+  and
+- pre-start database:
+  `c06a8e920c314ccccdd5826218a1ab4e99e5ac0a4cde1143d06ac54a2c555764`.
+
+The elevated installer returned:
+
+- installed archive SHA-256:
+  `5b1abe961e8e19331bd2781cc036a9549929af784831e2d2720d1230987dfa32`;
+- installed archive size: `1757412` bytes; and
+- embedded ASI SHA-256:
+  `3b403e94e26435f8cce36c52098b4787a3e66a137f1a61c0adc4a5a02ffbe502`.
+
+An independent read-only postflight audit verified that all seven protected
+original entries remained byte-identical, the archive contains exactly eight
+unique entries, the only authorized CampaignCompletion entry contains the
+candidate ASI, backup metadata matches all three archive hashes, and no
+authorized temporary sibling remains. The live INI stayed byte-identical. The
+database also retained its pre-start hash, proving that archive deployment did
+not rewrite completion data. A final process gate remained clear.
+
+The archive deployment is complete. Live startup and automatic normalization
+of the existing Antares record remain pending; that acceptance must verify that
+only `launch_source` changes to `single-player-custom-map` while the stable ID,
+record count, and original completion timestamp remain unchanged.
