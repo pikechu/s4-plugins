@@ -24,6 +24,11 @@ The adapter is enabled only for the already approved executable:
 - exact instruction windows for list construction, visible-row lookup, and
   scroll-bound updates must match the reviewed bytes in the loaded image.
 
+The reviewed instruction-window image RVAs are `0x0008d660` (visible-row
+lookup), `0x0008e700` (scroll-down bound), and `0x001202ae` (construction).
+The first two values include the PE `.text` section RVA of `0x1000`; section
+offsets such as `0x0008c660` are not image RVAs and must fail closed.
+
 Any mismatch disables only the internal menu adapter. Completion detection,
 persistence, backup recovery, and the existing public marker path remain
 unchanged.

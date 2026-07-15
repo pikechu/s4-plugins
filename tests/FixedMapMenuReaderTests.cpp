@@ -14,8 +14,10 @@ namespace {
 constexpr std::uintptr_t kScrollBaseRva = 0x00E938D8u;
 constexpr std::uintptr_t kEntryArrayRva = 0x00E97848u;
 constexpr std::uintptr_t kEntryCountRva = 0x0109C1D8u;
-constexpr std::uintptr_t kRenderWindowRva = 0x0008C660u;
-constexpr std::uintptr_t kScrollWindowRva = 0x0008D700u;
+// These are image RVAs, not offsets relative to the .text section. The PE
+// .text section begins at RVA 0x1000.
+constexpr std::uintptr_t kRenderWindowRva = 0x0008D660u;
+constexpr std::uintptr_t kScrollWindowRva = 0x0008E700u;
 constexpr std::uintptr_t kConstructionWindowRva = 0x001202AEu;
 constexpr std::uint32_t kImageSize = 0x012BF000u;
 

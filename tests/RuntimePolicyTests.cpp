@@ -389,6 +389,13 @@ int RunRuntimePolicyTests() {
                     std::string::npos &&
                 listeners.find("internal-menu status=") != std::string::npos,
             "the exact executable gate feeds diagnostic-only bounded snapshots");
+    Require(menuReader.find("kRenderWindowRva = 0x0008D660u") !=
+                    std::string::npos &&
+                menuReader.find("kScrollWindowRva = 0x0008E700u") !=
+                    std::string::npos &&
+                menuReader.find("kConstructionWindowRva = 0x001202AEu") !=
+                    std::string::npos,
+            "instruction gates use image RVAs rather than .text-relative offsets");
     Require(listeners.find("markerObserver_->ObserveInternal") ==
                 std::string::npos &&
                 listeners.find("markerRenderer_->RenderInternal") ==
