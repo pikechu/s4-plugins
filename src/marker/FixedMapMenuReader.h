@@ -1,15 +1,25 @@
 #pragma once
 
+#include "completion/CompletionRecord.h"
 #include "diagnostics/ModuleInventory.h"
-#include "marker/BoundedMenuText.h"
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <string_view>
 
 namespace campaign_completion {
 
 inline constexpr std::size_t kMaximumInternalVisibleRows = 6u;
+
+struct BoundedRelativeIdentifier final {
+    std::array<wchar_t, kMaximumRelativeIdentityUnits + 1u> units{};
+    std::uint16_t length = 0u;
+
+    std::wstring_view view() const noexcept {
+        return {units.data(), length};
+    }
+};
 
 enum class FixedMapMenuReadStatus {
     Success,
@@ -19,7 +29,7 @@ enum class FixedMapMenuReadStatus {
     CountOutOfRange,
     ScrollOutOfRange,
     EntryUnreadable,
-    LabelInvalid,
+    RelativeIdentifierInvalid,
     ConcurrentMutation,
 };
 
@@ -33,7 +43,8 @@ struct FixedMapMenuMemoryView final {
 };
 
 struct FixedMapMenuSnapshot final {
-    std::array<BoundedWideText, kMaximumInternalVisibleRows> labels{};
+    std::array<BoundedRelativeIdentifier, kMaximumInternalVisibleRows>
+        relativeIdentifiers{};
     std::uint32_t entryCount = 0u;
     std::uint32_t scrollBase = 0u;
     std::size_t rowCount = 0u;

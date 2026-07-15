@@ -12,6 +12,7 @@ namespace campaign_completion {
 
 struct MarkerCandidate final {
     std::string stableId;
+    std::wstring relativeId;
     std::wstring displayName;
     FixedMapListKind listKind = FixedMapListKind::Unknown;
 };
@@ -36,6 +37,9 @@ public:
     MarkerMatchStatus Match(
         FixedMapListKind listKind,
         std::wstring_view rowLabel) const noexcept;
+    MarkerMatchStatus MatchRelative(
+        FixedMapListKind listKind,
+        std::wstring_view relativeIdentifier) const noexcept;
 
 private:
     mutable std::mutex mutex_;

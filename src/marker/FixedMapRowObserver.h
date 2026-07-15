@@ -2,6 +2,7 @@
 
 #include "marker/BoundedMenuText.h"
 #include "marker/CompletionMarkerIndex.h"
+#include "marker/FixedMapMenuReader.h"
 #include "runtime/PageObservation.h"
 
 #include <windows.h>
@@ -50,6 +51,7 @@ public:
     void ObservePages(const PageSnapshot& snapshot) noexcept;
     void ObserveListKind(FixedMapListKind kind) noexcept;
     void ObserveElement(const FixedMapRowObservation& element) noexcept;
+    void ObserveInternalMenu(const FixedMapMenuSnapshot& snapshot) noexcept;
     MarkerFrameCommands TakeFrame(DWORD page) noexcept;
     void Disable() noexcept;
 
@@ -75,6 +77,7 @@ private:
     FixedMapListKind listKind_ = FixedMapListKind::Unknown;
     bool exactPages_ = false;
     bool invalidFrame_ = false;
+    bool internalSnapshotActive_ = false;
     bool enabled_ = true;
 };
 

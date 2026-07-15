@@ -1,8 +1,11 @@
 #include "marker/FixedMapRowObserver.h"
 
+#include <algorithm>
 #include <array>
+#include <initializer_list>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 
 namespace {
@@ -78,6 +81,31 @@ void Admit(campaign_completion::FixedMapRowObserver& observer,
            campaign_completion::FixedMapListKind kind) {
     observer.ObservePages(FixedPages());
     observer.ObserveListKind(kind);
+}
+
+campaign_completion::FixedMapMenuSnapshot InternalMenu(
+    std::initializer_list<std::wstring_view> identifiers) {
+    using namespace campaign_completion;
+    if (identifiers.size() > kMaximumInternalVisibleRows) {
+        throw std::runtime_error("internal menu test exceeds six rows");
+    }
+    FixedMapMenuSnapshot snapshot{};
+    snapshot.status = FixedMapMenuReadStatus::Success;
+    snapshot.entryCount = static_cast<std::uint32_t>(identifiers.size());
+    snapshot.rowCount = identifiers.size();
+    std::size_t slot = 0u;
+    for (const auto identifier : identifiers) {
+        if (identifier.empty() ||
+            identifier.size() > kMaximumRelativeIdentityUnits) {
+            throw std::runtime_error("invalid internal menu test identifier");
+        }
+        auto& target = snapshot.relativeIdentifiers[slot];
+        std::copy(identifier.begin(), identifier.end(), target.units.begin());
+        target.units[identifier.size()] = L'\0';
+        target.length = static_cast<std::uint16_t>(identifier.size());
+        ++slot;
+    }
+    return snapshot;
 }
 
 }  // namespace
@@ -244,6 +272,54 @@ int RunFixedMapRowObserverTests() {
         observer.ObserveElement(Element("Aeneas"));
         Require(observer.TakeFrame(25u).count == 0u,
                 "Disable clears state and remains inert");
+    }
+
+    {
+        FixedMapRowObserver observer(index);
+        const auto initial = InternalMenu({
+            L"Map\\Singleplayer\\Aeneas.map",
+            L"Map\\Singleplayer\\AllGreen.map"});
+        observer.ObserveInternalMenu(initial);
+        Require(observer.TakeFrame(25u).count == 0u,
+                "internal rows cannot draw before exact pages settle");
+
+        observer.ObservePages(FixedPages());
+        observer.ObserveInternalMenu(initial);
+        auto frame = observer.TakeFrame(25u);
+        Require(frame.count == 1u && IsCommand(frame.commands[0], 0u),
+                "initial internal snapshot draws Aeneas without a GUI callback");
+        Require(observer.TakeFrame(25u).count == 1u,
+                "internal snapshot commands persist across redraw frames");
+
+        const auto scrolled = InternalMenu({
+            L"Map\\Singleplayer\\AllGreen.map",
+            L"map/singleplayer/AENEAS.map"});
+        observer.ObserveInternalMenu(scrolled);
+        frame = observer.TakeFrame(25u);
+        Require(frame.count == 1u && IsCommand(frame.commands[0], 1u),
+                "scroll snapshot moves Aeneas and clears its former slot");
+
+        observer.ObserveElement(Element("Atlas", 2u));
+        frame = observer.TakeFrame(25u);
+        Require(frame.count == 1u && IsCommand(frame.commands[0], 1u),
+                "public GUI observations cannot contaminate an internal frame");
+
+        FixedMapMenuSnapshot failed{};
+        failed.status = FixedMapMenuReadStatus::ConcurrentMutation;
+        observer.ObserveInternalMenu(failed);
+        Require(observer.TakeFrame(25u).count == 0u,
+                "an internal read failure clears the complete retained frame");
+
+        observer.ObserveListKind(FixedMapListKind::Custom);
+        observer.ObserveInternalMenu(
+            InternalMenu({L"Map\\User\\Antares.map"}));
+        frame = observer.TakeFrame(25u);
+        Require(frame.count == 1u && IsCommand(frame.commands[0], 0u),
+                "custom relative identifiers use only the custom completion index");
+
+        observer.ObservePages({{1u}, 1u});
+        Require(observer.TakeFrame(25u).count == 0u,
+                "leaving exact pages clears internal marker commands");
     }
 
     return 0;

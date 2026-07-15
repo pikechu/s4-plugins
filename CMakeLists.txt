@@ -45,6 +45,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/runtime/PluginPaths.cpp
     src/runtime/S4Listeners.cpp
     src/runtime/StopRequest.cpp
+    src/runtime/UiPageCycle.cpp
     src/resources/CompletionMarkerResources.rc
     src/victory/LaunchOrigin.cpp
     src/victory/MapSessionPolicy.cpp
@@ -115,6 +116,7 @@ add_executable(campaign_completion_tests
   tests/FixedMapRowObserverTests.cpp
   tests/CompletionMarkerGeometryTests.cpp
   tests/CompletionMarkerRendererTests.cpp
+  tests/UiPageCycleTests.cpp
   src/diagnostics/CaptureTrace.cpp
   src/diagnostics/Logger.cpp
   src/diagnostics/ModuleInventory.cpp
@@ -150,6 +152,7 @@ add_executable(campaign_completion_tests
   src/runtime/PageObservation.cpp
   src/runtime/PluginPaths.cpp
   src/runtime/StopRequest.cpp
+  src/runtime/UiPageCycle.cpp
   src/victory/LaunchOrigin.cpp
   src/victory/MapSessionPolicy.cpp
   src/victory/SettlementUiProbe.cpp

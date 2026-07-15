@@ -82,6 +82,12 @@ MarkerDrawCommand MakeCommand(
             element.width, element.height};
 }
 
+MarkerDrawCommand MakeCommand(std::size_t slot) noexcept {
+    return {kLogicalSurfaceWidth, kLogicalSurfaceHeight, kRowX,
+            static_cast<WORD>(kFirstRowY + kRowStride * slot),
+            kRowWidth, kRowHeight};
+}
+
 }  // namespace
 
 FixedMapRowObserver::FixedMapRowObserver(
@@ -125,7 +131,7 @@ void FixedMapRowObserver::ObserveElement(
     const FixedMapRowObservation& element) noexcept {
     try {
         std::lock_guard<std::mutex> lock(mutex_);
-        if (!enabled_ || invalidFrame_ ||
+        if (!enabled_ || internalSnapshotActive_ || invalidFrame_ ||
             !HasBaseRowSignature(element)) {
             return;
         }
@@ -176,12 +182,49 @@ void FixedMapRowObserver::ObserveElement(
     }
 }
 
+void FixedMapRowObserver::ObserveInternalMenu(
+    const FixedMapMenuSnapshot& snapshot) noexcept {
+    try {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (!enabled_ || !exactPages_) return;
+
+        retainedActive_.fill(false);
+        ClearPending();
+        internalSnapshotActive_ = true;
+        if (snapshot.status != FixedMapMenuReadStatus::Success ||
+            listKind_ == FixedMapListKind::Unknown ||
+            snapshot.rowCount > kMaximumVisibleFixedRows) {
+            return;
+        }
+        for (std::size_t slot = 0u; slot < snapshot.rowCount; ++slot) {
+            if (index_.MatchRelative(
+                    listKind_,
+                    snapshot.relativeIdentifiers[slot].view()) ==
+                MarkerMatchStatus::Unique) {
+                retained_[slot] = MakeCommand(slot);
+                retainedActive_[slot] = true;
+            }
+        }
+    } catch (...) {
+    }
+}
+
 MarkerFrameCommands FixedMapRowObserver::TakeFrame(DWORD page) noexcept {
     try {
         std::lock_guard<std::mutex> lock(mutex_);
         MarkerFrameCommands frame{};
         frame.generation = generation_;
         if (!enabled_ || !exactPages_ || page != 25u) return frame;
+
+        if (internalSnapshotActive_) {
+            for (std::size_t slot = 0u; slot < retained_.size(); ++slot) {
+                if (retainedActive_[slot]) {
+                    frame.commands[frame.count] = retained_[slot];
+                    ++frame.count;
+                }
+            }
+            return frame;
+        }
 
         if (invalidFrame_) {
             retainedActive_.fill(false);
@@ -228,6 +271,7 @@ void FixedMapRowObserver::Disable() noexcept {
 
 void FixedMapRowObserver::ClearFrame() noexcept {
     retainedActive_.fill(false);
+    internalSnapshotActive_ = false;
     ClearPending();
 }
 

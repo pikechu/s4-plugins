@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cstring>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 
 namespace {
@@ -137,6 +138,9 @@ struct MenuFixture final {
     std::array<std::uint32_t, 1000u> pointers{};
     std::array<Entry, 8u> entries{};
     std::array<wchar_t, 32u> heapName{};
+    std::array<wchar_t,
+               campaign_completion::kMaximumRelativeIdentityUnits + 1u>
+        longHeapName{};
 
     MenuFixture() {
         constexpr std::array<std::wstring_view, 8u> names{
@@ -185,18 +189,28 @@ int RunFixedMapMenuReaderTests() {
     Require(snapshot.status == FixedMapMenuReadStatus::Success &&
                 snapshot.entryCount == 8u && snapshot.scrollBase == 0u &&
                 snapshot.rowCount == 6u &&
-                snapshot.labels[0].view() == L"Aeneas" &&
-                snapshot.labels[5].view() == L"Eos",
-            "initial snapshot copies the first six labels without hovering");
-
+                snapshot.relativeIdentifiers[0].view() == L"Aeneas" &&
+                snapshot.relativeIdentifiers[5].view() == L"Eos",
+            "initial snapshot copies the first six identifiers without "
+            "hovering");
     const auto initial = snapshot;
+
+    const std::wstring longIdentifier(300u, L'x');
+    SetHeapName(menu.entries[0], menu.longHeapName, longIdentifier);
+    snapshot = ReadFixedMapMenuSnapshot(menu.View());
+    Require(snapshot.status == FixedMapMenuReadStatus::Success &&
+                snapshot.relativeIdentifiers[0].view() == longIdentifier,
+            "relative identifiers beyond the display-name limit are copied "
+            "losslessly");
+    SetName(menu.entries[0], L"Aeneas");
+
     menu.scroll = 2u;
     snapshot = ReadFixedMapMenuSnapshot(menu.View());
     Require(snapshot.status == FixedMapMenuReadStatus::Success &&
                 snapshot.rowCount == 6u &&
-                snapshot.labels[0].view() == L"Borea" &&
-                snapshot.labels[4].view() == L"Antares Prime" &&
-                snapshot.labels[5].view() == L"Gaia" &&
+                snapshot.relativeIdentifiers[0].view() == L"Borea" &&
+                snapshot.relativeIdentifiers[4].view() == L"Antares Prime" &&
+                snapshot.relativeIdentifiers[5].view() == L"Gaia" &&
                 !EqualFixedMapMenuSnapshot(initial, snapshot),
             "scroll base deterministically remaps all six visible slots");
 
@@ -229,16 +243,17 @@ int RunFixedMapMenuReaderTests() {
     const auto savedPointer = menu.pointers[0];
     menu.pointers[0] = 0u;
     Require(ReadFixedMapMenuSnapshot(menu.View()).status ==
-                FixedMapMenuReadStatus::LabelInvalid,
+                FixedMapMenuReadStatus::RelativeIdentifierInvalid,
             "a missing row entry rejects the entire snapshot");
     menu.pointers[0] = savedPointer;
 
     const auto savedLength = menu.entries[0].name.length;
     menu.entries[0].name.length = 0u;
     snapshot = ReadFixedMapMenuSnapshot(menu.View());
-    Require(snapshot.status == FixedMapMenuReadStatus::LabelInvalid &&
+    Require(snapshot.status ==
+                FixedMapMenuReadStatus::RelativeIdentifierInvalid &&
                 snapshot.rowCount == 0u && snapshot.entryCount == 0u,
-            "malformed text fails without publishing partial labels");
+            "malformed text fails without publishing partial identifiers");
     menu.entries[0].name.length = savedLength;
 
     auto unreadable = menu.View();

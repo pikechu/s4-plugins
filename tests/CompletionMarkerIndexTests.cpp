@@ -81,6 +81,17 @@ int RunCompletionMarkerIndexTests() {
     Require(index.Match(FixedMapListKind::Unknown, L"Aeneas") ==
                 MarkerMatchStatus::None,
             "unknown category must fail closed");
+    Require(index.MatchRelative(
+                FixedMapListKind::Single,
+                L"map/singleplayer/AENEAS.map") ==
+                MarkerMatchStatus::Unique,
+            "menu relative identifiers match across case and slash variants");
+    Require(index.MatchRelative(FixedMapListKind::Custom,
+                                L"Map\\Singleplayer\\Aeneas.map") ==
+                MarkerMatchStatus::None &&
+                index.MatchRelative(FixedMapListKind::Single, L"Aeneas") ==
+                    MarkerMatchStatus::None,
+            "relative matching rejects a wrong list and a display label");
 
     auto random = Antares();
     random.stableId = "map:random";
@@ -118,6 +129,10 @@ int RunCompletionMarkerIndexTests() {
     Require(index.Find(FixedMapListKind::Single, L"Aeneas").empty() &&
                 index.Find(FixedMapListKind::Custom, L"Antares").empty(),
             "ineligible and malformed records never enter the index");
+    Require(index.MatchRelative(FixedMapListKind::Custom,
+                                L"Map\\User\\Antares.map") ==
+                MarkerMatchStatus::None,
+            "random and other ineligible records never match by relative id");
 
     auto duplicate = Antares();
     duplicate.stableId = "map:map\\user\\sub\\antares.map";
@@ -130,6 +145,15 @@ int RunCompletionMarkerIndexTests() {
     Require(index.Match(FixedMapListKind::Custom, L"Antares") ==
                 MarkerMatchStatus::Ambiguous,
             "two indexed candidates with one display name must be ambiguous");
+
+    auto sameRelative = Antares();
+    sameRelative.stableId = "map:duplicate-relative";
+    ambiguous.records = {Antares(), sameRelative};
+    index.Publish(ambiguous);
+    Require(index.MatchRelative(FixedMapListKind::Custom,
+                                L"map/user/ANTARES.map") ==
+                MarkerMatchStatus::Ambiguous,
+            "duplicate relative candidates fail closed as ambiguous");
 
     CompletionDatabaseSnapshot replacement{};
     replacement.records = {Aeneas()};

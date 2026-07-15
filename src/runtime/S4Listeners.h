@@ -14,6 +14,7 @@
 #include "runtime/CallbackGate.h"
 #include "runtime/ListenerRemoval.h"
 #include "runtime/PageObservation.h"
+#include "runtime/UiPageCycle.h"
 #include "victory/LaunchOrigin.h"
 #include "victory/SettlementUiProbe.h"
 
@@ -137,6 +138,8 @@ private:
     CallbackGate callbackGate_;
     std::mutex mutex_;
     PageObservationWindow pageWindow_{1000};
+    UiPageCycleObservation pageCycle_{
+        S4_SCREEN_SINGLEPLAYER_MAPSELECT_USER};
     ListAttribution listAttribution_{kApprovedTabControls};
     RateLimiter mouseLimiter_{1000};
     RateLimiter guiLimiter_{1000};

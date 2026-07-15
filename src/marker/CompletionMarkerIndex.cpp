@@ -3,6 +3,7 @@
 #include <windows.h>
 
 #include <algorithm>
+#include <array>
 #include <limits>
 #include <optional>
 #include <utility>
@@ -44,6 +45,28 @@ bool EqualOrdinalInsensitive(std::wstring_view left,
     return CompareStringOrdinal(
                left.data(), static_cast<int>(left.size()), right.data(),
                static_cast<int>(right.size()), TRUE) == CSTR_EQUAL;
+}
+
+bool EqualPathOrdinalInsensitive(std::wstring_view left,
+                                 std::wstring_view right) noexcept {
+    if (left.size() != right.size() ||
+        left.size() > kMaximumRelativeIdentityUnits ||
+        left.size() > static_cast<std::size_t>(
+                          (std::numeric_limits<int>::max)())) {
+        return false;
+    }
+    std::array<wchar_t, kMaximumRelativeIdentityUnits> normalizedLeft{};
+    std::array<wchar_t, kMaximumRelativeIdentityUnits> normalizedRight{};
+    for (std::size_t index = 0u; index < left.size(); ++index) {
+        normalizedLeft[index] =
+            left[index] == L'/' ? L'\\' : left[index];
+        normalizedRight[index] =
+            right[index] == L'/' ? L'\\' : right[index];
+    }
+    return CompareStringOrdinal(
+               normalizedLeft.data(), static_cast<int>(left.size()),
+               normalizedRight.data(), static_cast<int>(right.size()),
+               TRUE) == CSTR_EQUAL;
 }
 
 bool HasMapExtension(std::wstring_view value) noexcept {
@@ -130,6 +153,9 @@ void CompletionMarkerIndex::Publish(
             const auto relative = StrictUtf8ToWide(record.relativeId);
             const auto displayName = StrictUtf8ToWide(record.displayName);
             if (!relative.has_value() || !displayName.has_value() ||
+                relative->empty() ||
+                relative->size() > kMaximumRelativeIdentityUnits ||
+                HasControlCharacter(*relative) ||
                 displayName->empty() ||
                 displayName->size() > kMaximumMarkerDisplayNameUnits ||
                 HasControlCharacter(*displayName)) {
@@ -141,7 +167,8 @@ void CompletionMarkerIndex::Publish(
                 continue;
             }
             candidate.push_back(
-                {record.stableId, std::move(*displayName), listKind});
+                {record.stableId, std::move(*relative),
+                 std::move(*displayName), listKind});
         }
 
         std::lock_guard<std::mutex> lock(mutex_);
@@ -188,6 +215,33 @@ MarkerMatchStatus CompletionMarkerIndex::Match(
             if (matched) {
                 return MarkerMatchStatus::Ambiguous;
             }
+            matched = true;
+        }
+        return matched ? MarkerMatchStatus::Unique
+                       : MarkerMatchStatus::None;
+    } catch (...) {
+        return MarkerMatchStatus::None;
+    }
+}
+
+MarkerMatchStatus CompletionMarkerIndex::MatchRelative(
+    FixedMapListKind listKind,
+    std::wstring_view relativeIdentifier) const noexcept {
+    if (listKind == FixedMapListKind::Unknown ||
+        relativeIdentifier.empty() ||
+        relativeIdentifier.size() > kMaximumRelativeIdentityUnits) {
+        return MarkerMatchStatus::None;
+    }
+    try {
+        bool matched = false;
+        std::lock_guard<std::mutex> lock(mutex_);
+        for (const auto& candidate : candidates_) {
+            if (candidate.listKind != listKind ||
+                !EqualPathOrdinalInsensitive(candidate.relativeId,
+                                             relativeIdentifier)) {
+                continue;
+            }
+            if (matched) return MarkerMatchStatus::Ambiguous;
             matched = true;
         }
         return matched ? MarkerMatchStatus::Unique

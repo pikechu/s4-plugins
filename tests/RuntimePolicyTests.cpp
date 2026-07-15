@@ -84,9 +84,10 @@ int RunRuntimePolicyTests() {
     const auto policy = ReadText(sourceRoot / "config" /
                                  "CampaignCompletionDebug.ini");
     for (const auto* required : {
-             "Version=0.6.1",
-             "DiagnosticMode=ReadOnlyInternalMenuDiagnostic",
+             "Version=0.6.2",
+             "DiagnosticMode=InternalMenuRelativeMarkerRendering",
              "InternalMenuReadOnly=1", "InternalMenuWrites=0",
+             "InternalMenuRendering=1", "PublicMarkerFallback=1",
              "MarkerCalibration=0",
              "NativeEventSubscription=1", "NativeTerminalEventId=609",
              "IdentitySource=SettlersUnitedLua",
@@ -125,10 +126,10 @@ int RunRuntimePolicyTests() {
                 "Plugins/CampaignCompletion/CampaignCompletionDebug.ini") !=
                 std::string::npos,
             "workflow must require the plugin-relative INI layout");
-    Require(runtime.find("version=0.6.1") != std::string::npos &&
-                runtime.find("mode=read-only-internal-menu-diagnostic") !=
+    Require(runtime.find("version=0.6.2") != std::string::npos &&
+                runtime.find("mode=internal-menu-relative-marker-rendering") !=
                     std::string::npos,
-            "runtime header identifies the read-only menu diagnostic");
+            "runtime header identifies relative-id marker rendering");
     for (const auto* forbidden : {
              "FixedMapLoadHook", "HlibCallPatchBackend", "HookSiteLayout",
              "fixedMapHook_", "hookBackend_", "originalInvoker_",
@@ -249,6 +250,7 @@ int RunRuntimePolicyTests() {
              "src/native/NativeEventAdmission.cpp",
              "src/native/NativeEventRegistration.cpp",
              "src/native/NativeVictoryEventSubscriber.cpp",
+             "src/runtime/UiPageCycle.cpp",
              "src/victory/VictoryEventProbe.cpp"}) {
         Require(asiSources.find(requiredSource) != std::string::npos,
                 "native event production source is missing from the ASI");
@@ -271,6 +273,10 @@ int RunRuntimePolicyTests() {
                                         "DirectDrawMarkerSurface.cpp");
     const auto menuReader = ReadText(sourceRoot / "src" / "marker" /
                                      "FixedMapMenuReader.cpp");
+    const auto rowObserver = ReadText(sourceRoot / "src" / "marker" /
+                                      "FixedMapRowObserver.cpp");
+    const auto markerIndex = ReadText(sourceRoot / "src" / "marker" /
+                                      "CompletionMarkerIndex.cpp");
     Require(listeners.find("RefineActiveSessionOrigin") !=
                     std::string::npos &&
                 listeners.find("identity->sessionId") != std::string::npos &&
@@ -372,7 +378,7 @@ int RunRuntimePolicyTests() {
                 std::string::npos,
             "public GUI-element observer remains the settlement source");
     Require(listeners.find(
-                "markerObserver_->ObservePages(snapshot.value())") !=
+                "markerObserver_->ObservePages(cycleSnapshot.value())") !=
                 std::string::npos &&
                 listeners.find(
                     "markerObserver_->ObserveListKind(listKind)") !=
@@ -382,13 +388,13 @@ int RunRuntimePolicyTests() {
                 std::string::npos &&
                 listeners.find("markerRenderer_->Render(") !=
                     std::string::npos,
-            "public page, tab, and frame evidence reaches marker rendering");
+            "cycle page, tab, and frame evidence reaches marker rendering");
     Require(runtime.find("AdmitFixedMapMenuMemory(*executable)") !=
                     std::string::npos &&
                 listeners.find("ReadFixedMapMenuSnapshot(") !=
                     std::string::npos &&
                 listeners.find("internal-menu status=") != std::string::npos,
-            "the exact executable gate feeds diagnostic-only bounded snapshots");
+            "the exact executable gate feeds bounded menu snapshots");
     Require(menuReader.find("kRenderWindowRva = 0x0008D660u") !=
                     std::string::npos &&
                 menuReader.find("kScrollWindowRva = 0x0008E700u") !=
@@ -396,11 +402,27 @@ int RunRuntimePolicyTests() {
                 menuReader.find("kConstructionWindowRva = 0x001202AEu") !=
                     std::string::npos,
             "instruction gates use image RVAs rather than .text-relative offsets");
-    Require(listeners.find("markerObserver_->ObserveInternal") ==
-                std::string::npos &&
-                listeners.find("markerRenderer_->RenderInternal") ==
+    Require(listeners.find(
+                "markerObserver_->ObserveInternalMenu(snapshot)") !=
+                    std::string::npos &&
+                rowObserver.find("index_.MatchRelative(") !=
+                    std::string::npos &&
+                markerIndex.find("CompletionMarkerIndex::MatchRelative(") !=
                     std::string::npos,
-            "internal menu snapshots are not connected to marker drawing");
+            "relative menu snapshots atomically feed marker row commands");
+    Require((listeners + rowObserver + markerIndex)
+                    .find("CompletionKindFor(") == std::string::npos &&
+                (listeners + rowObserver + markerIndex)
+                    .find("BuildStableMapId(") == std::string::npos,
+            "render integration cannot create or classify completion identity");
+    const auto cycleObserve = listeners.find("pageCycle_.Observe(page)");
+    const auto internalObserve = listeners.find("ObserveInternalMenu(page)");
+    const auto renderTake = listeners.find("markerObserver_->TakeFrame(page)");
+    Require(cycleObserve != std::string::npos &&
+                internalObserve != std::string::npos &&
+                renderTake != std::string::npos &&
+                cycleObserve < internalObserve && internalObserve < renderTake,
+            "exact cycle gating and internal replacement precede final rendering");
     for (const auto* forbiddenWrite : {
              "WriteProcessMemory", "VirtualProtect", "VirtualProtectEx",
              "CreateRemoteThread", "SetWindowLong", "SendInput",

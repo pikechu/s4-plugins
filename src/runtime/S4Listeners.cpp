@@ -91,8 +91,8 @@ const char* InternalMenuStatusName(FixedMapMenuReadStatus status) noexcept {
             return "scroll-out-of-range";
         case FixedMapMenuReadStatus::EntryUnreadable:
             return "entry-unreadable";
-        case FixedMapMenuReadStatus::LabelInvalid:
-            return "label-invalid";
+        case FixedMapMenuReadStatus::RelativeIdentifierInvalid:
+            return "relative-identifier-invalid";
         case FixedMapMenuReadStatus::ConcurrentMutation:
             return "concurrent-mutation";
     }
@@ -206,6 +206,7 @@ ListenerStopResult S4Listeners::Stop() {
     lastFixedMapMenuSnapshot_ = {};
     exactFixedMapPages_ = false;
     hasFixedMapMenuSnapshot_ = false;
+    pageCycle_.Reset();
     activeOrigin_ = {};
     activeSessionId_ = 0u;
     inGameSeen_ = false;
@@ -278,6 +279,18 @@ void S4Listeners::ObserveUiFrame(DWORD page,
     const auto now = GetTickCount64();
     ServiceNativeSubscription();
     std::lock_guard<std::mutex> lock(mutex_);
+    const auto cycleSnapshot = pageCycle_.Observe(page);
+    if (cycleSnapshot.has_value()) {
+        exactFixedMapPages_ = HasExactFixedMapPages(cycleSnapshot.value());
+        listAttribution_.ObservePages(cycleSnapshot.value());
+        if (markerObserver_ != nullptr) {
+            markerObserver_->ObservePages(cycleSnapshot.value());
+        }
+        if (!exactFixedMapPages_) {
+            hasFixedMapMenuSnapshot_ = false;
+            lastFixedMapMenuSnapshot_ = {};
+        }
+    }
     ObserveInternalMenu(page);
     if (markerObserver_ != nullptr && markerRenderer_ != nullptr) {
         const auto frame = markerObserver_->TakeFrame(page);
@@ -300,15 +313,6 @@ void S4Listeners::ObserveUiFrame(DWORD page,
         return;
     }
     currentPage_ = snapshot->primaryPage;
-    listAttribution_.ObservePages(snapshot.value());
-    exactFixedMapPages_ = HasExactFixedMapPages(snapshot.value());
-    if (!exactFixedMapPages_) {
-        hasFixedMapMenuSnapshot_ = false;
-        lastFixedMapMenuSnapshot_ = {};
-    }
-    if (markerObserver_ != nullptr) {
-        markerObserver_->ObservePages(snapshot.value());
-    }
     std::ostringstream message;
     message << "ui-pages active=";
     for (std::size_t index = 0; index < snapshot->activePages.size(); ++index) {
@@ -323,11 +327,14 @@ void S4Listeners::ObserveUiFrame(DWORD page,
 
 void S4Listeners::ObserveInternalMenu(DWORD page) {
     if (page != S4_SCREEN_SINGLEPLAYER_MAPSELECT_USER ||
-        !exactFixedMapPages_ ||
-        logger_ == nullptr || !fixedMapMenuMemory_.admitted) {
+        !exactFixedMapPages_ || !fixedMapMenuMemory_.admitted) {
         return;
     }
     const auto snapshot = ReadFixedMapMenuSnapshot(fixedMapMenuMemory_);
+    if (markerObserver_ != nullptr) {
+        markerObserver_->ObserveInternalMenu(snapshot);
+    }
+    if (logger_ == nullptr) return;
     if (hasFixedMapMenuSnapshot_ &&
         EqualFixedMapMenuSnapshot(lastFixedMapMenuSnapshot_, snapshot)) {
         return;
@@ -342,7 +349,8 @@ void S4Listeners::ObserveInternalMenu(DWORD page) {
                 << " scroll=" << snapshot.scrollBase << " rows=";
         for (std::size_t slot = 0u; slot < snapshot.rowCount; ++slot) {
             if (slot != 0u) message << '|';
-            message << slot << ':' << Utf8(snapshot.labels[slot].view());
+            message << slot << ':'
+                    << Utf8(snapshot.relativeIdentifiers[slot].view());
         }
     }
     logger_->Write(snapshot.status == FixedMapMenuReadStatus::Success

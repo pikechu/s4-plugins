@@ -92,9 +92,9 @@ bool DiagnosticRuntime::Start(HMODULE module) {
     }
 
     std::ostringstream header;
-    header << "CampaignCompletionDebug bootstrap version=0.6.1 pid="
+    header << "CampaignCompletionDebug bootstrap version=0.6.2 pid="
            << GetCurrentProcessId()
-           << " mode=read-only-internal-menu-diagnostic";
+           << " mode=internal-menu-relative-marker-rendering";
     logger_.Write(LogLevel::Info, header.str());
     const auto modules = EnumerateLoadedModules();
     const ModuleInfo* executable = nullptr;

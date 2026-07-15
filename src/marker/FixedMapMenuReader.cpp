@@ -19,7 +19,7 @@ constexpr std::uintptr_t kScrollWindowRva = 0x0008E700u;
 constexpr std::uintptr_t kConstructionWindowRva = 0x001202AEu;
 constexpr std::uint32_t kMinimumApprovedImageSize = 0x012BF000u;
 constexpr std::uint32_t kMaximumEntries = 1000u;
-constexpr std::uintptr_t kDisplayNameOffset = 0x18u;
+constexpr std::uintptr_t kRelativeIdentifierOffset = 0x18u;
 
 #pragma pack(push, 1)
 struct MsvcX86WideStringLayout final {
@@ -131,18 +131,21 @@ bool IsControl(wchar_t unit) noexcept {
     return value <= 0x1Fu || (value >= 0x7Fu && value <= 0x9Fu);
 }
 
-bool CaptureLabel(std::uint32_t entryAddress,
-                  BoundedWideText& output) noexcept {
+bool CaptureRelativeIdentifier(
+    std::uint32_t entryAddress,
+    BoundedRelativeIdentifier& output) noexcept {
     if (entryAddress == 0u ||
         entryAddress > (std::numeric_limits<std::uint32_t>::max)() -
-                           kDisplayNameOffset) {
+                           kRelativeIdentifierOffset) {
         return false;
     }
     const auto* object = reinterpret_cast<const void*>(
-        static_cast<std::uintptr_t>(entryAddress) + kDisplayNameOffset);
+        static_cast<std::uintptr_t>(entryAddress) +
+        kRelativeIdentifierOffset);
     MsvcX86WideStringLayout header{};
     if (!CopyProtected(&header, object, sizeof(header)) ||
-        header.length == 0u || header.length > kMaximumMarkerTextUnits ||
+        header.length == 0u ||
+        header.length > kMaximumRelativeIdentityUnits ||
         header.length > header.capacity || header.capacity >= 0x00100000u) {
         return false;
     }
@@ -153,7 +156,7 @@ bool CaptureLabel(std::uint32_t entryAddress,
         storage = header.storage.pointer32;
     }
     const auto count = static_cast<std::size_t>(header.length) + 1u;
-    BoundedWideText candidate{};
+    BoundedRelativeIdentifier candidate{};
     if (!CopyProtected(candidate.units.data(),
                        reinterpret_cast<const void*>(storage),
                        count * sizeof(wchar_t)) ||
@@ -317,8 +320,11 @@ FixedMapMenuSnapshot ReadFixedMapMenuSnapshot(
             RejectSnapshot(result, FixedMapMenuReadStatus::EntryUnreadable);
             return result;
         }
-        if (!CaptureLabel(entry, result.labels[slot])) {
-            RejectSnapshot(result, FixedMapMenuReadStatus::LabelInvalid);
+        if (!CaptureRelativeIdentifier(
+                entry, result.relativeIdentifiers[slot])) {
+            RejectSnapshot(
+                result,
+                FixedMapMenuReadStatus::RelativeIdentifierInvalid);
             return result;
         }
     }
@@ -340,7 +346,8 @@ bool EqualFixedMapMenuSnapshot(const FixedMapMenuSnapshot& left,
         left.scrollBase != right.scrollBase ||
         left.rowCount != right.rowCount) return false;
     for (std::size_t slot = 0u; slot < left.rowCount; ++slot) {
-        if (left.labels[slot].view() != right.labels[slot].view()) return false;
+        if (left.relativeIdentifiers[slot].view() !=
+            right.relativeIdentifiers[slot].view()) return false;
     }
     return true;
 }
