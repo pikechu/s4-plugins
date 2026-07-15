@@ -2,6 +2,10 @@
 
 #include <stdexcept>
 #include <string>
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -48,6 +52,34 @@ public:
     int beginCalls = 0;
     int drawCalls = 0;
     int endCalls = 0;
+};
+
+class BlockingSurface final
+    : public campaign_completion::IMarkerDrawingSurface {
+public:
+    bool Describe(LPDIRECTDRAWSURFACE7,
+                  campaign_completion::MarkerSurfaceExtent& extent) noexcept
+        override {
+        extent = {800u, 600u};
+        return true;
+    }
+    bool Begin(LPDIRECTDRAWSURFACE7) noexcept override {
+        std::unique_lock<std::mutex> lock(mutex);
+        began = true;
+        changed.notify_all();
+        changed.wait(lock, [this] { return released; });
+        return true;
+    }
+    bool DrawOutlinedCheck(
+        const campaign_completion::MarkerCheckGeometry&) noexcept override {
+        return true;
+    }
+    bool End() noexcept override { return true; }
+
+    std::mutex mutex;
+    std::condition_variable changed;
+    bool began = false;
+    bool released = false;
 };
 
 campaign_completion::MarkerDrawCommand Row(std::size_t slot) {
@@ -164,6 +196,49 @@ int RunCompletionMarkerRendererTests() {
         }
         Require(transient == 2u && terminal == 1u,
                 "transient logs are rate-limited and terminal disable logs once");
+    }
+
+    {
+        BlockingSurface surface;
+        CompletionMarkerRenderer renderer(surface, {});
+        MarkerRenderStatus renderStatus = MarkerRenderStatus::Skipped;
+        std::thread rendering([&] {
+            renderStatus = renderer.Render(destination, 0, Frame(1u), 0u);
+        });
+        {
+            std::unique_lock<std::mutex> lock(surface.mutex);
+            surface.changed.wait(lock, [&surface] { return surface.began; });
+        }
+        std::mutex disableMutex;
+        std::condition_variable disableChanged;
+        bool disableFinished = false;
+        std::thread disabling([&] {
+            renderer.Disable();
+            {
+                std::lock_guard<std::mutex> lock(disableMutex);
+                disableFinished = true;
+            }
+            disableChanged.notify_all();
+        });
+        bool disableRacedWithRender = false;
+        {
+            std::unique_lock<std::mutex> lock(disableMutex);
+            disableRacedWithRender = disableChanged.wait_for(
+                lock, std::chrono::milliseconds(100),
+                [&disableFinished] { return disableFinished; });
+        }
+        {
+            std::lock_guard<std::mutex> lock(surface.mutex);
+            surface.released = true;
+        }
+        surface.changed.notify_all();
+        rendering.join();
+        disabling.join();
+        Require(!disableRacedWithRender &&
+                    renderStatus == MarkerRenderStatus::Drawn &&
+                    renderer.Render(destination, 0, Frame(1u), 1u) ==
+                        MarkerRenderStatus::Disabled,
+                "Disable waits for an in-flight render before disabling");
     }
 
     return 0;

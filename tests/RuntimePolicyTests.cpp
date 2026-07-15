@@ -175,6 +175,13 @@ int RunRuntimePolicyTests() {
     Require(runtimeHeader.find("MarkerCalibrationTrace") == std::string::npos &&
                 runtimeHeader.find("FixedMapRowCalibration") == std::string::npos,
             "runtime no longer owns Phase 5A calibration components");
+    const auto observerHeader = ReadText(sourceRoot / "src" / "marker" /
+                                         "FixedMapRowObserver.h");
+    const auto rendererHeader = ReadText(sourceRoot / "src" / "marker" /
+                                         "CompletionMarkerRenderer.h");
+    Require(observerHeader.find("std::mutex mutex_") != std::string::npos &&
+                rendererHeader.find("std::mutex mutex_") != std::string::npos,
+            "observer and renderer synchronize Disable with active callbacks");
     const auto storeLoad = runtime.find("const auto load = store_->Load()");
     const auto markerIndexPublish = runtime.find(
         "markerIndex_->Publish(store_->Snapshot())", storeLoad);
