@@ -96,7 +96,8 @@ void FixedMapRowObserver::ObservePages(
         const bool exact = HasExactFixedMapPages(snapshot);
         if (exact == exactPages_) return;
         exactPages_ = exact;
-        listKind_ = FixedMapListKind::Unknown;
+        listKind_ = exact ? FixedMapListKind::Single
+                          : FixedMapListKind::Unknown;
         ClearFrame();
     } catch (...) {
     }
@@ -133,6 +134,7 @@ void FixedMapRowObserver::ObserveElement(
             InvalidateFrame();
             return;
         }
+        observedSlots_[slot] = true;
 
         BoundedWideText label{};
         if (!DecodeMenuTextLossless(element.text, label) ||
@@ -173,15 +175,31 @@ MarkerFrameCommands FixedMapRowObserver::TakeFrame(DWORD page) noexcept {
         frame.generation = generation_;
         if (!enabled_ || page != 25u) return frame;
 
-        if (!invalidFrame_) {
+        if (invalidFrame_) {
+            retainedActive_.fill(false);
+        } else {
+            for (std::size_t slot = 0u; slot < observedSlots_.size(); ++slot) {
+                if (observedSlots_[slot]) retainedActive_[slot] = false;
+            }
             for (std::size_t index = 0u; index < pendingCount_; ++index) {
                 if (!pending_[index].ambiguous) {
-                    frame.commands[frame.count] = pending_[index].command;
-                    ++frame.count;
+                    const auto& command = pending_[index].command;
+                    const auto delta =
+                        static_cast<unsigned>(command.y - kFirstRowY);
+                    const auto slot =
+                        static_cast<std::size_t>(delta / kRowStride);
+                    retained_[slot] = command;
+                    retainedActive_[slot] = true;
                 }
             }
         }
-        ClearFrame();
+        for (std::size_t slot = 0u; slot < retained_.size(); ++slot) {
+            if (retainedActive_[slot]) {
+                frame.commands[frame.count] = retained_[slot];
+                ++frame.count;
+            }
+        }
+        ClearPending();
         return frame;
     } catch (...) {
         return {};
@@ -201,7 +219,13 @@ void FixedMapRowObserver::Disable() noexcept {
 }
 
 void FixedMapRowObserver::ClearFrame() noexcept {
+    retainedActive_.fill(false);
+    ClearPending();
+}
+
+void FixedMapRowObserver::ClearPending() noexcept {
     pendingCount_ = 0u;
+    observedSlots_.fill(false);
     invalidFrame_ = false;
     ++generation_;
 }

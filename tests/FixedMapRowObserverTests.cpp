@@ -108,8 +108,19 @@ int RunFixedMapRowObserverTests() {
         const auto frame = observer.TakeFrame(25u);
         Require(frame.count == 1u && IsCommand(frame.commands[0], 0u),
                 "the final page-25 layer consumes the calibrated Aeneas row");
+        Require(observer.TakeFrame(25u).count == 1u,
+                "a validated visible row redraws on every later frame");
+        observer.ObserveElement(Element("AllGreen"));
         Require(observer.TakeFrame(25u).count == 0u,
-                "a consumed frame clears all row state");
+                "a newly observed incomplete row clears only its slot");
+    }
+
+    {
+        FixedMapRowObserver observer(index);
+        observer.ObservePages(FixedPages());
+        observer.ObserveElement(Element("Aeneas"));
+        Require(observer.TakeFrame(25u).count == 1u,
+                "first entry defaults safely to the visible single-map tab");
     }
 
     {
@@ -148,8 +159,10 @@ int RunFixedMapRowObserverTests() {
         rejected[7].valueLink = 2418u;
         rejected[8].textStyle = 3u;
         for (const auto& element : rejected) {
-            observer.ObserveElement(element);
-            Require(observer.TakeFrame(25u).count == 0u,
+            FixedMapRowObserver rejectedObserver(index);
+            Admit(rejectedObserver, FixedMapListKind::Single);
+            rejectedObserver.ObserveElement(element);
+            Require(rejectedObserver.TakeFrame(25u).count == 0u,
                     "every mismatch in the calibrated signature fails closed");
         }
     }

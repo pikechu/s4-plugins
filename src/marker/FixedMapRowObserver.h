@@ -61,11 +61,15 @@ private:
     };
 
     void ClearFrame() noexcept;
+    void ClearPending() noexcept;
     void InvalidateFrame() noexcept;
 
     const CompletionMarkerIndex& index_;
     std::mutex mutex_;
     std::array<PendingRow, kMaximumVisibleFixedRows> pending_{};
+    std::array<MarkerDrawCommand, kMaximumVisibleFixedRows> retained_{};
+    std::array<bool, kMaximumVisibleFixedRows> retainedActive_{};
+    std::array<bool, kMaximumVisibleFixedRows> observedSlots_{};
     std::size_t pendingCount_ = 0u;
     std::uint64_t generation_ = 0u;
     FixedMapListKind listKind_ = FixedMapListKind::Unknown;
