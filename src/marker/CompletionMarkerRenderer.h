@@ -9,6 +9,7 @@
 #include <functional>
 #include <mutex>
 #include <string>
+#include <string_view>
 
 namespace campaign_completion {
 
@@ -26,6 +27,15 @@ public:
 
 enum class MarkerRenderStatus { Skipped, Drawn, Failed, Disabled };
 
+enum class MarkerRenderFailureStage {
+    Input,
+    Describe,
+    Geometry,
+    Begin,
+    Draw,
+    End,
+};
+
 class CompletionMarkerRenderer final {
 public:
     using LogSink = std::function<void(LogLevel, std::string)>;
@@ -37,8 +47,9 @@ public:
     void Disable() noexcept;
 
 private:
-    MarkerRenderStatus Fail(std::uint64_t nowMs) noexcept;
-    void SafeLog(std::string line) noexcept;
+    MarkerRenderStatus Fail(MarkerRenderFailureStage stage,
+                            std::uint64_t nowMs) noexcept;
+    void SafeLog(std::string_view line) noexcept;
     IMarkerDrawingSurface& surface_;
     LogSink log_;
     std::mutex mutex_;
