@@ -84,9 +84,9 @@ int RunRuntimePolicyTests() {
     const auto policy = ReadText(sourceRoot / "config" /
                                  "CampaignCompletionDebug.ini");
     for (const auto* required : {
-             "Version=0.5.0",
-             "DiagnosticMode=FixedMapRowCalibration",
-             "MarkerCalibration=1",
+             "Version=0.6.0",
+             "DiagnosticMode=CompletionMarkerRendering",
+             "MarkerCalibration=0",
              "NativeEventSubscription=1", "NativeTerminalEventId=609",
              "IdentitySource=SettlersUnitedLua",
              "PublicSettlementUiProbe=1", "LaunchOriginTracking=1",
@@ -94,9 +94,9 @@ int RunRuntimePolicyTests() {
              "GameDefaultGameEndCheckCalls=0", "HookCount=0",
              "CodePatchBytes=0", "LuaWrites=0", "GameDataWrites=0",
              "CompletionDetection=1", "CompletionStorage=1",
-             "CompletionMarkers=0", "CaptureTraceRoot="}) {
+             "CompletionMarkers=1", "CaptureTraceRoot="}) {
         Require(policy.find(required) != std::string::npos,
-                "phase 5A INI policy field missing");
+                "phase 5B INI policy field missing");
     }
     Require(policy.find("CaptureTraceRoot=F:") == std::string::npos,
             "packaged trace root must remain empty");
@@ -124,10 +124,10 @@ int RunRuntimePolicyTests() {
                 "Plugins/CampaignCompletion/CampaignCompletionDebug.ini") !=
                 std::string::npos,
             "workflow must require the plugin-relative INI layout");
-    Require(runtime.find("version=0.5.0") != std::string::npos &&
-                runtime.find("mode=fixed-map-row-calibration") !=
+    Require(runtime.find("version=0.6.0") != std::string::npos &&
+                runtime.find("mode=completion-marker-rendering") !=
                     std::string::npos,
-            "runtime header identifies fixed-map row calibration");
+            "runtime header identifies completion-marker rendering");
     for (const auto* forbidden : {
              "FixedMapLoadHook", "HlibCallPatchBackend", "HookSiteLayout",
              "fixedMapHook_", "hookBackend_", "originalInvoker_",
@@ -152,29 +152,38 @@ int RunRuntimePolicyTests() {
                 runtimeHeader.find("CompletionAdmission") !=
                     std::string::npos,
             "runtime owns completion persistence in dependency-safe storage layers");
-    const auto markerTraceOwner =
-        runtimeHeader.find("std::unique_ptr<MarkerCalibrationTrace>");
     const auto markerIndexOwner =
         runtimeHeader.find("std::unique_ptr<CompletionMarkerIndex>");
-    const auto markerCalibrationOwner =
-        runtimeHeader.find("std::unique_ptr<FixedMapRowCalibration>");
-    Require(markerTraceOwner != std::string::npos &&
-                markerIndexOwner != std::string::npos &&
-                markerCalibrationOwner != std::string::npos &&
-                markerTraceOwner < markerIndexOwner &&
-                markerIndexOwner < markerCalibrationOwner,
-            "runtime owns marker calibration dependencies in safe order");
+    const auto markerObserverOwner =
+        runtimeHeader.find("std::unique_ptr<FixedMapRowObserver>");
+    const auto markerSurfaceOwner =
+        runtimeHeader.find("std::unique_ptr<DirectDrawMarkerSurface>");
+    const auto markerRendererOwner =
+        runtimeHeader.find("std::unique_ptr<CompletionMarkerRenderer>");
+    const auto workerOwner =
+        runtimeHeader.find("std::unique_ptr<CompletionWorker>");
+    Require(markerIndexOwner != std::string::npos &&
+                markerObserverOwner != std::string::npos &&
+                markerSurfaceOwner != std::string::npos &&
+                markerRendererOwner != std::string::npos &&
+                workerOwner != std::string::npos &&
+                markerIndexOwner < markerObserverOwner &&
+                markerObserverOwner < markerSurfaceOwner &&
+                markerSurfaceOwner < markerRendererOwner &&
+                markerRendererOwner < workerOwner,
+            "runtime owns marker rendering dependencies in safe order");
+    Require(runtimeHeader.find("MarkerCalibrationTrace") == std::string::npos &&
+                runtimeHeader.find("FixedMapRowCalibration") == std::string::npos,
+            "runtime no longer owns Phase 5A calibration components");
     const auto storeLoad = runtime.find("const auto load = store_->Load()");
-    const auto markerTraceOpen = runtime.find(
-        "markerTrace_->Open(paths_->dataDirectory, GetCurrentProcessId())",
-        storeLoad);
     const auto markerIndexPublish = runtime.find(
         "markerIndex_->Publish(store_->Snapshot())", storeLoad);
     Require(storeLoad != std::string::npos &&
-                markerTraceOpen != std::string::npos &&
                 markerIndexPublish != std::string::npos &&
-                storeLoad < markerTraceOpen && storeLoad < markerIndexPublish,
-            "successful store load seeds project-local marker calibration");
+                storeLoad < markerIndexPublish &&
+                runtime.find("markerIndex_->Publish(snapshot)",
+                             markerIndexPublish) != std::string::npos,
+            "successful load and committed snapshots feed the same marker index");
     Require(runtimeHeader.find("S4LuaApi") != std::string::npos &&
                 runtimeHeader.find("S4LuaMapBridge") != std::string::npos &&
                 runtimeHeader.find("MapIdentityCoordinator") !=
@@ -187,26 +196,26 @@ int RunRuntimePolicyTests() {
     const auto coordinatorDisable = runtime.find("coordinator_->Disable()");
     const auto originDisable = runtime.find("origin_.Disable()");
     const auto settlementDisable = runtime.find("settlement_.Disable()");
-    const auto markerDisable =
-        runtime.find("markerCalibration_->Disable()", settlementDisable);
+    const auto markerObserverDisable =
+        runtime.find("markerObserver_->Disable()", settlementDisable);
+    const auto markerRendererDisable =
+        runtime.find("markerRenderer_->Disable()", settlementDisable);
     const auto listenerStop = runtime.find("listeners_.Stop()",
                                             settlementDisable);
     const auto traceClose = runtime.find("phase3Trace_.Close()", listenerStop);
-    const auto markerTraceClose =
-        runtime.find("markerTrace_->Close()", listenerStop);
     Require(coordinatorDisable != std::string::npos &&
                 originDisable != std::string::npos &&
                 settlementDisable != std::string::npos &&
                 listenerStop != std::string::npos &&
                 coordinatorDisable < listenerStop &&
                 originDisable < listenerStop && settlementDisable < listenerStop &&
-                markerDisable != std::string::npos && markerDisable < listenerStop,
-            "calibration components are disabled before public listener stop");
+                markerObserverDisable != std::string::npos &&
+                markerObserverDisable < listenerStop &&
+                markerRendererDisable != std::string::npos &&
+                markerRendererDisable < listenerStop,
+            "marker components are disabled before public listener stop");
     Require(traceClose != std::string::npos && listenerStop < traceClose,
             "phase 3 trace closes after public listeners");
-    Require(markerTraceClose != std::string::npos &&
-                listenerStop < markerTraceClose,
-            "marker calibration trace closes after public listeners");
 
     const auto cmake = ReadText(sourceRoot / "CMakeLists.txt");
     const auto asiBegin = cmake.find("add_library(CampaignCompletionDebug");
@@ -222,9 +231,12 @@ int RunRuntimePolicyTests() {
              "src/completion/CompletionStore.cpp",
              "src/completion/CompletionWorker.cpp",
              "src/completion/Win32CompletionFileOps.cpp",
-             "src/diagnostics/MarkerCalibrationTrace.cpp",
+             "src/marker/BoundedMenuText.cpp",
+             "src/marker/CompletionMarkerGeometry.cpp",
              "src/marker/CompletionMarkerIndex.cpp",
-             "src/marker/FixedMapRowCalibration.cpp",
+             "src/marker/CompletionMarkerRenderer.cpp",
+             "src/marker/DirectDrawMarkerSurface.cpp",
+             "src/marker/FixedMapRowObserver.cpp",
              "src/native/NativeEventAdmission.cpp",
              "src/native/NativeEventRegistration.cpp",
              "src/native/NativeVictoryEventSubscriber.cpp",
@@ -234,15 +246,20 @@ int RunRuntimePolicyTests() {
     }
     for (const auto* forbiddenSource : {
              "HookSiteLayout.cpp", "FixedMapLoadHook.cpp",
-             "HlibCallPatchBackend.cpp", "MsvcX86WideString.cpp"}) {
+             "HlibCallPatchBackend.cpp", "MsvcX86WideString.cpp",
+             "MarkerCalibrationTrace.cpp", "FixedMapRowCalibration.cpp"}) {
         Require(asiSources.find(forbiddenSource) == std::string::npos,
-                "Hook-era source must not be linked into the 0.2.5 ASI");
+                "forbidden calibration or Hook-era source is linked into the ASI");
     }
+    Require(cmake.find("Gdi32") != std::string::npos,
+            "marker rendering target links Gdi32");
 
     const auto listeners = ReadText(sourceRoot / "src" / "runtime" /
                                     "S4Listeners.cpp");
     const auto listenerHeader = ReadText(sourceRoot / "src" / "runtime" /
                                          "S4Listeners.h");
+    const auto markerSurface = ReadText(sourceRoot / "src" / "marker" /
+                                        "DirectDrawMarkerSurface.cpp");
     Require(listeners.find("RefineActiveSessionOrigin") !=
                     std::string::npos &&
                 listeners.find("identity->sessionId") != std::string::npos &&
@@ -259,12 +276,16 @@ int RunRuntimePolicyTests() {
                     std::string::npos,
             "listener start receives native subscriber and probe");
     Require(listenerHeader.find(
-                "FixedMapRowCalibration& markerCalibration") !=
+                "FixedMapRowObserver& markerObserver") !=
                 std::string::npos &&
                 listenerHeader.find(
-                    "FixedMapRowCalibration* markerCalibration_") !=
+                    "CompletionMarkerRenderer& markerRenderer") !=
+                    std::string::npos &&
+                listenerHeader.find("FixedMapRowObserver* markerObserver_") !=
+                    std::string::npos &&
+                listenerHeader.find("CompletionMarkerRenderer* markerRenderer_") !=
                     std::string::npos,
-            "listener receives but does not own marker calibration");
+            "listener receives but does not own marker rendering components");
     Require(listenerHeader.find(
                 "DispatchUiFrame(DWORD page, LPDIRECTDRAWSURFACE7 surface,") !=
                 std::string::npos &&
@@ -340,19 +361,21 @@ int RunRuntimePolicyTests() {
                 std::string::npos,
             "public GUI-element observer remains the settlement source");
     Require(listeners.find(
-                "markerCalibration_->ObservePages(snapshot.value())") !=
+                "markerObserver_->ObservePages(snapshot.value())") !=
                 std::string::npos &&
                 listeners.find(
-                    "markerCalibration_->ObserveListKind(listKind)") !=
-                    std::string::npos &&
+                    "markerObserver_->ObserveListKind(listKind)") !=
+                std::string::npos &&
                 listeners.find(
-                    "markerCalibration_->ObserveFrame(page, pillarboxWidth)") !=
+                    "markerObserver_->TakeFrame(page)") !=
+                std::string::npos &&
+                listeners.find("markerRenderer_->Render(") !=
                     std::string::npos,
-            "public page, tab, and frame evidence reaches marker calibration");
+            "public page, tab, and frame evidence reaches marker rendering");
     Require(listeners.find(
-                "CopyBoundedGuiText(element->text, copiedText)") !=
+                "CopyBoundedGuiText(element->text, feature.text)") !=
                 std::string::npos &&
-                listeners.find("markerCalibration_->ObserveElement(feature)") !=
+                listeners.find("markerObserver_->ObserveElement(feature)") !=
                     std::string::npos,
             "GUI text is copied through the bounded public-field helper");
     auto listenersWithoutTextStyle = listeners;
@@ -367,15 +390,24 @@ int RunRuntimePolicyTests() {
                 listeners.find("element->tooltipText") == std::string::npos &&
                 listeners.find("element->tooltipExtraText") ==
                     std::string::npos,
-            "calibration reads only the bounded map-label text pointer");
+            "rendering reads only the bounded map-label text pointer");
     for (const auto* forbiddenMarkerDrawing : {
              "CreateCustomUiElement", "AddGuiBltListener(",
-             "IDirectDrawSurface7::GetDC", "DrawIcon", "Polyline",
-             "CompletionMarkerRenderer"}) {
+             "IDirectDrawSurface7::GetDC", "DrawIcon", "Polyline"}) {
         Require((runtime + runtimeHeader + listeners + listenerHeader)
                     .find(forbiddenMarkerDrawing) == std::string::npos,
-                "phase 5A must not link or call marker drawing");
+                "drawing and custom controls stay outside runtime/listeners");
     }
+    Require(markerSurface.find("GetDC") != std::string::npos &&
+                markerSurface.find("ReleaseDC") != std::string::npos &&
+                markerSurface.find("Polyline") != std::string::npos,
+            "DirectDraw marker surface exclusively owns GDI drawing calls");
+    Require(workflow.find("--config Release") != std::string::npos &&
+                workflow.find("-C Release") != std::string::npos &&
+                workflow.find("build/Release") != std::string::npos &&
+                workflow.find("CampaignCompletionDebug-Win32") !=
+                    std::string::npos,
+            "workflow builds, tests, and packages Release under the stable artifact name");
     Require(listeners.find("AddLuaOpenListener(&OnLuaOpen)") !=
                 std::string::npos,
             "public LuaOpen listener must be registered");

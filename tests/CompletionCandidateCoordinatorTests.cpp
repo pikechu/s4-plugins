@@ -1,4 +1,5 @@
 #include "completion/CompletionCandidateCoordinator.h"
+#include "marker/CompletionMarkerIndex.h"
 #include "victory/MapSessionPolicy.h"
 
 #include <stdexcept>
@@ -183,6 +184,31 @@ int RunCompletionCandidateCoordinatorTests() {
                 randomCandidate->record.mapKind == CompletionMapKind::Random &&
                 randomCandidate->record.stableId == "map:rd_lcgsdr30",
             "recordable random victory emits a hidden-kind record");
+
+    CompletionCandidateCoordinator rdNamedFixed(
+        [] { return std::string("2026-07-14T02:08:30Z"); });
+    const LaunchOriginSnapshot customOrigin{
+        LaunchSource::SinglePlayerCustomMap, SessionEligibility::Eligible};
+    rdNamedFixed.BeginSession(16u, customOrigin);
+    Require(!rdNamedFixed.ObserveIdentity(
+                {16u, L"RD_PlayerSave", L"Map\\User\\Antares.map"},
+                customOrigin),
+            "RD-prefixed player save name waits for victory");
+    const auto rdNamedCandidate = rdNamedFixed.ObserveVictory(
+        Event(16u, NativeLocalResult::Won));
+    Require(rdNamedCandidate.has_value() &&
+                rdNamedCandidate->record.mapKind == CompletionMapKind::Fixed &&
+                rdNamedCandidate->record.launchSource ==
+                    LaunchSource::SinglePlayerCustomMap &&
+                rdNamedCandidate->record.displayName == "Antares",
+            "confirmed relative path, not RD-prefixed save name, defines the fixed record");
+    CompletionDatabaseSnapshot rdNamedSnapshot{};
+    rdNamedSnapshot.records.push_back(rdNamedCandidate->record);
+    CompletionMarkerIndex rdNamedIndex;
+    rdNamedIndex.Publish(rdNamedSnapshot);
+    Require(rdNamedIndex.Match(FixedMapListKind::Custom, L"Antares") ==
+                MarkerMatchStatus::Unique,
+            "RD-prefixed save name leaves the fixed-list marker enabled");
 
     CompletionCandidateCoordinator disabled(
         [] { return std::string("2026-07-14T02:09:00Z"); });
