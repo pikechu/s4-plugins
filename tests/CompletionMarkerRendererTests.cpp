@@ -132,23 +132,53 @@ int RunCompletionMarkerRendererTests() {
 
     {
         FakeSurface surface;
-        CompletionMarkerRenderer renderer(surface, {});
+        std::vector<std::pair<LogLevel, std::string>> logs;
+        CompletionMarkerRenderer renderer(
+            surface, [&logs](LogLevel level, std::string line) {
+                logs.emplace_back(level, std::move(line));
+            });
         auto invalid = Frame(2u);
         invalid.commands[1].logicalSurfaceWidth = 100u;
         Require(renderer.Render(destination, 0, invalid, 0u) ==
                     MarkerRenderStatus::Failed &&
-                    surface.describeCalls == 1 && surface.beginCalls == 0,
-                "invalid geometry drops the whole frame before Begin");
+                    surface.describeCalls == 1 && surface.beginCalls == 0 &&
+                    logs.size() == 1u &&
+                    logs[0].second ==
+                        "completion-marker-renderer frame-failed stage=geometry",
+                "invalid geometry reports its bounded failure stage");
+    }
+
+    {
+        FakeSurface surface;
+        surface.describeResult = false;
+        std::vector<std::pair<LogLevel, std::string>> logs;
+        CompletionMarkerRenderer renderer(
+            surface, [&logs](LogLevel level, std::string line) {
+                logs.emplace_back(level, std::move(line));
+            });
+        Require(renderer.Render(destination, 0, Frame(1u), 0u) ==
+                    MarkerRenderStatus::Failed &&
+                    logs.size() == 1u &&
+                    logs[0].second ==
+                        "completion-marker-renderer frame-failed stage=describe",
+                "surface description failure is distinguishable");
     }
 
     {
         FakeSurface surface;
         surface.drawResult = false;
-        CompletionMarkerRenderer renderer(surface, {});
+        std::vector<std::pair<LogLevel, std::string>> logs;
+        CompletionMarkerRenderer renderer(
+            surface, [&logs](LogLevel level, std::string line) {
+                logs.emplace_back(level, std::move(line));
+            });
         Require(renderer.Render(destination, 0, Frame(1u), 0u) ==
                     MarkerRenderStatus::Failed &&
-                    surface.drawCalls == 1 && surface.endCalls == 1,
-                "a draw failure still closes the backend pass");
+                    surface.drawCalls == 1 && surface.endCalls == 1 &&
+                    logs.size() == 1u &&
+                    logs[0].second ==
+                        "completion-marker-renderer frame-failed stage=draw",
+                "a draw failure closes the pass and reports its stage");
         surface.drawResult = true;
         Require(renderer.Render(destination, 0, Frame(1u), 1u) ==
                     MarkerRenderStatus::Drawn,
@@ -159,6 +189,22 @@ int RunCompletionMarkerRendererTests() {
                     renderer.Render(destination, 0, Frame(1u), 3u) ==
                         MarkerRenderStatus::Failed,
                 "two failures after a success do not disable rendering");
+    }
+
+    {
+        FakeSurface surface;
+        surface.endResult = false;
+        std::vector<std::pair<LogLevel, std::string>> logs;
+        CompletionMarkerRenderer renderer(
+            surface, [&logs](LogLevel level, std::string line) {
+                logs.emplace_back(level, std::move(line));
+            });
+        Require(renderer.Render(destination, 0, Frame(1u), 0u) ==
+                    MarkerRenderStatus::Failed &&
+                    logs.size() == 1u &&
+                    logs[0].second ==
+                        "completion-marker-renderer frame-failed stage=end",
+                "surface release failure is distinguishable");
     }
 
     {
@@ -186,11 +232,11 @@ int RunCompletionMarkerRendererTests() {
         std::size_t terminal = 0u;
         for (const auto& log : logs) {
             transient += log.second ==
-                                 "completion-marker-renderer frame-failed"
+                                 "completion-marker-renderer frame-failed stage=begin"
                              ? 1u
                              : 0u;
             terminal += log.second ==
-                                "completion-marker-renderer disabled failures=3"
+                                "completion-marker-renderer disabled failures=3 last-stage=begin"
                             ? 1u
                             : 0u;
         }
