@@ -43,7 +43,7 @@ All locations are RVAs from the loaded `S4_Main.exe` base:
 | entry array | `0x00e97848` | `1000` bounded 32-bit entry pointers |
 | entry count | `0x0109c1d8` | `0..1000` initialized entries |
 | array alias | `0x0109c1e0` | must equal image base + entry-array RVA |
-| display name | entry `+0x18` | MSVC x86 `std::wstring`, bounded copy |
+| relative identifier | entry `+0x18` | MSVC x86 `std::wstring`, bounded copy |
 
 The reviewed renderer at VMA `0x0048d600` computes each presented item as
 `entry_array[scroll_base + row]`. The wheel callback at VMA `0x0048e600`
@@ -59,8 +59,8 @@ active, the adapter:
 
 1. reads the array alias, count, and scroll base;
 2. validates their fixed bounds and checked address arithmetic;
-3. copies at most six display names through bounded readable-range and SEH
-   guards into project-owned fixed buffers;
+3. copies at most six relative identifiers through bounded readable-range and
+   SEH guards into project-owned fixed buffers;
 4. rereads the alias, count, and scroll base;
 5. publishes the snapshot only if both header reads are identical.
 
@@ -71,11 +71,13 @@ the entire snapshot.
 ## Diagnostic checkpoint
 
 The first candidate is diagnostic-only. It logs a bounded record when the
-accepted `(count, scroll base, visible labels)` snapshot changes. It does not
+accepted `(count, scroll base, visible identifiers)` snapshot changes. It does not
 use the internal snapshot for drawing. Live acceptance must prove:
 
-- initial entry reports Aeneas in slot 0 without hovering a map row;
-- each scroll reports the same six labels visible on screen in the same order;
+- initial entry reports `Map\Singleplayer\Aeneas.map` in slot 0 without
+  hovering a map row;
+- each scroll reports the six relative identifiers corresponding to the same
+  visible rows in the same order;
 - scrolling back reports the original mapping;
 - Single, Multiplayer, and Custom tab changes produce their own current list;
 - leaving the exact page set stops all internal snapshots;
@@ -86,9 +88,11 @@ replace public row-label observations with these read-only snapshots.
 
 ## Identity and RD rule
 
-The adapter supplies presentation labels and visible slots only. It never
-creates or persists completion identity. Marker eligibility continues to come
-from `CompletionMarkerIndex`, built from the validated normalized
-`identity.relative` value. A player save/display name such as `RD_PlayerSave`
-cannot classify a fixed map as random; a true `RD_...` relative identifier
-remains random and hidden from fixed-list markers.
+The adapter supplies menu-relative identifiers and visible slots only. It never
+creates, classifies, or persists completion identity. Marker eligibility
+continues to come from validated normalized `identity.relative` records. A
+future rendering adapter may compare a menu-relative identifier with that
+index, but may not promote the menu value into session identity. A player
+save/display name such as `RD_PlayerSave` cannot classify a fixed map as
+random; a true `RD_...` relative identifier remains random and hidden from
+fixed-list markers.
