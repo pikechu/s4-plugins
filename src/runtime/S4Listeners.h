@@ -7,7 +7,8 @@
 #include "identity/ListAttribution.h"
 #include "identity/MapIdentityCoordinator.h"
 #include "lua/SuLuaMapBridge.h"
-#include "marker/FixedMapRowCalibration.h"
+#include "marker/CompletionMarkerRenderer.h"
+#include "marker/FixedMapRowObserver.h"
 #include "native/NativeVictoryEventSubscriber.h"
 #include "runtime/CallbackGate.h"
 #include "runtime/ListenerRemoval.h"
@@ -57,7 +58,8 @@ public:
                VictoryEventProbe& victoryProbe,
                CompletionAdmission& completionAdmission,
                Phase3Trace& phase3Trace,
-               FixedMapRowCalibration& markerCalibration);
+               FixedMapRowObserver& markerObserver,
+               CompletionMarkerRenderer& markerRenderer);
     ListenerStopResult Stop();
 
 private:
@@ -124,7 +126,8 @@ private:
     VictoryEventProbe* victoryProbe_ = nullptr;
     CompletionAdmission* completionAdmission_ = nullptr;
     Phase3Trace* phase3Trace_ = nullptr;
-    FixedMapRowCalibration* markerCalibration_ = nullptr;
+    FixedMapRowObserver* markerObserver_ = nullptr;
+    CompletionMarkerRenderer* markerRenderer_ = nullptr;
     std::vector<S4HOOK> hooks_;
     CallbackGate callbackGate_;
     std::mutex mutex_;

@@ -5,6 +5,25 @@
 #include <utility>
 
 namespace campaign_completion {
+namespace {
+
+std::wstring_view FixedDisplayName(std::wstring_view relative,
+                                   std::wstring_view fallback) noexcept {
+    if (relative.size() <= 4u ||
+        CompareStringOrdinal(relative.data() + relative.size() - 4u, 4,
+                             L".map", 4, TRUE) != CSTR_EQUAL) {
+        return fallback;
+    }
+    const auto separator = relative.find_last_of(L"\\/");
+    const std::size_t first =
+        separator == std::wstring_view::npos ? 0u : separator + 1u;
+    if (first >= relative.size() - 4u) {
+        return fallback;
+    }
+    return relative.substr(first, relative.size() - first - 4u);
+}
+
+}  // namespace
 
 CompletionCandidateCoordinator::CompletionCandidateCoordinator(Clock clock)
     : clock_(std::move(clock)) {}
@@ -84,7 +103,11 @@ CompletionCandidateCoordinator::TryComplete() noexcept {
     try {
         const auto stableId = BuildStableMapId(identity_->relative);
         const auto relativeId = WideToStrictUtf8(identity_->relative);
-        const auto displayName = WideToStrictUtf8(identity_->name);
+        const auto mapKind = CompletionKindFor(identity_->relative);
+        const auto displayName = WideToStrictUtf8(
+            mapKind == CompletionMapKind::Fixed
+                ? FixedDisplayName(identity_->relative, identity_->name)
+                : std::wstring_view(identity_->name));
         const std::string completedAtUtc = clock_();
         if (!stableId.has_value() || !relativeId.has_value() ||
             !displayName.has_value() ||
@@ -97,7 +120,7 @@ CompletionCandidateCoordinator::TryComplete() noexcept {
         candidate.record.stableId = *stableId;
         candidate.record.relativeId = *relativeId;
         candidate.record.displayName = *displayName;
-        candidate.record.mapKind = CompletionKindFor(identity_->relative);
+        candidate.record.mapKind = mapKind;
         candidate.record.launchSource = origin_.source;
         candidate.record.completedAtUtc = completedAtUtc;
         emitted_ = true;

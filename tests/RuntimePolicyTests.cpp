@@ -402,6 +402,21 @@ int RunRuntimePolicyTests() {
                 markerSurface.find("ReleaseDC") != std::string::npos &&
                 markerSurface.find("Polyline") != std::string::npos,
             "DirectDraw marker surface exclusively owns GDI drawing calls");
+    Require(listenerHeader.find("LPS4GUIDRAWBLTPARAMS marker") ==
+                std::string::npos &&
+                listenerHeader.find("LPCS4UIELEMENT marker") ==
+                    std::string::npos,
+            "listeners retain no raw GUI pointer for marker rendering");
+    for (const auto* markerFile : {
+             "BoundedMenuText.cpp", "CompletionMarkerGeometry.cpp",
+             "CompletionMarkerRenderer.cpp", "DirectDrawMarkerSurface.cpp",
+             "FixedMapRowObserver.cpp"}) {
+        const auto markerSource = ReadText(sourceRoot / "src" / "marker" /
+                                           markerFile);
+        Require(markerSource.find("std::filesystem") == std::string::npos &&
+                    markerSource.find("CompletionJson") == std::string::npos,
+                "render-path marker sources perform no filesystem or JSON work");
+    }
     Require(workflow.find("--config Release") != std::string::npos &&
                 workflow.find("-C Release") != std::string::npos &&
                 workflow.find("build/Release") != std::string::npos &&
@@ -478,5 +493,16 @@ int RunRuntimePolicyTests() {
                 drain < drainFailureReturn &&
                 drainFailureReturn < workerReset,
             "drain timeout must retain worker and store ownership for later retry");
+    const auto rendererReset = runtime.find("markerRenderer_.reset()", workerReset);
+    const auto surfaceReset = runtime.find("markerSurface_.reset()", rendererReset);
+    const auto observerReset = runtime.find("markerObserver_.reset()", surfaceReset);
+    const auto indexReset = runtime.find("markerIndex_.reset()", observerReset);
+    Require(rendererReset != std::string::npos &&
+                surfaceReset != std::string::npos &&
+                observerReset != std::string::npos &&
+                indexReset != std::string::npos &&
+                workerReset < rendererReset && rendererReset < surfaceReset &&
+                surfaceReset < observerReset && observerReset < indexReset,
+            "shutdown destroys worker, renderer, surface, observer, and index safely");
     return 0;
 }

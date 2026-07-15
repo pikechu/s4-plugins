@@ -76,12 +76,28 @@ $requiredCompletionFiles = @(
     'src/completion/CompletionWorker.cpp',
     'src/completion/Win32CompletionFileOps.cpp'
 )
+$requiredMarkerFiles = @(
+    'src/marker/BoundedMenuText.cpp',
+    'src/marker/CompletionMarkerGeometry.cpp',
+    'src/marker/CompletionMarkerIndex.cpp',
+    'src/marker/CompletionMarkerRenderer.cpp',
+    'src/marker/DirectDrawMarkerSurface.cpp',
+    'src/marker/FixedMapRowObserver.cpp'
+)
 foreach ($file in $requiredCompletionFiles) {
     $count = [regex]::Matches(
         $targetBody, [regex]::Escape($file),
         [Text.RegularExpressions.RegexOptions]::IgnoreCase).Count
     if ($count -ne 1) {
         throw "Required completion source must be linked exactly once: $file (found $count)"
+    }
+}
+foreach ($file in $requiredMarkerFiles) {
+    $count = [regex]::Matches(
+        $targetBody, [regex]::Escape($file),
+        [Text.RegularExpressions.RegexOptions]::IgnoreCase).Count
+    if ($count -ne 1) {
+        throw "Required marker source must be linked exactly once: $file (found $count)"
     }
 }
 foreach ($file in $requiredNativeFiles) {
@@ -121,6 +137,12 @@ $hookEraFiles = @(
 foreach ($file in $hookEraFiles) {
     if ($targetBody.IndexOf($file, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
         throw "Hook-era source is linked into CampaignCompletionDebug: $file"
+    }
+}
+foreach ($file in @('src/diagnostics/MarkerCalibrationTrace.cpp',
+                     'src/marker/FixedMapRowCalibration.cpp')) {
+    if ($targetBody.IndexOf($file, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+        throw "Phase 5A calibration source is linked into CampaignCompletionDebug: $file"
     }
 }
 

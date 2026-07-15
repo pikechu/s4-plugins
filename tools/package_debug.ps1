@@ -15,6 +15,9 @@ if ($requestedOutput -ne $expectedOutput) {
 }
 
 $build = [IO.Path]::GetFullPath((Join-Path (Get-Location) $BuildDirectory))
+if ((Split-Path -Leaf $build) -ne "Release") {
+    throw "BuildDirectory must select the Release configuration"
+}
 $asi = Join-Path $build "CampaignCompletionDebug.asi"
 $configuration = Join-Path $repository "config/CampaignCompletionDebug.ini"
 if (-not (Test-Path -LiteralPath $asi -PathType Leaf)) {

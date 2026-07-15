@@ -14,7 +14,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/diagnostics/CaptureTrace.cpp
     src/diagnostics/Logger.cpp
     src/diagnostics/ModuleInventory.cpp
-    src/diagnostics/MarkerCalibrationTrace.cpp
     src/diagnostics/Phase3Trace.cpp
     src/completion/CompletionRecord.cpp
     src/completion/CompletionAdmission.cpp
@@ -35,7 +34,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/marker/CompletionMarkerRenderer.cpp
     src/marker/DirectDrawMarkerSurface.cpp
     src/marker/FixedMapRowObserver.cpp
-    src/marker/FixedMapRowCalibration.cpp
     src/native/NativeEventAdmission.cpp
     src/native/NativeEventRegistration.cpp
     src/native/NativeVictoryEventSubscriber.cpp

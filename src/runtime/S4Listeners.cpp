@@ -82,7 +82,8 @@ bool S4Listeners::Start(S4API api, Logger& logger,
                         VictoryEventProbe& victoryProbe,
                         CompletionAdmission& completionAdmission,
                         Phase3Trace& phase3Trace,
-                        FixedMapRowCalibration& markerCalibration) {
+                        FixedMapRowObserver& markerObserver,
+                        CompletionMarkerRenderer& markerRenderer) {
     coordinator_ = &coordinator;
     bridge_ = &bridge;
     origin_ = &origin;
@@ -91,7 +92,8 @@ bool S4Listeners::Start(S4API api, Logger& logger,
     victoryProbe_ = &victoryProbe;
     completionAdmission_ = &completionAdmission;
     phase3Trace_ = &phase3Trace;
-    markerCalibration_ = &markerCalibration;
+    markerObserver_ = &markerObserver;
+    markerRenderer_ = &markerRenderer;
     return StartPublicListeners(api, logger);
 }
 
@@ -147,7 +149,8 @@ ListenerStopResult S4Listeners::Stop() {
     victoryProbe_ = nullptr;
     completionAdmission_ = nullptr;
     phase3Trace_ = nullptr;
-    markerCalibration_ = nullptr;
+    markerObserver_ = nullptr;
+    markerRenderer_ = nullptr;
     activeOrigin_ = {};
     activeSessionId_ = 0u;
     inGameSeen_ = false;
@@ -217,15 +220,15 @@ HRESULT S4HCALL S4Listeners::OnGuiElement(LPS4GUIDRAWBLTPARAMS element, BOOL) {
 void S4Listeners::ObserveUiFrame(DWORD page,
                                  LPDIRECTDRAWSURFACE7 surface,
                                  INT32 pillarboxWidth) {
-    (void)surface;
     const auto now = GetTickCount64();
     ServiceNativeSubscription();
     std::lock_guard<std::mutex> lock(mutex_);
+    if (markerObserver_ != nullptr && markerRenderer_ != nullptr) {
+        const auto frame = markerObserver_->TakeFrame(page);
+        markerRenderer_->Render(surface, pillarboxWidth, frame, now);
+    }
     if (origin_ != nullptr) {
         origin_->ObservePage(page, now);
-    }
-    if (markerCalibration_ != nullptr) {
-        markerCalibration_->ObserveFrame(page, pillarboxWidth);
     }
     if (page == S4_SCREEN_INGAME) {
         inGameSeen_ = true;
@@ -242,8 +245,8 @@ void S4Listeners::ObserveUiFrame(DWORD page,
     }
     currentPage_ = snapshot->primaryPage;
     listAttribution_.ObservePages(snapshot.value());
-    if (markerCalibration_ != nullptr) {
-        markerCalibration_->ObservePages(snapshot.value());
+    if (markerObserver_ != nullptr) {
+        markerObserver_->ObservePages(snapshot.value());
     }
     std::ostringstream message;
     message << "ui-pages active=";
@@ -472,8 +475,8 @@ void S4Listeners::ObserveMouse(DWORD button, INT x, INT y, DWORD message,
         const auto listKind = listAttribution_.Current();
         if (message == WM_LBUTTONUP &&
             listKind != FixedMapListKind::Unknown) {
-            if (markerCalibration_ != nullptr) {
-                markerCalibration_->ObserveListKind(listKind);
+            if (markerObserver_ != nullptr) {
+                markerObserver_->ObserveListKind(listKind);
             }
             if (coordinator_ != nullptr) {
                 coordinator_->ObserveListKind(listKind, now);
@@ -526,8 +529,8 @@ void S4Listeners::ObserveGuiElement(LPS4GUIDRAWBLTPARAMS element) {
         feature.backTexture = element->backTexture;
         settlement_->Observe(feature);
     }
-    if (element != nullptr && markerCalibration_ != nullptr) {
-        MarkerGuiElement feature{};
+    if (element != nullptr && markerObserver_ != nullptr) {
+        FixedMapRowObservation feature{};
         feature.surfaceWidth = element->surfaceWidth;
         feature.surfaceHeight = element->surfaceHeight;
         feature.containerType = element->containerType;
@@ -537,10 +540,8 @@ void S4Listeners::ObserveGuiElement(LPS4GUIDRAWBLTPARAMS element) {
         feature.height = element->height;
         feature.valueLink = element->valueLink;
         feature.textStyle = static_cast<WORD>(element->textStyle);
-        std::string copiedText;
-        if (CopyBoundedGuiText(element->text, copiedText)) {
-            feature.text = std::move(copiedText);
-            markerCalibration_->ObserveElement(feature);
+        if (CopyBoundedGuiText(element->text, feature.text)) {
+            markerObserver_->ObserveElement(feature);
         }
     }
     if (!guiLimiter_.Allow(now) || logger_ == nullptr) {

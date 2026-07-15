@@ -24,16 +24,16 @@ jobs:
         run: ./tools/test_settlers_united_artifact.ps1
 
       - name: Configure Win32
-        run: cmake -S . -B build -A Win32 -DCMAKE_BUILD_TYPE=Debug
+        run: cmake -S . -B build -A Win32 -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build build --config Debug --parallel
+        run: cmake --build build --config Release --parallel
 
-      - name: Verify native event calibration policy
+      - name: Verify completion marker rendering policy
         shell: pwsh
         run: |
           ./tools/verify_no_process_patch.ps1 `
-            -Binary build/Debug/CampaignCompletionDebug.asi `
+            -Binary build/Release/CampaignCompletionDebug.asi `
             -SourceRoot .
 
       - name: Reject forbidden behavior fixtures
@@ -50,7 +50,7 @@ jobs:
             $accepted = $true
             try {
               ./tools/verify_no_process_patch.ps1 `
-                -Binary build/Debug/CampaignCompletionDebug.asi `
+                -Binary build/Release/CampaignCompletionDebug.asi `
                 -SourceRoot $root
             } catch {
               $accepted = $false
@@ -104,16 +104,16 @@ jobs:
           }
 
       - name: Test
-        run: ctest --test-dir build -C Debug --output-on-failure
+        run: ctest --test-dir build -C Release --output-on-failure
 
       - name: Package
         shell: pwsh
-        run: ./tools/package_debug.ps1 -BuildDirectory build/Debug -OutputDirectory dist
+        run: ./tools/package_debug.ps1 -BuildDirectory build/Release -OutputDirectory dist
 
       - name: Verify PE32 and package contents
         shell: pwsh
         run: |
-          $asi = "build/Debug/CampaignCompletionDebug.asi"
+          $asi = "build/Release/CampaignCompletionDebug.asi"
           if (-not (Test-Path $asi)) { throw "ASI missing" }
           $bytes = [IO.File]::ReadAllBytes($asi)
           $pe = [BitConverter]::ToInt32($bytes, 0x3c)
