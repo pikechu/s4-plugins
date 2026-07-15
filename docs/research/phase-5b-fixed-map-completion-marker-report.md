@@ -4,21 +4,23 @@ Date: 2026-07-15 (Asia/Shanghai)
 
 ## Status
 
-Static implementation, code review, Release CI, and artifact audit are complete.
-The candidate is ready for an explicit deployment decision, but it has not
-been deployed. Live navigation, rendering, shutdown, and same-process refresh
-acceptance remain pending and no live GO/NO-GO has been assigned.
+Static implementation, code review, Release CI, artifact audit, and guarded
+deployment are complete. Live navigation, rendering, shutdown, and
+same-process refresh acceptance remain pending and no live GO/NO-GO has been
+assigned.
 
 ## Scope and authorization boundary
 
 - Development remained on `main` as requested.
 - No intermediate Task 2-5 build was deployed.
-- No game or Settlers United file was modified during development or audit.
+- No game or Settlers United file was modified during development or artifact
+  audit. Deployment occurred only after the user confirmed both protected
+  processes were closed and explicitly approved the audited Phase 5B candidate.
 - `artifacts/` and `research/evidence/save-samples/` remained untracked and
   were not staged, deleted, or rewritten.
-- Any replacement of the installed project ASI/INI or Settlers United archive
-  still requires fresh explicit user approval and the established guarded
-  backup/replacement procedure.
+- The guarded deployment modified only the installed project INI and the exact
+  Settlers United `Plugin_SU.zip` replacement target. No process was started or
+  terminated by the deployment.
 
 ## Implementation checkpoints
 
@@ -151,15 +153,49 @@ temporary Settlers United archive integration test also passed. Local
 `dumpbin` remained unavailable; the successful CI policy verifier performed
 the export, PE32, production-source membership, and forbidden-mutation audit.
 
+## Guarded deployment
+
+The user confirmed that `S4_Main` and Settlers United were closed and explicitly
+approved deployment of the audited Phase 5B candidate. Preflight found zero
+protected processes and verified the installed archive against its prior
+metadata before any write:
+
+- prior installed archive SHA-256:
+  `2770385ae23e3caf6c8f6c786b4d8c9903fb979f1363ef56e3552fb40aa41745`;
+- immutable original archive SHA-256:
+  `807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265`;
+- prior live INI SHA-256:
+  `d90a2a0014769567abbcec4be8a2eab6a66289a1732578c3a828ed31f9a2a220`;
+- completion database SHA-256:
+  `31edf4f486d7e0078efa23d958482ebc23ffadda2b555c73b5f49b2493756b1f`.
+
+The complete eight-file live configuration was copied and verified
+file-by-file before deployment at:
+
+`research/backups/campaign-completion/2026-07-15-pre-v0.6.0-completion-markers/Plugins/CampaignCompletion/`
+
+The established guarded Settlers United installer replaced only the project
+ASI entry in `Plugin_SU.zip`; the project INI was installed through an atomic
+same-directory replacement. Independent post-deployment verification found:
+
+| Installed item | Result |
+| --- | --- |
+| `Plugin_SU.zip` | 1,377,638 bytes; SHA-256 `997e6146c70d7f3c0314dff99f864e3d3b1e9c251ab6509d95bd437f74fc473d` |
+| embedded `Plugins/CampaignCompletionDebug.asi` | SHA-256 `b5db2bf25b4c4ee0a4de195b686a8dedefbe5b5e26661362ad7e28cff83527e4` |
+| live `CampaignCompletionDebug.ini` | SHA-256 `4f8aa0962482b6bc4dd63f91bd5734d749dbe436656084733a176dd9afff6c83` |
+| live `completed_maps.json` | unchanged; SHA-256 `31edf4f486d7e0078efa23d958482ebc23ffadda2b555c73b5f49b2493756b1f` |
+
+The installed archive has ten ZIP entries including two directory entries.
+The ASI is its only changed entry; all other nine entries are byte-identical to
+the immutable original. The original archive remained unchanged, all seven
+non-INI live configuration files matched the verified backup, both authorized
+temporary siblings were absent, and the protected-process count remained zero.
+Deployment evidence is retained untracked at
+`artifacts/phase-5b-completion-markers/run-29391467302/deployment-result.json`.
+
 ## Deployment and live acceptance gates
 
-Deployment has not occurred. Before any installation, the user must explicitly
-approve it and confirm both the game and Settlers United are closed. The guarded
-procedure must then verify the current installed archive against prior metadata,
-preserve the immutable original archive SHA-256
-`807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265`,
-back up and hash the complete project-owned configuration, and replace only the
-approved project artifacts.
+Deployment is complete and independently verified. This is not yet a live GO.
 
 Live GO additionally requires the planned navigation/hover/selection/scrolling
 checks, the zero-marker control, normal input and shutdown behavior, and a
