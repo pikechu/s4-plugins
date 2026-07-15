@@ -30,6 +30,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
     src/lua/LuaApi.cpp
     src/lua/SuLuaMapBridge.cpp
     src/marker/BoundedMenuText.cpp
+    src/marker/CompletionMarkerGeometry.cpp
     src/marker/CompletionMarkerIndex.cpp
     src/marker/FixedMapRowObserver.cpp
     src/marker/FixedMapRowCalibration.cpp
@@ -134,6 +135,7 @@ add_executable(campaign_completion_tests
   src/identity/SuMapValue.cpp
   src/lua/SuLuaMapBridge.cpp
   src/marker/BoundedMenuText.cpp
+  src/marker/CompletionMarkerGeometry.cpp
   src/marker/CompletionMarkerIndex.cpp
   src/marker/FixedMapRowObserver.cpp
   src/marker/FixedMapRowCalibration.cpp
