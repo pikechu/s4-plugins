@@ -2,6 +2,7 @@
 
 #include <array>
 #include <mutex>
+#include <sstream>
 #include <utility>
 
 namespace campaign_completion {
@@ -70,7 +71,8 @@ MarkerRenderStatus CompletionMarkerRenderer::Render(
                 frame.commands[index], pillarboxWidth, extent.width,
                 extent.height);
             if (!built.has_value()) {
-                return Fail(MarkerRenderFailureStage::Geometry, nowMs);
+                return Fail(MarkerRenderFailureStage::Geometry, nowMs,
+                            &frame.commands[index], pillarboxWidth, extent);
             }
             geometry[index] = *built;
         }
@@ -105,10 +107,28 @@ void CompletionMarkerRenderer::Disable() noexcept {
 }
 
 MarkerRenderStatus CompletionMarkerRenderer::Fail(
-    MarkerRenderFailureStage stage, std::uint64_t nowMs) noexcept {
+    MarkerRenderFailureStage stage, std::uint64_t nowMs,
+    const MarkerDrawCommand* row, INT32 pillarboxWidth,
+    MarkerSurfaceExtent extent) noexcept {
     ++failures_;
     if (!failureLogged_ || nowMs - lastFailureLogMs_ >= 5000u) {
-        SafeLog(FailureLog(stage));
+        if (stage == MarkerRenderFailureStage::Geometry && row != nullptr) {
+            try {
+                std::ostringstream message;
+                message << FailureLog(stage) << " pillarbox="
+                        << pillarboxWidth << " destination=" << extent.width
+                        << ',' << extent.height << " logical="
+                        << row->logicalSurfaceWidth << ','
+                        << row->logicalSurfaceHeight << " row=" << row->x
+                        << ',' << row->y << ',' << row->width << ','
+                        << row->height;
+                SafeLog(message.str());
+            } catch (...) {
+                SafeLog(FailureLog(stage));
+            }
+        } else {
+            SafeLog(FailureLog(stage));
+        }
         failureLogged_ = true;
         lastFailureLogMs_ = nowMs;
     }

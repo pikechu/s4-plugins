@@ -48,7 +48,10 @@ public:
 
 private:
     MarkerRenderStatus Fail(MarkerRenderFailureStage stage,
-                            std::uint64_t nowMs) noexcept;
+                            std::uint64_t nowMs,
+                            const MarkerDrawCommand* row = nullptr,
+                            INT32 pillarboxWidth = 0,
+                            MarkerSurfaceExtent extent = {}) noexcept;
     void SafeLog(std::string_view line) noexcept;
     IMarkerDrawingSurface& surface_;
     LogSink log_;
