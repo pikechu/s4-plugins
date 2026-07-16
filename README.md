@@ -213,6 +213,13 @@ markers; the complete no-hover 12-mission catalog remains an evidence gap. See
 the [Phase 6A.1 design](docs/superpowers/specs/2026-07-16-phase-6a-1-public-sparse-campaign-association-design.md)
 and [GO report](docs/research/phase-6a-1-public-sparse-campaign-association-build-report.md).
 
+Phase 6A.2 static evidence supports a smaller complete-catalog design without
+a private mutable menu reader: an exact-version-gated immutable table for
+controls 2081–2092 and `Map\Campaign\dark01.map` through `dark12.map`,
+cross-checked by the public page-21 callback. Implementation and deployment
+remain unapproved. See the [static evidence](docs/research/phase-6a-2-dark-tribe-static-catalog-evidence.md)
+and [design](docs/superpowers/specs/2026-07-16-phase-6a-2-static-campaign-catalog-design.md).
+
 Development feedback policy:
 
 - keep intermediate RED test commits local;
