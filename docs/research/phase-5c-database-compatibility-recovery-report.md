@@ -1,19 +1,18 @@
-# Phase 5C database compatibility startup-recovery report
+# Phase 5C database compatibility recovery report
 
 Date: 2026-07-16 (Asia/Shanghai)
 
 ## Decision
 
-The Phase 5C code-only database compatibility correction is **GO for startup
-recovery**. The audited candidate loaded the untouched three-record primary
-database in writable mode, published the historical TheCross completion to the
-fixed-map list, and exited without changing the primary database, backup, or a
-database temporary file.
+Phase 5C is **GO**. The audited code-only compatibility correction loaded the
+untouched three-record primary database in writable mode, published the
+historical TheCross completion, and performed no startup write. A separately
+approved same-process Phoenix victory then added exactly one fourth record,
+atomically retained the three-record pre-commit primary as the backup, and
+published the Phoenix marker without a process restart.
 
-This is not full Phase 5C completion. The separately authorized same-process
-victory commit and immediate-marker-refresh acceptance remains outstanding.
-This report authorizes no live database write, restoration, manual database
-replacement, or further deployment.
+This report authorizes no further live database write, restoration, manual
+database replacement, or deployment.
 
 ## Audited candidate
 
@@ -74,6 +73,60 @@ Antares `0.4.0`; the backup still contains exactly Aeneas and Antares. The
 production database temporary path and the checked sibling temporary paths
 were absent after exit.
 
+## Same-process commit and immediate refresh
+
+The user separately approved one live completion write. The preflight froze the
+same three-record primary and two-record backup used by startup recovery, then
+started a fresh process. PID `30748` loaded the audited ASI and reported
+`completion-store mode=writable-loaded records=3 failure=0 error=0` before any
+map launch.
+
+The user selected Phoenix directly from Single Player Maps and used the
+previously accepted automatic AI Resign victory flow. The session confirmed
+the exact relative identity before admission:
+
+```text
+2026-07-16T13:41:31.057+LOCAL [INFO] su-map-relative=Map\Singleplayer\Phoenix.map
+2026-07-16T13:41:31.057+LOCAL [INFO] identity-association=confirmed
+2026-07-16T13:41:41.347+LOCAL [INFO] completion-admission accepted stable-id=map:map\singleplayer\phoenix.map
+2026-07-16T13:41:41.363+LOCAL [INFO] completion-store committed stable-id=map:map\singleplayer\phoenix.map stage=none error=0
+```
+
+The new record is exactly:
+
+- stable ID: `map:map\singleplayer\phoenix.map`;
+- relative identity: `Map\Singleplayer\Phoenix.map`;
+- map kind: `fixed`;
+- launch source: `single-player-map`;
+- completion UTC: `2026-07-16T05:41:41Z`;
+- record source: `native-event-609`;
+- plugin persistence version: `0.6.0`.
+
+This admission used the confirmed session-bound relative identity, not the
+display name or any save name. The established RD archive-name rule therefore
+remains unchanged.
+
+The main database grew from 951 bytes and three records to 1,260 bytes and four
+records with SHA-256
+`49b81aaffddd0380c6cfa69f870ad911d9b82f0ba55a213f305ad7955d4ff26e`.
+The backup became byte-for-byte equal to the exact frozen three-record
+pre-commit primary, with SHA-256
+`31edf4f486d7e0078efa23d958482ebc23ffadda2b555c73b5f49b2493756b1f`.
+All Aeneas, TheCross, and Antares fields and historical plugin versions were
+preserved.
+
+Without restarting PID `30748`, the user returned to Single Player Maps. The
+first captured visible row set contained `Map\Singleplayer\Phoenix.map`, and
+the user confirmed its marker appeared automatically without hover. The user
+then scrolled Phoenix out of view and back; the marker again appeared
+immediately. The complete session contained one bootstrap, exactly one store
+commit, exactly one Phoenix commit, and no warning, error, second write, or
+temporary database sibling.
+
+After normal exit, the protected-process count was zero. The four-record main
+and three-record backup retained their post-commit hashes and timestamps, and
+the backup still compared byte-for-byte equal to the frozen pre-commit main.
+
 ## Frozen live evidence
 
 The complete project log after normal exit is copied beneath the ignored
@@ -86,11 +139,22 @@ It is 12,467,773 bytes with SHA-256
 The candidate audit and guarded deployment result remain beside it in the same
 run directory.
 
-## Remaining Phase 5C gate
+The same-process preflight and postflight evidence is frozen under:
 
-Startup recovery is now closed as GO. Full Phase 5C still requires a fresh,
-explicitly approved live-write test in a new process: one eligible previously
-uncompleted fixed map must receive one real local-player victory event, produce
-exactly one fourth primary record, refresh its marker without restart, and
-leave the backup equal to the exact three-record pre-commit primary. No part of
-this startup-recovery approval implies permission for that database write.
+`artifacts/phase-5c-database-compatibility-recovery/run-29472314013/live-same-process/`
+
+The postflight files are:
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `CampaignCompletion.log` | 12,552,438 | `219ac1c2de45f630c50106ffbe63a68778d941e5a1ec24b1a6952941d1e35235` |
+| `completed_maps.json` | 1,260 | `49b81aaffddd0380c6cfa69f870ad911d9b82f0ba55a213f305ad7955d4ff26e` |
+| `completed_maps.json.bak` | 951 | `31edf4f486d7e0078efa23d958482ebc23ffadda2b555c73b5f49b2493756b1f` |
+
+## Completion boundary
+
+The startup compatibility, zero-write recovery, one-record native victory
+commit, atomic backup, same-process marker publication, scroll replay, and
+normal shutdown gates are all satisfied. Phase 5C is complete and GO. Any
+future completion is ordinary product behavior; further diagnostic deployment
+or manual manipulation of the JSON files remains outside this approval.
