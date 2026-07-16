@@ -10,9 +10,13 @@ an evidence gap on selectors 3/4 and the shared New World page set 5/6: those
 screens draw companion public layers, and candidate `0.8.0` cleared its single
 page cache when a non-campaign companion frame arrived.
 
-The focused `0.8.1` composed-page fix is GREEN for deployment review. It has not
-been deployed. The running `0.8.0` process remains read-only, and final database
-postflight is pending normal user-controlled shutdown.
+The composed-page owner fix plus the bounded startup retry are live-validated
+in read-only candidate `0.8.2`. The focused selector retest produced successful
+snapshots for pages 3, 4, and 6, with zero invalid snapshots, clicks, launches,
+or identity associations. Normal-shutdown postflight preserved the database and
+backup byte-for-byte. Phase 6B is therefore GREEN for the public catalog and
+page-isolation calibration scope; it does not authorize inferred mission
+mappings or campaign markers.
 
 ## Initial live slice
 
@@ -93,13 +97,6 @@ packaging, PE32, export, and package checks passed. The ASI has exactly one
 `CampaignCompletionDebugStop` export, and the packaged INI is source-identical
 after CRLF normalization.
 
-## Remaining live work
-
-After normal shutdown and zero-write postflight, deployment of `0.8.1` requires
-a fresh explicit approval. The follow-up catalog pass needs only selectors 3/4
-and the two visits to the 5/6 composite; accepted pages 11 through 21 do not
-need to be repeated. No mission launch is authorized by this audit.
-
 ## Startup retry follow-up
 
 The first `0.8.1` composed-page retest was not evidence-bearing. The installed
@@ -114,7 +111,7 @@ up to 20 module inventories separated by 100ms. It does not admit an empty
 inventory and does not change the exact executable version/SHA gate. If the
 approved executable is still absent, startup fails closed exactly as before.
 
-The `0.8.2` retry candidate is GREEN for deployment review:
+The `0.8.2` retry candidate passed deployment review:
 
 - workflow run `29485642641`, job `87579365098`, success;
 - artifact ID `8370318400`;
@@ -128,5 +125,57 @@ The `0.8.2` retry candidate is GREEN for deployment review:
   `55c664baaf4f58d38c970686e36859eae6b58b718cdce1eca0b442a5ae45a1c2`.
 
 The complete Windows build, policy, mutation, CTest, package, PE32, and export
-gates passed. Deployment remains unapproved pending normal shutdown and a
-fresh exact user approval.
+gates passed.
+
+## `0.8.2` deployment and focused live retest
+
+The user closed both applications and explicitly approved deployment of the
+Phase 6B startup-retry candidate. Exact replacement produced:
+
+- installed archive SHA-256
+  `3faaa2c537713e04b642d4adb15a495650ee0f5479c5558c939abe009dfcf936`;
+- embedded ASI SHA-256
+  `097aac07991ed0f6324bfadec333afff8f16fe1ebd8a10cc6c72d660979666b1`;
+- installed INI SHA-256
+  `55c664baaf4f58d38c970686e36859eae6b58b718cdce1eca0b442a5ae45a1c2`;
+- preserved original archive SHA-256
+  `807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265`.
+
+The new session loaded exact candidate `0.8.2`, accepted exact executable
+version `2.50.1516.0` and SHA-256
+`3b561269fb7ce4c281959f8f0db691cebf7cd36a04ad3594461b94290c5d3816`,
+and started the diagnostic runtime. The focused no-launch batch observed the
+composed active sets `3,24`, `4,22,23,25`, and `5,6`, while the stable catalog
+owner emitted:
+
+| Page | Successful snapshots | Maximum retained features | Invalid |
+| ---: | ---: | ---: | ---: |
+| 3 | 3 | 2 | 0 |
+| 4 | 2 | 1 | 0 |
+| 6 | 6 | 2 | 0 |
+
+No campaign click, association, map session, or identity evidence was emitted.
+The frozen `0.8.2` session occupies log offsets `[12792772,12833244)`, is 40472
+bytes, and has SHA-256
+`869580203b3422031a5681a86fd0a52fb9af9910c7b177f8eaac21e7b38c3967`.
+
+After normal user-controlled shutdown, process inventory was empty and no
+database or archive temporary file existed. Final state remained:
+
+- `completed_maps.json`: 1260 bytes, SHA-256
+  `49b81aaffddd0380c6cfa69f870ad911d9b82f0ba55a213f305ad7955d4ff26e`,
+  timestamp `2026-07-16T05:41:41.3482563Z`;
+- `completed_maps.json.bak`: 951 bytes, SHA-256
+  `31edf4f486d7e0078efa23d958482ebc23ffadda2b555c73b5f49b2493756b1f`,
+  timestamp `2026-07-14T11:13:02.1756072Z`;
+- final log: 12833244 bytes, SHA-256
+  `807de0a0e0f1cd819214ca914c02053114d6700033367b188805a3fe8a365942`.
+
+## Scope conclusion
+
+Pages 3, 4, 6, and 11 through 21 now share one proven bounded public sparse
+catalog path with deterministic page isolation. Static path tables remain
+independently gated. Any later RD classification must still use a confirmed
+same-session `identity.relative`; save names, display labels, and page ownership
+are not classification evidence. Dynamic mission anchors and campaign marker
+implementation require their own approved phase.
