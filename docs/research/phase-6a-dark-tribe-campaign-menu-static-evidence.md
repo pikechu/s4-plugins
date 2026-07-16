@@ -79,3 +79,32 @@ rendering to zero.
 The diagnostic association emits only the exact same-session confirmed
 `identity.relative`. Display/save names—including names beginning `RD` or
 `RD_`—never create, replace, or classify identity.
+
+## GREEN checkpoint and audited candidate
+
+The Phase 6A implementation is frozen by commits `3a76792` and `f02805c`.
+Authoritative Windows Release workflow run `29476757736` completed successfully
+for exact head `f02805c704612b55aac81de61582a7a152a2a9aa`. Configure, build,
+`/W4 /WX`, archive integration, source/binary policy, all mutation fixtures,
+tests, packaging, PE32/i386 verification, exact package contents, and artifact
+upload all passed.
+
+The independently downloaded candidate is frozen as:
+
+- artifact ID `8366884532`, name `CampaignCompletionDebug-Win32`, size
+  `235991` bytes, GitHub digest and downloaded SHA-256
+  `1979e4168d37af6ccfe8c110c9df2779cd27ac7002e381bb9fd62e463045fbb8`;
+- embedded `CampaignCompletionDebug.zip` SHA-256
+  `3904bc322e18410f8ab640bf6b2f7e9dd04d5c8860431e5c1fad7c64af688838`;
+- `Plugins/CampaignCompletionDebug.asi`, `420864` bytes, SHA-256
+  `ddae1357af8f6fd3bb0eaee0c314baff24b95281080da52f1da777820aded617`;
+- `Plugins/CampaignCompletion/CampaignCompletionDebug.ini`, `822` bytes,
+  SHA-256
+  `00facab7bdf7b70f6f6f20f72ece60dd381e1ffb4e0fdd57ab820a081d2bb5e7`.
+
+The inner package has exactly those two entries. Independent inspection
+identifies the ASI as PE32/i386 and exactly one exported
+`CampaignCompletionDebugStop`; the packaged INI equals the committed INI after
+normalizing the Windows checkout's CRLF line endings. The candidate is audited
+but not deployed. Guarded deployment still requires closed game/SU processes
+and fresh explicit user approval.
