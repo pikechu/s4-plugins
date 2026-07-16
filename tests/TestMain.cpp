@@ -4,6 +4,7 @@
 int RunLoggerTests();
 int RunCaptureTraceTests();
 int RunCampaignLaunchAssociationTests();
+int RunCampaignDescriptorCatalogTests();
 int RunCampaignMenuCaptureTests();
 int RunFixedMapCaptureStateTests();
 int RunFixedMapIdentityProbeTests();
@@ -51,6 +52,7 @@ int main() {
         RunLoggerTests();
         RunCaptureTraceTests();
         RunCampaignLaunchAssociationTests();
+        RunCampaignDescriptorCatalogTests();
         RunCampaignMenuCaptureTests();
         RunFixedMapCaptureStateTests();
         RunFixedMapIdentityProbeTests();

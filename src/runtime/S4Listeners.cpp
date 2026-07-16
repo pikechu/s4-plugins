@@ -176,13 +176,15 @@ bool S4Listeners::Start(S4API api, Logger& logger,
                         LaunchOriginTracker& origin,
                         Phase3Trace& phase3Trace,
                         CampaignMenuCapture& campaignCapture,
-                        CampaignLaunchAssociation& campaignAssociation) {
+                        CampaignLaunchAssociation& campaignAssociation,
+                        const CampaignDescriptorCatalog& campaignDescriptors) {
     coordinator_ = &coordinator;
     bridge_ = &bridge;
     origin_ = &origin;
     phase3Trace_ = &phase3Trace;
     campaignCapture_ = &campaignCapture;
     campaignAssociation_ = &campaignAssociation;
+    campaignDescriptors_ = &campaignDescriptors;
     return StartPublicListeners(api, logger);
 }
 
@@ -242,6 +244,7 @@ ListenerStopResult S4Listeners::Stop() {
     markerRenderer_ = nullptr;
     campaignCapture_ = nullptr;
     campaignAssociation_ = nullptr;
+    campaignDescriptors_ = nullptr;
     lastCampaignSnapshot_ = {};
     fixedMapMenuMemory_ = {};
     lastFixedMapMenuSnapshot_ = {};
@@ -540,6 +543,50 @@ void S4Listeners::ObserveTick(BOOL delayed) {
                            << association->sessionId << " relative="
                            << Utf8(association->relative);
                     logger_->Write(LogLevel::Info, record.str());
+                    const auto validation = campaignDescriptors_ != nullptr
+                        ? ValidateCampaignDescriptor(*campaignDescriptors_,
+                                                     association.value())
+                        : CampaignDescriptorValidation{
+                              CampaignDescriptorValidationStatus::CatalogNotAdmitted,
+                              nullptr};
+                    const char* status = "catalog-not-admitted";
+                    switch (validation.status) {
+                        case CampaignDescriptorValidationStatus::Matched:
+                            status = "matched";
+                            break;
+                        case CampaignDescriptorValidationStatus::CatalogNotAdmitted:
+                            status = "catalog-not-admitted";
+                            break;
+                        case CampaignDescriptorValidationStatus::GroupNotAdmitted:
+                            status = "group-not-admitted";
+                            break;
+                        case CampaignDescriptorValidationStatus::ControlUnknown:
+                            status = "control-unknown";
+                            break;
+                        case CampaignDescriptorValidationStatus::GeometryMismatch:
+                            status = "geometry-mismatch";
+                            break;
+                        case CampaignDescriptorValidationStatus::RelativeMismatch:
+                            status = "relative-mismatch";
+                            break;
+                    }
+                    std::ostringstream descriptor;
+                    descriptor << "campaign-descriptor-validation status="
+                               << status << " page=" << association->page
+                               << " control=" << association->control.controlId
+                               << " session=" << association->sessionId;
+                    if (validation.record != nullptr) {
+                        descriptor << " key=" << validation.record->key
+                                   << " expected="
+                                   << Utf8(validation.record->relative);
+                    }
+                    descriptor << " actual=" << Utf8(association->relative);
+                    logger_->Write(
+                        validation.status ==
+                                CampaignDescriptorValidationStatus::Matched
+                            ? LogLevel::Info
+                            : LogLevel::Warning,
+                        descriptor.str());
                 }
             }
             activeOrigin_ = RefineActiveSessionOrigin(

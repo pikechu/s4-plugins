@@ -243,12 +243,16 @@ page-isolation calibration, but does not authorize inferred mission mappings or
 campaign markers. See the
 [initial batch and fix audit](docs/research/phase-6b-initial-batch-composed-page-fix-audit.md).
 
-Phase 6C is designed as an immutable descriptor-admission phase. It will freeze
-the complete public-control-to-formatter static chain first, then use one live
-anchor per distinctly proven transition implementation instead of launching
-every mission. Runtime development and deployment remain unapproved; campaign
-marker rendering remains a later Phase 6D decision. See the
-[Phase 6C design](docs/superpowers/specs/2026-07-16-phase-6c-immutable-campaign-descriptor-anchor-design.md).
+Phase 6C immutable descriptor diagnostic development is approved and in
+pre-deployment validation. Exact-version and bounded-window admission now
+fail-closes independently for the observed Add-on, Mission CD, Original, and
+Dark Tribe records. New World and New World 2 remain disabled evidence gaps.
+Runtime comparison accepts only the existing same-MapInit-session exact
+`identity.relative`; it does not use display/save names and does not enable
+storage or marker code. Deployment is not yet approved, and marker rendering
+remains a later Phase 6D decision. See the
+[Phase 6C design](docs/superpowers/specs/2026-07-16-phase-6c-immutable-campaign-descriptor-anchor-design.md)
+and [static evidence](docs/research/phase-6c-immutable-campaign-descriptor-evidence.md).
 
 Development feedback policy:
 

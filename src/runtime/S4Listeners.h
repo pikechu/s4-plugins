@@ -2,6 +2,7 @@
 
 #include "S4ModApi.h"
 #include "campaign/CampaignLaunchAssociation.h"
+#include "campaign/CampaignDescriptorCatalog.h"
 #include "campaign/CampaignMenuCapture.h"
 #include "completion/CompletionAdmission.h"
 #include "diagnostics/Logger.h"
@@ -59,7 +60,8 @@ public:
                LaunchOriginTracker& origin,
                Phase3Trace& phase3Trace,
                CampaignMenuCapture& campaignCapture,
-               CampaignLaunchAssociation& campaignAssociation);
+               CampaignLaunchAssociation& campaignAssociation,
+               const CampaignDescriptorCatalog& campaignDescriptors);
     ListenerStopResult Stop();
 
 private:
@@ -131,6 +133,7 @@ private:
     CompletionMarkerRenderer* markerRenderer_ = nullptr;
     CampaignMenuCapture* campaignCapture_ = nullptr;
     CampaignLaunchAssociation* campaignAssociation_ = nullptr;
+    const CampaignDescriptorCatalog* campaignDescriptors_ = nullptr;
     CampaignMenuSnapshot lastCampaignSnapshot_{};
     FixedMapMenuMemoryView fixedMapMenuMemory_{};
     FixedMapMenuSnapshot lastFixedMapMenuSnapshot_{};

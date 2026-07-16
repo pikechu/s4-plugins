@@ -1,6 +1,7 @@
 #pragma once
 
 #include "campaign/CampaignLaunchAssociation.h"
+#include "campaign/CampaignDescriptorCatalog.h"
 #include "campaign/CampaignMenuCapture.h"
 #include "diagnostics/Logger.h"
 #include "diagnostics/Phase3Trace.h"
@@ -37,6 +38,7 @@ private:
     Logger logger_;
     std::unique_ptr<CampaignMenuCapture> campaignCapture_;
     std::unique_ptr<CampaignLaunchAssociation> campaignAssociation_;
+    CampaignDescriptorCatalog campaignDescriptors_{};
     S4Listeners listeners_;
     S4LuaApi luaApi_;
     S4LuaMapBridge luaBridge_{luaApi_};

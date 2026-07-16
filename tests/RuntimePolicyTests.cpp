@@ -69,8 +69,8 @@ int RunRuntimePolicyTests() {
     const auto policy =
         ReadText(root / "config" / "CampaignCompletionDebug.ini");
     for (const auto* required : {
-             "Version=0.8.2",
-             "DiagnosticMode=AllCampaignPublicCatalogCalibration",
+             "Version=0.9.0",
+             "DiagnosticMode=ImmutableCampaignDescriptorDiagnostic",
              "InternalMenuReadOnly=0", "InternalMenuWrites=0",
              "InternalMenuRendering=0", "PublicMarkerFallback=0",
              "PublicSettlementUiProbe=0", "LaunchOriginTracking=1",
@@ -84,9 +84,13 @@ int RunRuntimePolicyTests() {
              "CampaignMenuAssociation=SettlersUnitedLua",
              "CampaignMenuCache=PageResidencySparse",
              "CampaignLaunchLeaseMs=30000",
+             "CampaignDescriptorCatalog=ImmutableStaticReadOnly",
+             "CampaignDescriptorIdentity=SameSessionRelativeExact",
+             "CampaignDescriptorGroups=AddOn,MissionCD,Original,DarkTribe",
+             "CampaignDescriptorEvidenceGaps=NewWorld,NewWorld2",
              "IdentitySource=SettlersUnitedLua", "CaptureTraceRoot="}) {
         Require(policy.find(required) != std::string::npos,
-                "Phase 6B packaged policy field is missing");
+                "Phase 6C packaged policy field is missing");
     }
     Require(policy.find("CaptureTraceRoot=F:") == std::string::npos,
             "packaged trace root remains empty");
@@ -103,11 +107,13 @@ int RunRuntimePolicyTests() {
         ReadText(root / "src" / "campaign" / "CampaignMenuCapture.cpp");
     const auto campaignAssociation = ReadText(
         root / "src" / "campaign" / "CampaignLaunchAssociation.cpp");
+    const auto campaignDescriptors = ReadText(
+        root / "src" / "campaign" / "CampaignDescriptorCatalog.cpp");
 
-    Require(runtime.find("version=0.8.2") != std::string::npos &&
-                runtime.find("mode=all-campaign-public-catalog-calibration") !=
+    Require(runtime.find("version=0.9.0") != std::string::npos &&
+                runtime.find("mode=immutable-campaign-descriptor-diagnostic") !=
                     std::string::npos,
-            "runtime identifies the Phase 6B diagnostic mode");
+            "runtime identifies the Phase 6C diagnostic mode");
     Require(runtime.find("kModuleInventoryRetryCount = 20u") !=
                     std::string::npos &&
                 runtime.find("kModuleInventoryRetryDelayMs = 100u") !=
@@ -121,14 +127,18 @@ int RunRuntimePolicyTests() {
                     std::string::npos &&
                 runtimeHeader.find(
                     "std::unique_ptr<CampaignLaunchAssociation>") !=
+                    std::string::npos &&
+                runtimeHeader.find("CampaignDescriptorCatalog campaignDescriptors_") !=
                     std::string::npos,
-            "runtime owns bounded campaign capture and association");
+            "runtime owns bounded capture, association, and immutable descriptors");
     Require(runtime.find("std::make_unique<CampaignMenuCapture>()") !=
                     std::string::npos &&
                 runtime.find(
                     "std::make_unique<CampaignLaunchAssociation>()") !=
+                    std::string::npos &&
+                runtime.find("AdmitCampaignDescriptorCatalog(*executable)") !=
                     std::string::npos,
-            "runtime constructs the two read-only diagnostic components");
+            "runtime constructs the read-only diagnostic components");
 
     for (const auto* forbidden : {
              "Win32CompletionFileOps", "CompletionStore",
@@ -140,9 +150,9 @@ int RunRuntimePolicyTests() {
              "CompletionMarkerRenderer", "AdmitFixedMapMenuMemory",
              "FixedMapLoadHook", "HlibCallPatchBackend", "HookSiteLayout"}) {
         Require((runtime + runtimeHeader).find(forbidden) == std::string::npos,
-                "Phase 6B runtime must not own a writer, native event, marker, or Hook path");
+                "Phase 6C runtime must not own a writer, native event, marker, or Hook path");
     }
-    Require(runtime.find("phase-6b-read-only storage=disabled") !=
+    Require(runtime.find("phase-6c-read-only storage=disabled") !=
                     std::string::npos,
             "runtime logs the enforced read-only construction boundary");
 
@@ -155,6 +165,9 @@ int RunRuntimePolicyTests() {
                     std::string::npos &&
                 listenerHeader.find(
                     "CampaignLaunchAssociation* campaignAssociation_") !=
+                    std::string::npos &&
+                listenerHeader.find(
+                    "const CampaignDescriptorCatalog* campaignDescriptors_") !=
                     std::string::npos,
             "listeners borrow but do not own campaign diagnostic state");
     Require(listeners.find("ActiveCampaignCatalogOwner(api_)") !=
@@ -177,11 +190,22 @@ int RunRuntimePolicyTests() {
                     std::string::npos &&
                 listeners.find("campaignAssociation_->ObserveIdentity(") !=
                     std::string::npos &&
+                listeners.find("ValidateCampaignDescriptor(") !=
+                    std::string::npos &&
                 listeners.find("relative=\"") != std::string::npos,
-            "click, MapInit session, and confirmed identity form the association chain");
+            "click, MapInit session, confirmed identity, and immutable descriptor form the chain");
     Require(listeners.find("identity->relative") != std::string::npos &&
-                listeners.find("identity->name") == std::string::npos,
+                listeners.find("identity->name") == std::string::npos &&
+                campaignDescriptors.find("identity.name") == std::string::npos &&
+                campaignDescriptors.find("display") == std::string::npos,
             "runtime classification and association never use display/save name");
+    Require(campaignDescriptors.find("association.relative !=") !=
+                    std::string::npos &&
+                campaignDescriptors.find("S4_SCREEN_NEWWORLD") !=
+                    std::string::npos &&
+                campaignDescriptors.find("CampaignDescriptorGroup::NewWorld") !=
+                    std::string::npos,
+            "descriptor validation compares exact same-session relative and fail-closes evidence-gap pages");
     Require(campaignCapture.find("if (!dirty_) return std::nullopt;") !=
                     std::string::npos &&
                 campaignCapture.find("!IsCampaignCatalogPage(page)") !=
@@ -212,7 +236,7 @@ int RunRuntimePolicyTests() {
                     std::string::npos &&
                 listeners.find("AddTickListener(&OnTick)") !=
                     std::string::npos,
-            "Phase 6B uses only the approved public listener surface");
+            "Phase 6C uses only the approved public listener surface");
     Require((runtime + runtimeHeader + listeners + listenerHeader)
                     .find("GameDefaultGameEndCheck") == std::string::npos,
             "diagnostic never invokes the behavior-producing game-end check");
@@ -239,6 +263,8 @@ int RunRuntimePolicyTests() {
     Require(asiSources.find("src/campaign/CampaignMenuCapture.cpp") !=
                     std::string::npos &&
                 asiSources.find("src/campaign/CampaignLaunchAssociation.cpp") !=
+                    std::string::npos &&
+                asiSources.find("src/campaign/CampaignDescriptorCatalog.cpp") !=
                     std::string::npos,
             "campaign diagnostic sources are linked into the ASI");
     for (const auto* forbiddenSource : {

@@ -75,9 +75,9 @@ bool DiagnosticRuntime::Start(HMODULE module) {
     }
 
     std::ostringstream header;
-    header << "CampaignCompletionDebug bootstrap version=0.8.2 pid="
+    header << "CampaignCompletionDebug bootstrap version=0.9.0 pid="
            << GetCurrentProcessId()
-           << " mode=all-campaign-public-catalog-calibration";
+           << " mode=immutable-campaign-descriptor-diagnostic";
     logger_.Write(LogLevel::Info, header.str());
     constexpr DWORD kModuleInventoryRetryCount = 20u;
     constexpr DWORD kModuleInventoryRetryDelayMs = 100u;
@@ -128,8 +128,28 @@ bool DiagnosticRuntime::Start(HMODULE module) {
         return false;
     }
 
+    campaignDescriptors_ = AdmitCampaignDescriptorCatalog(*executable);
+    std::ostringstream descriptorAdmission;
+    descriptorAdmission
+        << "campaign-descriptor-admission executable="
+        << (campaignDescriptors_.executableAdmitted ? "admitted" : "rejected")
+        << " addon="
+        << (campaignDescriptors_.GroupAdmitted(CampaignDescriptorGroup::AddOn)
+                ? "admitted" : "disabled")
+        << " missioncd="
+        << (campaignDescriptors_.GroupAdmitted(
+                CampaignDescriptorGroup::MissionCd) ? "admitted" : "disabled")
+        << " original="
+        << (campaignDescriptors_.GroupAdmitted(
+                CampaignDescriptorGroup::Original) ? "admitted" : "disabled")
+        << " dark="
+        << (campaignDescriptors_.GroupAdmitted(
+                CampaignDescriptorGroup::DarkTribe) ? "admitted" : "disabled")
+        << " newworld=disabled newworld2=disabled";
+    logger_.Write(LogLevel::Info, descriptorAdmission.str());
+
     logger_.Write(LogLevel::Info,
-                  "phase-6b-read-only storage=disabled native-events=disabled "
+                  "phase-6c-read-only storage=disabled native-events=disabled "
                   "markers=disabled internal-menu-adapter=disabled");
 
     constexpr DWORD kWaitStepMs = 100;
@@ -184,7 +204,7 @@ bool DiagnosticRuntime::Start(HMODULE module) {
 
     if (!listeners_.Start(api_, logger_, *coordinator_, luaBridge_, origin_,
                           phase3Trace_, *campaignCapture_,
-                          *campaignAssociation_)) {
+                          *campaignAssociation_, campaignDescriptors_)) {
         AbortStart();
         return false;
     }
@@ -266,6 +286,7 @@ void DiagnosticRuntime::Stop() {
                                     : "controlled-stop-flush=failed");
     campaignAssociation_.reset();
     campaignCapture_.reset();
+    campaignDescriptors_ = {};
     coordinator_.reset();
     phase3Trace_.Close();
     logger_.Close();
@@ -285,6 +306,7 @@ void DiagnosticRuntime::AbortStart() noexcept {
         listeners_.Stop();
         campaignAssociation_.reset();
         campaignCapture_.reset();
+        campaignDescriptors_ = {};
         if (api_ != nullptr) {
             api_->Release();
             api_ = nullptr;
