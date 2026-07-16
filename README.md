@@ -204,10 +204,14 @@ campaign mapping or marker is authorized. See the [Phase 6A report](docs/researc
 [design](docs/superpowers/specs/2026-07-16-phase-6a-dark-tribe-campaign-menu-forensics-design.md),
 and [static evidence](docs/research/phase-6a-dark-tribe-campaign-menu-static-evidence.md).
 
-Phase 6A.1 development addresses only the public association subproblem with a
-bounded page-residency sparse cache and a 30-second click-to-MapInit lease. It
-does not add an internal reader or authorize campaign markers. See the
-[Phase 6A.1 design](docs/superpowers/specs/2026-07-16-phase-6a-1-public-sparse-campaign-association-design.md).
+Phase 6A.1 is **GO for the public association subproblem**. Its bounded
+page-residency sparse cache retained mission controls across empty callbacks,
+and the live run associated exact control `2083` through campaign MapInit
+session 1 to the same-session confirmed `Map\Campaign\dark03.map`, with zero
+database changes. This does not add an internal reader or authorize campaign
+markers; the complete no-hover 12-mission catalog remains an evidence gap. See
+the [Phase 6A.1 design](docs/superpowers/specs/2026-07-16-phase-6a-1-public-sparse-campaign-association-design.md)
+and [GO report](docs/research/phase-6a-1-public-sparse-campaign-association-build-report.md).
 
 Development feedback policy:
 
