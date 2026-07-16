@@ -243,19 +243,22 @@ page-isolation calibration, but does not authorize inferred mission mappings or
 campaign markers. See the
 [initial batch and fix audit](docs/research/phase-6b-initial-batch-composed-page-fix-audit.md).
 
-The first Phase 6C live batch was NO-GO for two independent reasons: the
-page-16 record belonged to the wrong `mcd2_*` formatter family, and the Add-on
-known-control lease was rejected by a presentation-sensitive origin tracker.
-Phase 6C.1 correction development is approved. The exact static chain now
-admits only page-16 controls `1903/1904` as `md_roman1/2`; sibling Mission CD
-pages and both New World groups remain disabled. A lease can be created only
-by an exact admitted page/control/rectangle, while the next fresh session may
-bind with unknown independent origin but still rejects explicit online origin.
-Final acceptance remains exact same-session `identity.relative`; display/save
-names, storage, and marker code remain excluded. Deployment is not approved,
-and marker rendering remains a later Phase 6D decision. See the
-[Phase 6C design](docs/superpowers/specs/2026-07-16-phase-6c-immutable-campaign-descriptor-anchor-design.md)
-and [corrected path evidence](docs/research/phase-6c-1-descriptor-family-path-evidence.md).
+Phase 6C.1 is GO after the corrected Add-on and page-16 live batch. Exact
+descriptor clicks bound sessions 1 and 2, and exact `ao_trojan01` and
+`md_roman1` relatives both matched with zero rejection or `mcd2_` fallback.
+Sibling Mission CD pages and both New World groups remain disabled. Database
+main/backup bytes and timestamps remained unchanged through normal shutdown.
+See the [corrected path evidence](docs/research/phase-6c-1-descriptor-family-path-evidence.md)
+and [final audit](docs/research/phase-6c-1-descriptor-family-session-gate-candidate-audit.md).
+
+Phase 6D campaign completion marker design is approved, but implementation is
+not. It proposes a separate campaign index, exact descriptor-gated Campaign
+completion source, public snapshot observer, and reuse of the accepted PNG
+renderer. It deliberately covers only currently admitted descriptors; missing
+campaign controls remain unmarked. Future live acceptance requires separate
+deployment approval and explicit authorization for a bounded completion
+database read/one-record campaign victory transaction. See the
+[Phase 6D design](docs/superpowers/specs/2026-07-16-phase-6d-campaign-completion-marker-index-and-rendering-design.md).
 
 Development feedback policy:
 
