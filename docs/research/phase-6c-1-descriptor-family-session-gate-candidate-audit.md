@@ -141,3 +141,48 @@ all absent. The machine-readable result is retained at
 Deployment is complete. Dynamic acceptance remains pending and is restricted
 to the Add-on Trojan 1 and page-16 Roman 1 paths; no database, save, progress,
 or marker authority follows from deployment.
+
+## Live acceptance: GO
+
+The user launched the deployed candidate and reached the main menu. The runtime
+loaded the exact candidate ASI SHA-256 and exact approved executable, then
+reported `addon=admitted`, `mdroman=admitted`, `original=admitted`,
+`dark=admitted`, with both New World groups disabled. The read-only runtime
+boundary remained active.
+
+The efficient two-path batch produced:
+
+| Path | Exact click lease | Session/origin diagnostic | Exact same-session relative | Result |
+| --- | --- | --- | --- | --- |
+| Add-on Trojan 1 | page `11`, control `91`, rectangle `320,200,175,30`, key `addon-trojan-01` | session `1`; independent origin `random-map/eligible` | `Map\Campaign\ao_trojan01.map` | `matched` |
+| page-16 Roman 1 | page `16`, control `1903`, rectangle `237,148,175,30`, key `md-roman-01` | session `2`; independent origin `campaign/eligible` | `Map\Campaign\md_roman1.map` | `matched` |
+
+Trojan proves that the independent presentation-origin classification no
+longer suppresses a known exact descriptor lease. Roman proves the corrected
+formatter family and exact relative. Across the complete session range there
+were exactly two descriptor matches, zero descriptor rejections, and zero
+`mcd2_` occurrences. Original and Dark Tribe were not repeated because their
+unchanged anchors remained covered by static regression tests as designed.
+
+## Normal-shutdown postflight
+
+After the user normally closed the game and Settlers United:
+
+- protected-process count: `0`;
+- session log range: `[12894818,12970712)`;
+- session log size: `75,894` bytes;
+- session log SHA-256:
+  `e37d920facc2bbf78fb09426ea5cd3dea777a7a18e98bec9e7eecd0b10b18dca`;
+- final full log size: `12,970,712` bytes;
+- final full log SHA-256:
+  `97ae6bf6a56577fa707bece2150bd769d63ef93fab54388f44af7c9db689dc18`.
+
+The installed archive, embedded ASI, and live INI retained their deployed
+hashes. Database main and backup retained the exact preflight sizes,
+timestamps, and hashes. Archive, INI, and database temporary siblings were all
+absent.
+
+Phase 6C.1 is therefore **GO** for the corrected immutable descriptor and
+same-session association contract. This GO does not authorize campaign marker
+indexing/rendering, database or save changes, or campaign-progress behavior;
+those remain a separate Phase 6D design and approval boundary.
