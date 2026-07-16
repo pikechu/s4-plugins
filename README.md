@@ -195,12 +195,13 @@ implemented and live-validated. Phase 5C restored compatibility with historical
 victory, atomic-backup, same-process marker refresh, and normal-shutdown
 acceptance. See the [Phase 5C GO report](docs/research/phase-5c-database-compatibility-recovery-report.md).
 
-Phase 6A development is in progress: a structurally read-only Dark Tribe
-campaign-menu diagnostic captures bounded public UI features and can associate
-one uniquely clicked control with the same-session Settlers United
-`identity.relative`. It constructs no completion writer, native victory
-subscription, internal menu reader, or marker renderer. Deployment and live
-acceptance remain separately gated. See the [Phase 6A design](docs/superpowers/specs/2026-07-16-phase-6a-dark-tribe-campaign-menu-forensics-design.md)
+Phase 6A is an **EVIDENCE GAP**. Its structurally read-only Dark Tribe
+diagnostic proved safe zero-write operation and observed one public mission
+control plus the exact launched `identity.relative`, but the public callback
+behaved as a sparse state-change stream. The candidate therefore did not form
+a stable no-hover menu snapshot or its own click-to-session association, and no
+campaign mapping or marker is authorized. See the [Phase 6A report](docs/research/phase-6a-dark-tribe-campaign-menu-forensics-report.md),
+[design](docs/superpowers/specs/2026-07-16-phase-6a-dark-tribe-campaign-menu-forensics-design.md),
 and [static evidence](docs/research/phase-6a-dark-tribe-campaign-menu-static-evidence.md).
 
 Development feedback policy:
