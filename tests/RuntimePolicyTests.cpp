@@ -69,7 +69,7 @@ int RunRuntimePolicyTests() {
     const auto policy =
         ReadText(root / "config" / "CampaignCompletionDebug.ini");
     for (const auto* required : {
-             "Version=0.8.1",
+             "Version=0.8.2",
              "DiagnosticMode=AllCampaignPublicCatalogCalibration",
              "InternalMenuReadOnly=0", "InternalMenuWrites=0",
              "InternalMenuRendering=0", "PublicMarkerFallback=0",
@@ -104,10 +104,19 @@ int RunRuntimePolicyTests() {
     const auto campaignAssociation = ReadText(
         root / "src" / "campaign" / "CampaignLaunchAssociation.cpp");
 
-    Require(runtime.find("version=0.8.1") != std::string::npos &&
+    Require(runtime.find("version=0.8.2") != std::string::npos &&
                 runtime.find("mode=all-campaign-public-catalog-calibration") !=
                     std::string::npos,
             "runtime identifies the Phase 6B diagnostic mode");
+    Require(runtime.find("kModuleInventoryRetryCount = 20u") !=
+                    std::string::npos &&
+                runtime.find("kModuleInventoryRetryDelayMs = 100u") !=
+                    std::string::npos &&
+                runtime.find("Sleep(kModuleInventoryRetryDelayMs)") !=
+                    std::string::npos &&
+                runtime.find("modules = EnumerateLoadedModules()") !=
+                    std::string::npos,
+            "a transient empty module snapshot retries without weakening exact compatibility");
     Require(runtimeHeader.find("std::unique_ptr<CampaignMenuCapture>") !=
                     std::string::npos &&
                 runtimeHeader.find(

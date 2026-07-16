@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace campaign_completion {
 namespace {
@@ -74,11 +75,26 @@ bool DiagnosticRuntime::Start(HMODULE module) {
     }
 
     std::ostringstream header;
-    header << "CampaignCompletionDebug bootstrap version=0.8.1 pid="
+    header << "CampaignCompletionDebug bootstrap version=0.8.2 pid="
            << GetCurrentProcessId()
            << " mode=all-campaign-public-catalog-calibration";
     logger_.Write(LogLevel::Info, header.str());
-    const auto modules = EnumerateLoadedModules();
+    constexpr DWORD kModuleInventoryRetryCount = 20u;
+    constexpr DWORD kModuleInventoryRetryDelayMs = 100u;
+    auto modules = EnumerateLoadedModules();
+    const auto hasExecutable = [](const std::vector<ModuleInfo>& inventory) {
+        return std::any_of(inventory.begin(), inventory.end(),
+                           [](const ModuleInfo& loaded) {
+                               return EqualInsensitive(loaded.name,
+                                                       L"s4_main.exe");
+                           });
+    };
+    for (DWORD attempt = 1u;
+         attempt < kModuleInventoryRetryCount && !hasExecutable(modules);
+         ++attempt) {
+        Sleep(kModuleInventoryRetryDelayMs);
+        modules = EnumerateLoadedModules();
+    }
     const ModuleInfo* executable = nullptr;
     for (const auto& loaded : modules) {
         std::ostringstream line;
