@@ -152,3 +152,56 @@ Post-deployment protected-process count was zero and no authorized temporary
 sibling remained. The exact machine-readable result is retained in the ignored
 artifact directory as `artifacts/phase-6c-e7890c2/deployment-result.json`.
 Deployment is complete; live anchor acceptance remains pending.
+
+## Live anchor result: NO-GO
+
+The deployed `0.9.0` process loaded the exact audited ASI and admitted the exact
+executable. Runtime admission reported Add-on, Mission CD, Original, and Dark
+Tribe admitted, with New World and New World 2 disabled. The user then completed
+the three anchors in one uninterrupted process and returned to the main menu.
+
+The authoritative results were:
+
+| Intended anchor | Public click | Confirmed same-session relative | Descriptor result |
+| --- | --- | --- | --- |
+| Add-on Trojan 1 | page 11, control `91`, `320,200,175,30` | session 1, `Map\Campaign\ao_trojan01.map` | no association; pending click was not session-armed |
+| Mission CD Roman 1 | page 16, control `1903`, `237,148,175,30` | session 2, `Map\Campaign\md_roman1.map` | `relative-mismatch`; expected `mcd2_roman1` |
+| Original Viking 2 | page 20, control `2039`, `420,150,175,30` | session 3, `Map\Campaign\viking02.map` | `matched` |
+
+The Mission CD mismatch is a direct rejection of the offline prediction. The
+confirmed same-session relative is authoritative; menu labels, the S4ModApi
+page enum name, and the earlier path-family interpretation cannot override it.
+The affected group is NO-GO until its construction/dispatch/formatter chain is
+re-audited.
+
+The Add-on launch confirmed the predicted relative in session 1, but strict
+acceptance also requires the public click-to-session association record. That
+record was absent, so the anchor is not accepted by temporal proximity. The
+click occurred about ten seconds before MapInit and remained within its own
+30-second lease. The independent `LaunchOrigin` prerequisite nevertheless
+failed to arm it. Phase 6C.1 must bind only an already-known exact descriptor
+control and fail closed at the later exact relative comparison; it must not
+infer an association after the fact.
+
+Original Viking 2 is GO for its immutable descriptor and dynamic anchor. Dark
+Tribe retains its previously accepted unchanged anchor. No marker authorization
+results from either success.
+
+## Normal-shutdown postflight
+
+After the user normally closed the game and SU:
+
+- protected-process count: zero;
+- session log range: `[12833244,12894818)`;
+- session log size: 61,574 bytes;
+- session log SHA-256:
+  `9379de5bd93aedc34a404179466f98340cc7f510df220f85dc583071cebbbdd2`;
+- final full log size: 12,894,818 bytes;
+- final full log SHA-256:
+  `4be2f800b7a33dab9f32773399ca705349a4ac4ae7812660a68f8f6ec0d73a75`.
+
+The installed archive, synchronized ASI, and INI retained their deployed
+hashes. `completed_maps.json` and its backup retained the exact preflight sizes,
+timestamps, and hashes. Archive, INI, and database temporary siblings were all
+absent. Phase 6C remains NO-GO overall pending a separately approved Phase
+6C.1 diagnostic correction.
