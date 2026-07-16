@@ -1,7 +1,9 @@
 #include "campaign/CampaignMenuCapture.h"
 
+#include <array>
 #include <stdexcept>
 #include <string_view>
+#include <utility>
 
 namespace {
 
@@ -24,6 +26,50 @@ campaign_completion::CampaignMenuFeature Feature(WORD id, WORD x = 10u) {
 
 int RunCampaignMenuCaptureTests() {
     using namespace campaign_completion;
+
+    constexpr std::array<std::pair<DWORD, WORD>, 27u> admittedControls{{
+        {S4_SCREEN_MISSIONCD, 1919u},
+        {S4_SCREEN_NEWWORLD2, 1825u},
+        {S4_SCREEN_NEWWORLD2, 1844u},
+        {S4_SCREEN_NEWWORLD2, 2939u},
+        {S4_SCREEN_NEWWORLD2, 2954u},
+        {S4_SCREEN_ADDON_TROJAN, 91u},
+        {S4_SCREEN_ADDON_TROJAN, 102u},
+        {S4_SCREEN_ADDON_ROMAN, 47u},
+        {S4_SCREEN_ADDON_ROMAN, 50u},
+        {S4_SCREEN_ADDON_MAYAN, 34u},
+        {S4_SCREEN_ADDON_MAYAN, 37u},
+        {S4_SCREEN_ADDON_VIKING, 112u},
+        {S4_SCREEN_ADDON_VIKING, 115u},
+        {S4_SCREEN_ADDON_SETTLE, 77u},
+        {S4_SCREEN_ADDON_SETTLE, 80u},
+        {S4_SCREEN_MISSIONCD_ROMAN, 1903u},
+        {S4_SCREEN_MISSIONCD_ROMAN, 1907u},
+        {S4_SCREEN_MISSIONCD_VIKING, 1950u},
+        {S4_SCREEN_MISSIONCD_VIKING, 1954u},
+        {S4_SCREEN_MISSIONCD_MAYAN, 1889u},
+        {S4_SCREEN_MISSIONCD_MAYAN, 1893u},
+        {S4_SCREEN_MISSIONCD_CONFL, 1941u},
+        {S4_SCREEN_MISSIONCD_CONFL, 1946u},
+        {S4_SCREEN_SINGLEPLAYER_CAMPAIGN, 2038u},
+        {S4_SCREEN_SINGLEPLAYER_CAMPAIGN, 2046u},
+        {S4_SCREEN_SINGLEPLAYER_DARKTRIBE, 2081u},
+        {S4_SCREEN_SINGLEPLAYER_DARKTRIBE, 2092u},
+    }};
+    for (const auto& [page, control] : admittedControls) {
+        Require(IsPhase6DCampaignMissionControl(page, control),
+                "every Phase 6D mission-control boundary is admitted");
+    }
+    for (const auto rejected :
+         {std::pair<DWORD, WORD>{S4_SCREEN_MISSIONCD, 1925u},
+          {S4_SCREEN_NEWWORLD2, 2938u},
+          {S4_SCREEN_SINGLEPLAYER_CAMPAIGN, 2037u},
+          {S4_SCREEN_SINGLEPLAYER_DARKTRIBE, 2080u},
+          {S4_SCREEN_ADDON_ROMAN, 46u}}) {
+        Require(!IsPhase6DCampaignMissionControl(rejected.first,
+                                                  rejected.second),
+                "navigation and neighboring controls stay outside the gap catalog");
+    }
 
     std::array<bool, kCampaignCatalogPages.size()> activePages{};
     Require(SelectCampaignCatalogOwner(activePages) == S4_GUI_UNKNOWN,
@@ -64,6 +110,22 @@ int RunCampaignMenuCaptureTests() {
     Require(!capture.ObserveFrame(kDarkTribeCampaignPage, true).has_value() &&
                 capture.Active() && capture.ActivePage() == 21u,
             "the first admitted Dark Tribe frame opens capture");
+
+    CampaignMenuCapture entryCapture;
+    entryCapture.SynchronizePage(S4_SCREEN_ADDON_ROMAN, true);
+    Require(entryCapture.Active() &&
+                entryCapture.ActivePage() == S4_SCREEN_ADDON_ROMAN,
+            "a GUI callback can prime the owner before the first UI-frame callback");
+    for (WORD control = 47u; control <= 50u; ++control) {
+        Require(entryCapture.ObserveFeature(Feature(control)),
+                "the initial full redraw is retained without hover");
+    }
+    const auto entrySnapshot =
+        entryCapture.ObserveFrame(S4_SCREEN_ADDON_ROMAN, true);
+    Require(entrySnapshot.has_value() && entrySnapshot->count == 4u &&
+                entrySnapshot->features[0].valueLink == 47u &&
+                entrySnapshot->features[3].valueLink == 50u,
+            "the first UI frame publishes the complete pre-frame redraw");
 
     char label[] = "Mission One";
     S4GuiElementBltParams raw{};

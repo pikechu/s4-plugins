@@ -251,15 +251,17 @@ main/backup bytes and timestamps remained unchanged through normal shutdown.
 See the [corrected path evidence](docs/research/phase-6c-1-descriptor-family-path-evidence.md)
 and [final audit](docs/research/phase-6c-1-descriptor-family-session-gate-candidate-audit.md).
 
-Phase 6D's offline unified evidence pass is complete and remains NO-GO for
-implementation. Exact executable control flow closes 107 selectable campaign
+Phase 6D's offline unified evidence pass is complete. Exact executable control
+flow closes 107 selectable campaign
 mission chains; 19 also have accepted public rectangles, while 88 need only a
 single gap-only rectangle sweep. The pass correctly assigns `mcd2_*` to the
 composed New World family and `md_*` to pages 16–19. It also proves that page 4
-contains one direct `md_bonus` mission control, so the navigation-only selector
-assumption must be corrected before implementation. No production code,
-installed archive, database, save, or process was changed. After the gap-only
-matrix is frozen, one common candidate can add the separate campaign index,
+contains one direct `md_bonus` mission control. The `0.10.0` read-only gap-only
+catalog candidate now primes the public campaign owner before the first UI
+frame and retains only exact statically proven mission-control IDs, including
+page-4 control 1919. Deployment remains unapproved; the installed archive,
+database, save, and game process remain unchanged. After the gap-only matrix is
+frozen, one common candidate can add the separate campaign index,
 exact descriptor-gated Campaign completion source, public snapshot observer,
 and accepted PNG renderer. Deployment and any bounded completion-database
 read/one-record write still require their own explicit approvals. See the

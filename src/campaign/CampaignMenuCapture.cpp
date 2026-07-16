@@ -49,6 +49,42 @@ bool IsCampaignCatalogPage(DWORD page) noexcept {
     return false;
 }
 
+bool IsPhase6DCampaignMissionControl(DWORD page, WORD valueLink) noexcept {
+    const auto within = [valueLink](WORD first, WORD last) noexcept {
+        return valueLink >= first && valueLink <= last;
+    };
+    switch (page) {
+        case S4_SCREEN_MISSIONCD:
+            return valueLink == 1919u;
+        case S4_SCREEN_NEWWORLD2:
+            return within(1825u, 1844u) || within(2939u, 2954u);
+        case S4_SCREEN_ADDON_TROJAN:
+            return within(91u, 102u);
+        case S4_SCREEN_ADDON_ROMAN:
+            return within(47u, 50u);
+        case S4_SCREEN_ADDON_MAYAN:
+            return within(34u, 37u);
+        case S4_SCREEN_ADDON_VIKING:
+            return within(112u, 115u);
+        case S4_SCREEN_ADDON_SETTLE:
+            return within(77u, 80u);
+        case S4_SCREEN_MISSIONCD_ROMAN:
+            return within(1903u, 1907u);
+        case S4_SCREEN_MISSIONCD_VIKING:
+            return within(1950u, 1954u);
+        case S4_SCREEN_MISSIONCD_MAYAN:
+            return within(1889u, 1893u);
+        case S4_SCREEN_MISSIONCD_CONFL:
+            return within(1941u, 1946u);
+        case S4_SCREEN_SINGLEPLAYER_CAMPAIGN:
+            return within(2038u, 2046u);
+        case S4_SCREEN_SINGLEPLAYER_DARKTRIBE:
+            return within(2081u, 2092u);
+        default:
+            return false;
+    }
+}
+
 DWORD SelectCampaignCatalogOwner(
     const std::array<bool, kCampaignCatalogPages.size()>& active) noexcept {
     DWORD owner = S4_GUI_UNKNOWN;
@@ -133,24 +169,31 @@ bool EqualCampaignMenuSnapshot(const CampaignMenuSnapshot& left,
     return true;
 }
 
-std::optional<CampaignMenuSnapshot> CampaignMenuCapture::ObserveFrame(
+void CampaignMenuCapture::SynchronizePage(
     DWORD page, bool campaignPageActive) noexcept {
-    if (!enabled_) return std::nullopt;
+    if (!enabled_) return;
     if (!campaignPageActive || !IsCampaignCatalogPage(page)) {
         collecting_ = false;
         activePage_ = S4_GUI_UNKNOWN;
         ClearWorking();
+        return;
+    }
+    if (collecting_ && page == activePage_) return;
+    ClearWorking();
+    collecting_ = true;
+    activePage_ = page;
+}
+
+std::optional<CampaignMenuSnapshot> CampaignMenuCapture::ObserveFrame(
+    DWORD page, bool campaignPageActive) noexcept {
+    if (!enabled_) return std::nullopt;
+    if (!campaignPageActive || !IsCampaignCatalogPage(page)) {
+        SynchronizePage(page, campaignPageActive);
         return std::nullopt;
     }
-    if (collecting_ && page != activePage_) {
-        ClearWorking();
-        collecting_ = false;
-    }
     ++generation_;
-    if (!collecting_) {
-        ClearWorking();
-        collecting_ = true;
-        activePage_ = page;
+    if (!collecting_ || page != activePage_) {
+        SynchronizePage(page, campaignPageActive);
         return std::nullopt;
     }
     if (!dirty_) return std::nullopt;

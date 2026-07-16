@@ -69,8 +69,8 @@ int RunRuntimePolicyTests() {
     const auto policy =
         ReadText(root / "config" / "CampaignCompletionDebug.ini");
     for (const auto* required : {
-             "Version=0.9.1",
-             "DiagnosticMode=DescriptorFamilySessionGateCorrection",
+             "Version=0.10.0",
+             "DiagnosticMode=Phase6DGapOnlyCampaignCatalog",
              "InternalMenuReadOnly=0", "InternalMenuWrites=0",
              "InternalMenuRendering=0", "PublicMarkerFallback=0",
              "PublicSettlementUiProbe=0", "LaunchOriginTracking=1",
@@ -82,15 +82,17 @@ int RunRuntimePolicyTests() {
              "CampaignMenuPublicCapture=1",
              "CampaignMenuPages=3,4,5,6,11,12,13,14,15,16,17,18,19,20,21",
              "CampaignMenuAssociation=SettlersUnitedLua",
-             "CampaignMenuCache=PageResidencySparse",
+             "CampaignMenuCache=PreFrameMissionControlResidency",
+             "CampaignMenuControlFilter=ExactPhase6DStaticMissionIds",
+             "CampaignMenuEntryPrime=PublicScreenReadBeforeFirstUiFrame",
              "CampaignLaunchLeaseMs=30000",
              "CampaignDescriptorCatalog=ImmutableStaticReadOnly",
              "CampaignDescriptorIdentity=SameSessionRelativeExact",
-             "CampaignDescriptorGroups=AddOn,MdRoman,Original,DarkTribe",
-             "CampaignDescriptorEvidenceGaps=MissionCdSiblingPages,NewWorld,NewWorld2",
+             "CampaignDescriptorGroups=ExistingPhase6C1Unchanged",
+             "CampaignDescriptorEvidenceGaps=PublicRectanglesOnly",
              "IdentitySource=SettlersUnitedLua", "CaptureTraceRoot="}) {
         Require(policy.find(required) != std::string::npos,
-                "Phase 6C packaged policy field is missing");
+                "Phase 6D packaged policy field is missing");
     }
     Require(policy.find("CaptureTraceRoot=F:") == std::string::npos,
             "packaged trace root remains empty");
@@ -110,10 +112,10 @@ int RunRuntimePolicyTests() {
     const auto campaignDescriptors = ReadText(
         root / "src" / "campaign" / "CampaignDescriptorCatalog.cpp");
 
-    Require(runtime.find("version=0.9.1") != std::string::npos &&
-                runtime.find("mode=descriptor-family-session-gate-correction") !=
+    Require(runtime.find("version=0.10.0") != std::string::npos &&
+                runtime.find("mode=phase-6d-gap-only-campaign-catalog") !=
                     std::string::npos,
-            "runtime identifies the Phase 6C diagnostic mode");
+            "runtime identifies the Phase 6D diagnostic mode");
     Require(runtime.find("kModuleInventoryRetryCount = 20u") !=
                     std::string::npos &&
                 runtime.find("kModuleInventoryRetryDelayMs = 100u") !=
@@ -150,9 +152,9 @@ int RunRuntimePolicyTests() {
              "CompletionMarkerRenderer", "AdmitFixedMapMenuMemory",
              "FixedMapLoadHook", "HlibCallPatchBackend", "HookSiteLayout"}) {
         Require((runtime + runtimeHeader).find(forbidden) == std::string::npos,
-                "Phase 6C runtime must not own a writer, native event, marker, or Hook path");
+                "Phase 6D runtime must not own a writer, native event, marker, or Hook path");
     }
-    Require(runtime.find("phase-6c-1-read-only storage=disabled") !=
+    Require(runtime.find("phase-6d-gap-only-read-only storage=disabled") !=
                     std::string::npos,
             "runtime logs the enforced read-only construction boundary");
 
@@ -175,14 +177,18 @@ int RunRuntimePolicyTests() {
                 listeners.find(
                     "api->IsCurrentlyOnScreen(static_cast<S4_GUI_ENUM>(page))") !=
                     std::string::npos &&
+                listeners.find("campaignCapture_->SynchronizePage(") !=
+                    std::string::npos &&
                 listeners.find("campaignCapture_->ObserveFrame(campaignPage, campaignPageActive)") !=
                     std::string::npos,
-            "one deterministic public owner retains composed campaign layers");
+            "GUI callbacks prime one deterministic public owner before the first frame");
     Require(listeners.find("CopyCampaignMenuFeature(element, feature)") !=
+                    std::string::npos &&
+                listeners.find("IsPhase6DCampaignMissionControl(") !=
                     std::string::npos &&
                 listeners.find("campaignCapture_->Invalidate()") !=
                     std::string::npos,
-            "GUI values use bounded copy and malformed callbacks fail closed");
+            "only exact static mission controls use bounded copy and malformed callbacks fail closed");
     Require(listeners.find(
                 "campaignAssociation_->ObserveClick(message, element,") !=
                     std::string::npos &&
@@ -244,7 +250,7 @@ int RunRuntimePolicyTests() {
                     std::string::npos &&
                 listeners.find("AddTickListener(&OnTick)") !=
                     std::string::npos,
-            "Phase 6C uses only the approved public listener surface");
+            "Phase 6D uses only the approved public listener surface");
     Require((runtime + runtimeHeader + listeners + listenerHeader)
                     .find("GameDefaultGameEndCheck") == std::string::npos,
             "diagnostic never invokes the behavior-producing game-end check");

@@ -75,9 +75,9 @@ bool DiagnosticRuntime::Start(HMODULE module) {
     }
 
     std::ostringstream header;
-    header << "CampaignCompletionDebug bootstrap version=0.9.1 pid="
+    header << "CampaignCompletionDebug bootstrap version=0.10.0 pid="
            << GetCurrentProcessId()
-           << " mode=descriptor-family-session-gate-correction";
+           << " mode=phase-6d-gap-only-campaign-catalog";
     logger_.Write(LogLevel::Info, header.str());
     constexpr DWORD kModuleInventoryRetryCount = 20u;
     constexpr DWORD kModuleInventoryRetryDelayMs = 100u;
@@ -149,7 +149,7 @@ bool DiagnosticRuntime::Start(HMODULE module) {
     logger_.Write(LogLevel::Info, descriptorAdmission.str());
 
     logger_.Write(LogLevel::Info,
-                  "phase-6c-1-read-only storage=disabled native-events=disabled "
+                  "phase-6d-gap-only-read-only storage=disabled native-events=disabled "
                   "markers=disabled internal-menu-adapter=disabled");
 
     constexpr DWORD kWaitStepMs = 100;

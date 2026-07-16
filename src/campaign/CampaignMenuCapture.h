@@ -32,6 +32,7 @@ inline constexpr std::array<DWORD, 15u> kCampaignCatalogPages{
 };
 
 bool IsCampaignCatalogPage(DWORD page) noexcept;
+bool IsPhase6DCampaignMissionControl(DWORD page, WORD valueLink) noexcept;
 DWORD SelectCampaignCatalogOwner(
     const std::array<bool, kCampaignCatalogPages.size()>& active) noexcept;
 
@@ -81,6 +82,7 @@ bool EqualCampaignMenuSnapshot(const CampaignMenuSnapshot& left,
 
 class CampaignMenuCapture final {
 public:
+    void SynchronizePage(DWORD page, bool campaignPageActive) noexcept;
     std::optional<CampaignMenuSnapshot> ObserveFrame(
         DWORD page, bool campaignPageActive) noexcept;
     bool ObserveFeature(const CampaignMenuFeature& feature) noexcept;

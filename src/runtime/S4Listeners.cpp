@@ -774,11 +774,19 @@ void S4Listeners::ObserveGuiElement(LPS4GUIDRAWBLTPARAMS element) {
     const auto now = GetTickCount64();
     std::lock_guard<std::mutex> lock(mutex_);
     ++guiElementCount_;
-    if (campaignCapture_ != nullptr && campaignCapture_->Active()) {
-        CampaignMenuFeature feature{};
-        if (!CopyCampaignMenuFeature(element, feature) ||
-            !campaignCapture_->ObserveFeature(feature)) {
+    if (campaignCapture_ != nullptr) {
+        const DWORD campaignPage = ActiveCampaignCatalogOwner(api_);
+        campaignCapture_->SynchronizePage(
+            campaignPage, campaignPage != S4_GUI_UNKNOWN);
+        if (element == nullptr) {
             campaignCapture_->Invalidate();
+        } else if (IsPhase6DCampaignMissionControl(campaignPage,
+                                                   element->valueLink)) {
+            CampaignMenuFeature feature{};
+            if (!CopyCampaignMenuFeature(element, feature) ||
+                !campaignCapture_->ObserveFeature(feature)) {
+                campaignCapture_->Invalidate();
+            }
         }
     }
     if (element != nullptr && settlement_ != nullptr &&

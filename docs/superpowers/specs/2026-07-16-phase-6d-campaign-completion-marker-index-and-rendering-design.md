@@ -25,14 +25,18 @@ audited deployment is explicitly approved.
 The target is one descriptor matrix for every accessible mission control in:
 
 - Add-on pages 11 through 15;
+- the direct Mission CD bonus mission on selector page 4;
 - Mission CD pages 16 through 19;
 - New World and New World 2 composed pages 5/6;
 - Original campaigns on page 20;
 - Dark Tribe on page 21.
 
-Selectors 3 and 4 are navigation evidence, not mission identities. Locked or
-unavailable content is recorded as unavailable and is never unlocked,
-manufactured, or treated as a failed mission.
+Selector 3 is navigation evidence. Selector 4 is navigation evidence except
+for exact control 1919: the accepted executable proves that it dispatches
+event `0x1B5F`, selects transition kind `0x0A`, and formats the exact fixed
+relative `Map\\Campaign\\md_bonus.map`. Locked or unavailable content is
+recorded as unavailable and is never unlocked, manufactured, or treated as a
+failed mission.
 
 Already accepted Phase 6B public snapshots, scroll/re-entry observations, and
 Phase 6C.1 exact descriptor chains are reusable. Dark Tribe's complete static
@@ -84,6 +88,10 @@ entry/scroll/top states, and composed-page ownership before requesting any new
 live pass. Historical sparse observations may confirm geometry or page
 residency; absence remains absence.
 
+The page-4 bonus row is part of the matrix even though it resides on a selector.
+No selector label, display value, or neighboring control may substitute for
+its exact control/dispatch/formatter chain.
+
 Produce one reviewable evidence artifact containing, for each mission:
 
 ```text
@@ -102,10 +110,16 @@ If offline analysis plus existing Phase 6B evidence leaves public geometry or
 availability gaps, use one read-only diagnostic candidate and one continuous
 game process. Do not deploy a sequence of family-specific probes.
 
-The user performs one uninterrupted traversal of all campaign pages and every
+The user performs one uninterrupted traversal of selector page 4, all campaign pages, and every
 available scroll state, then reports completion once. No mission launch, hover,
 victory, database access, save access, or per-page message is required. The
 candidate writes only the existing project-owned diagnostic log.
+
+The gap-only candidate samples the deterministic campaign owner from the
+public screen API at GUI-element callback time, before the first UI-frame
+callback can finalize the page epoch. It retains only exact statically proven
+mission control IDs, so the initial full redraw is captured without hover while
+navigation, decoration, and text remain non-identity data.
 
 Do not run game processes concurrently. The installed archive, plugin log,
 completion database, session IDs, and menu callbacks are shared; multiple
