@@ -220,6 +220,15 @@ cross-checked by the public page-21 callback. Implementation and deployment
 remain unapproved. See the [static evidence](docs/research/phase-6a-2-dark-tribe-static-catalog-evidence.md)
 and [design](docs/superpowers/specs/2026-07-16-phase-6a-2-static-campaign-catalog-design.md).
 
+Phase 6B offline evidence proves the exact path-format families and PDB state
+ownership for original, Add-on, Mission CD, New World, and New World 2
+campaigns. It does not promote incomplete non-Dark control catalogs to GO.
+The unified design keeps each descriptor independently gated and replaces
+per-mission repetition with one sequential single-process catalog pass plus at
+most one dynamic anchor per distinct proven menu implementation. Runtime
+development and deployment remain unapproved. See the [static evidence](docs/research/phase-6b-all-campaign-static-catalog-evidence.md)
+and [batch design](docs/superpowers/specs/2026-07-16-phase-6b-unified-campaign-catalog-batch-design.md).
+
 Development feedback policy:
 
 - keep intermediate RED test commits local;
