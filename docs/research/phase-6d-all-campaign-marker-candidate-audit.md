@@ -219,3 +219,67 @@ siblings were absent. The machine-readable result is retained at
 The corrected deployment is complete. Dynamic admission and marker acceptance
 remain pending and retain all previously stated no-write and no-process-control
 boundaries.
+
+## Corrected live representative batch
+
+The corrected user-driven startup loaded exact version `0.11.0`, passed exact
+executable compatibility, and admitted all six descriptor groups:
+Add-on, Mission CD, New World, New World 2, Original, and Dark Tribe. The
+bounded main-database read loaded four records; all four were correctly
+rejected from the separate Campaign index because none has Campaign source.
+No database record was modified or manufactured for visual testing.
+
+The user completed one no-launch, no-hover representative batch and returned
+to the main menu. The accepted session contains 28 successful campaign
+snapshots:
+
+| Page/layout | Successful snapshots | Exact controls |
+| --- | ---: | ---: |
+| Add-on child page 11 | 3 | 12 |
+| Mission CD child page 16 | 3 | 5 |
+| Mission CD selector bonus page 4 | 2 | 1 |
+| composed page 6, New World | 5 | 20 |
+| composed page 6, New World 2 | 1 | 16 |
+| Original page 20 | 5 | 9 |
+| Dark Tribe page 21, including scroll/return | 9 | 12 |
+
+There were zero invalid campaign snapshots, renderer failures, errors, MapInit
+events, or database temporary files. Two transient fixed-map internal-menu
+`alias-mismatch` warnings occurred while page 4 overlapped page transitions;
+the read-only adapter failed closed as designed and neither warning affected
+campaign capture or rendering.
+
+The user also completed the fixed-map regression step in the same batch.
+Campaign pages correctly displayed no false markers because the database
+contains no Campaign completion record. Positive drawing for every one of the
+107 descriptors remains covered by the authoritative all-record in-memory
+test; no live completion record was created merely to force a marker.
+
+## Normal-shutdown postflight
+
+After the user normally closed both protected applications:
+
+- protected-process count: `0`;
+- final corrected session slice: `90,453` bytes; SHA-256
+  `e514a182d12ca6f4be17a3b710a31da69e394d4b20ab6741d0aa8f913df05188`;
+- final full log: `19,866,187` bytes; SHA-256
+  `1eb96c620ffb1c2688f9f19ac6b616c28300079996b13db05052fc2525c61e7a`;
+- installed archive remained `1,423,333` bytes with SHA-256
+  `f584df8f64b6abb90945ae4617bb3bc43098b2eb597655524408c82b6217b836`;
+- embedded ASI remained the corrected candidate
+  `3898b7b28b8321fb2434ff946dd2280ee08bbb4f854663197ab99455bd79be41`;
+- live INI remained
+  `3e4bca3799f6a8ef5eb68dd8a42603b6ce241db5abe9145b22e2a57ef73a1b18`;
+- database main remained `1,260` bytes with its original timestamp and
+  SHA-256
+  `49b81aaffddd0380c6cfa69f870ad911d9b82f0ba55a213f305ad7955d4ff26e`;
+- database backup remained `951` bytes with its original timestamp and
+  SHA-256
+  `31edf4f486d7e0078efa23d958482ebc23ffadda2b555c73b5f49b2493756b1f`;
+- archive, INI, and database temporary siblings were absent.
+
+Phase 6D all-campaign immutable descriptors, separate read-only index, public
+observer, shared 36-command renderer scheduling, fixed-map regression, guarded
+deployment, and representative no-record integration are **GO**. This does not
+record a campaign victory. Campaign completion admission and persistence
+remain a separate future authorization boundary.
