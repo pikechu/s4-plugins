@@ -125,3 +125,47 @@ A future live acceptance needs fresh explicit approval for:
 No family-by-family victory repetition is required. The shared integration
 needs one live transaction; all 107 descriptor rows remain covered by static
 catalog and constructed tests.
+
+## Guarded deployment
+
+The user subsequently approved deployment of the exact audited Phase 6E
+candidate. Fresh preflight independently confirmed:
+
+- protected-process count `0`;
+- installed Phase 6D archive SHA-256
+  `f584df8f64b6abb90945ae4617bb3bc43098b2eb597655524408c82b6217b836`;
+- live Phase 6D INI SHA-256
+  `3e4bca3799f6a8ef5eb68dd8a42603b6ce241db5abe9145b22e2a57ef73a1b18`;
+- database main and backup hashes, sizes, and timestamps exactly matched the
+  Phase 6D postflight;
+- immutable original and installer metadata matched their fixed expected
+  hashes;
+- archive, INI, and database temporary siblings were absent.
+
+The fixed-input elevated transaction replaced only the project ASI inside
+`Plugin_SU.zip` and the project-owned live INI. It created the immutable
+pre-deployment snapshot
+`research/backups/campaign-completion/2026-07-18-pre-v0.12.0-phase6e-persistence`.
+Any exception after replacement was configured to restore the preceding
+archive, INI, and installer metadata.
+
+Independent post-deployment verification recorded:
+
+| Item | Deployed identity |
+| --- | --- |
+| protected processes | `0` |
+| installed `Plugin_SU.zip` | `1,444,503` bytes; SHA-256 `b209572f45f447759cecbac227a35d6513f50d032febdf37f33408807aa4f1e4` |
+| embedded project ASI | SHA-256 `4e0b08fb85ed3e0004e7c6b3ff84fc9e4f0c040cd63598bb9f03b90b764f763d` |
+| live project INI | `1,455` bytes; SHA-256 `de830132d2982228920da16e825750b8261c487770467ff088aef7e2fcdc32bc` |
+| database main | `1,260` bytes; timestamp `2026-07-16T05:41:41.3482563Z`; SHA-256 `49b81aaffddd0380c6cfa69f870ad911d9b82f0ba55a213f305ad7955d4ff26e` |
+| database backup | `951` bytes; timestamp `2026-07-14T11:13:02.1756072Z`; SHA-256 `31edf4f486d7e0078efa23d958482ebc23ffadda2b555c73b5f49b2493756b1f` |
+| immutable original | SHA-256 `807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265` |
+| installer metadata | SHA-256 `9a8413ed320fd75cf5a4048ff035e47777e3411d92e78bbfab2e52a31d67cb3c` |
+
+All authorized temporary siblings remained absent. The machine-readable result
+is `artifacts/phase6e-persistence-9ab07f1/deployment-result.json`.
+
+Deployment is complete, but the live transaction is not. The next boundary is
+a user-driven startup to the main menu, followed by a no-write startup
+preflight. Mission selection and one normal victory remain separately bounded
+by the explicit live-acceptance procedure above.
