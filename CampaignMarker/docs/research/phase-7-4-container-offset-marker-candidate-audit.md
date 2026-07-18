@@ -109,13 +109,33 @@ Windows CI ran and passed the complete binary/export policy check; local
 `file` and MinGW `objdump` independently confirmed PE32 x86 and the single
 expected export.
 
-## Deployment boundary
+## Guarded deployment
 
-This audit does not deploy `0.13.4`. Deployment requires both `S4_Main` and
-Settlers United to be closed normally by the user and a fresh explicit
-approval. A guarded combined-archive replacement may change only
-`Plugins/CampaignCompletionDebug.asi`; `PileChainRepair.asi` and every other
-entry must remain byte-for-byte identical.
+After both `S4_Main` and Settlers United were confirmed closed, the user gave
+fresh explicit approval for the audited Phase 7.4 candidate and required
+`PileChainRepair` to remain unchanged.
+
+The fixed-hash elevated deployment:
+
+- verified the current combined archive baseline SHA-256:
+  `81de1082b1c3f17008708c9db8d0219330ea94db861d8508d4395af4ec9a77fd`
+- verified the immutable original archive SHA-256:
+  `807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265`
+- created and verified a complete combined-archive rollback copy
+- replaced only `Plugins/CampaignCompletionDebug.asi`
+- installed archive SHA-256:
+  `5378530b85874f7b3a4ae7b5b77b044753d7976634a8770a903a350ec712d64b`
+- independently verified the embedded Campaign ASI SHA-256:
+  `de10824a451bec3d566dbf417307c23fb9912fbf6aa2ea2b03e98e9d20655534`
+- independently verified `Plugins/PileChainRepair.asi` remained:
+  `7d17f6de446d43a22bfe30647585ba1bd2b5a4acc3781cb5b9eb24f4ead33493`
+- independently compared all nine file entries and found only the Campaign
+  ASI entry changed
+- left no authorized temporary sibling
+- confirmed both protected processes remained absent after deployment
+
+The installed archive is 1,936,643 bytes. The guarded rollback baseline and
+candidate remain in the project-owned Phase 7.4 backup directory.
 
 RD handling remains fail-closed. Only exact same-session
 `identity.relative` is admitted. An exact `RD_` relative remains random,
