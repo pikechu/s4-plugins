@@ -169,3 +169,88 @@ Deployment is complete, but the live transaction is not. The next boundary is
 a user-driven startup to the main menu, followed by a no-write startup
 preflight. Mission selection and one normal victory remain separately bounded
 by the explicit live-acceptance procedure above.
+
+## One-victory live acceptance
+
+The user started the exact deployed candidate and reached the main menu.
+Startup evidence showed:
+
+- runtime version `0.12.0`;
+- exact executable compatibility `compatible`;
+- all six descriptor groups admitted;
+- store mode `writable-loaded`, with four existing records;
+- database main and backup bytes, hashes, and timestamps unchanged from
+  deployment;
+- no database temporary sibling.
+
+The initially proposed Add-on Trojan mission was not launched. Before MapInit,
+the user changed the predeclared single test target to **Mission CD / Roman 1**.
+The accepted chain was:
+
+| Gate | Observed value |
+| --- | --- |
+| public menu click | page `16`, control `1903`, rectangle `237,148,175,30`, key `md-roman-01` |
+| MapInit | session `1`, origin `campaign/eligible` |
+| confirmed relative | `Map\Campaign\md_roman1.map` |
+| immutable descriptor | `matched`; expected and actual relative identical |
+| native subscriber | reinserted at list front |
+| completion admission | accepted exactly once |
+| store transaction | committed exactly once; stage `none`; error `0` |
+
+The committed record is exactly:
+
+- stable ID `map:map\campaign\md_roman1.map`;
+- relative ID `Map\Campaign\md_roman1.map`;
+- display name `md_roman1`;
+- map kind `fixed`;
+- launch source `campaign`;
+- completed at `2026-07-18T09:10:32Z`;
+- record source `native-event-609`.
+
+The main database changed from four to five records and contains exactly one
+Roman 1 record:
+
+- size `1,558` bytes;
+- timestamp `2026-07-18T09:10:32.2487339Z`;
+- SHA-256
+  `c324c7a3f49441421eb4d61056b6e80129ce02f80ebf0b84567f551acdddc461`.
+
+The atomic backup is the exact pre-transaction main database:
+
+- size `1,260` bytes;
+- preserved timestamp `2026-07-16T05:41:41.3482563Z`;
+- SHA-256
+  `49b81aaffddd0380c6cfa69f870ad911d9b82f0ba55a213f305ad7955d4ff26e`.
+
+The user returned to Mission CD / Roman without hovering. The Roman 1
+completion marker appeared immediately, proving same-process publication from
+the committed store snapshot through the campaign index and first page draw.
+No second admission, duplicate transaction, or additional database record
+occurred.
+
+After the user normally closed the game and Settlers United, final postflight
+recorded:
+
+- protected-process count `0`;
+- installed archive, embedded ASI, live INI, immutable original, and installer
+  metadata exactly retained their deployed sizes and hashes;
+- main database retained exactly five records and exactly one Roman 1 record;
+- backup retained the exact pre-transaction main;
+- archive, INI, and database temporary siblings were absent;
+- session log contained one descriptor match, one native reinsert, one
+  accepted admission, one committed transaction, zero duplicates, and zero
+  errors;
+- three benign fixed internal-menu `alias-mismatch` warnings occurred only
+  during menu transitions and failed closed.
+
+Final full log identity:
+
+- size `19,949,475` bytes;
+- timestamp `2026-07-18T09:15:22.8072622Z`;
+- SHA-256
+  `260c916a8947a0dbcc5ebd4e48f054c04829bbd6ff5cce064e37824e0ae803d1`.
+
+Phase 6E is **GO**. One exact campaign victory was admitted, committed
+atomically, published to the campaign marker index in the same process, and
+rendered immediately without hover. No family-by-family live repetition is
+required, and no RD/save-name classification boundary was weakened.
