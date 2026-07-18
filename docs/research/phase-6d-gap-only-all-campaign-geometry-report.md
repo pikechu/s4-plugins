@@ -98,5 +98,31 @@ confirmed session-bound relative may establish random-map status.
 The unified descriptor and public geometry matrix is ready for design review
 of the common all-campaign completion index, bounded completion source,
 snapshot observer, and PNG renderer. That implementation requires a separate
-explicit approval. The current diagnostic must first receive a normal-shutdown
-postflight proving archive, candidate, database, and backup stability.
+explicit approval.
+
+## Normal-shutdown postflight
+
+After the user normally closed the game and Settlers United:
+
+- protected-process count: `0`;
+- final session log range: `[19621126,19694279)`;
+- final session log size: `73153` bytes;
+- final session log SHA-256:
+  `839ff8933df1a6a6ec227c3edee405914471be06b2d7b387793060676ae7bb70`;
+- final full log size: `19694279` bytes;
+- final full log SHA-256:
+  `f81d3bdd3368453bb24d1225e2fee3424cdc3444117c1f5a2054a2d6fce8c66c`.
+
+The installed archive remained `1400259` bytes with SHA-256
+`ea15116f8b84996c4c72e037d6b41782c4921f91224eec24c6acdc1d40e9ac67`.
+Its unique embedded project ASI retained SHA-256
+`de36bfca5cfd3f0cf36a063e7717fe1a20c20754bff2f1bcc6d39158dc113a6c`,
+and the live INI retained SHA-256
+`4a9835f5ea2228aea2780e2d393f001d87e09c35dd87f6525969cc69a0b01e38`.
+
+Database main and backup retained their exact preflight sizes, timestamps, and
+hashes. Archive, INI, and database temporary siblings were all absent.
+
+Phase 6D public catalog geometry is therefore **GO**. This GO does not
+authorize database/save access, completion classification, marker
+implementation/rendering, or another deployment.

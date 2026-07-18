@@ -173,6 +173,25 @@ keys, 107 unique page/control keys, 107 `CLOSED` rows, and zero
 in
 [`phase-6d-gap-only-all-campaign-geometry-report.md`](phase-6d-gap-only-all-campaign-geometry-report.md).
 
-Live geometry acceptance is **GO**. Normal-shutdown postflight remains pending.
-This GO does not authorize completion-database/save access, completion
-classification, marker implementation/rendering, or another deployment.
+Live geometry acceptance is **GO**. The following normal-shutdown postflight
+closes the diagnostic session. This GO does not authorize
+completion-database/save access, completion classification, marker
+implementation/rendering, or another deployment.
+
+## Normal-shutdown postflight
+
+After the user normally closed both protected applications:
+
+- protected-process count: `0`;
+- final session range: `[19621126,19694279)`, `73153` bytes, SHA-256
+  `839ff8933df1a6a6ec227c3edee405914471be06b2d7b387793060676ae7bb70`;
+- final full log: `19694279` bytes, SHA-256
+  `f81d3bdd3368453bb24d1225e2fee3424cdc3444117c1f5a2054a2d6fce8c66c`;
+- installed archive, embedded candidate ASI, and live INI retained their
+  deployed hashes;
+- database main and backup retained their exact preflight sizes, timestamps,
+  and hashes;
+- archive, INI, and database temporary siblings remained absent.
+
+Phase 6D gap-only public catalog geometry is **GO**. The next implementation
+boundary remains separately approval-gated.

@@ -271,7 +271,9 @@ The audited gap-only candidate is recorded in the
 [candidate audit](docs/research/phase-6d-gap-only-campaign-catalog-candidate-audit.md).
 Its single live catalog batch closed all 107 exact public mission rectangles
 with no invalid snapshot, extra control, or rectangle instability. The merged
-matrix now has zero geometry gaps; normal-shutdown postflight remains pending.
+matrix now has zero geometry gaps. Normal-shutdown postflight preserved the
+installed candidate and database main/backup exactly, so Phase 6D public
+catalog geometry is GO.
 See the
 [live geometry report](docs/research/phase-6d-gap-only-all-campaign-geometry-report.md).
 
