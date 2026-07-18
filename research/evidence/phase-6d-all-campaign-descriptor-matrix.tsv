@@ -1,112 +1,112 @@
 # Phase 6D all-campaign descriptor matrix
 # exact executable SHA-256: 3b561269fb7ce4c281959f8f0db691cebf7cd36a04ad3594461b94290c5d3816
 # exact PDB SHA-256: 702df42ef4d7e8f6ba39aee96b5c83780c3266a7e9a174f81db13c6934050ae6
-# generated/reviewed: 2026-07-16 Asia/Shanghai
+# generated/reviewed: 2026-07-18 Asia/Shanghai
 descriptor key	content group	page	control	rectangle	ordinal / event	transition kind	formatter / literal	exact relative	static windows	public evidence	status
-addon-roman-01	Add-on Roman	12	47	—	0 / 0x1F49	0x0B	ao_roman%01i	Map\Campaign\ao_roman1.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-roman-02	Add-on Roman	12	48	—	1 / 0x1F49	0x0B	ao_roman%01i	Map\Campaign\ao_roman2.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-roman-03	Add-on Roman	12	49	—	2 / 0x1F49	0x0B	ao_roman%01i	Map\Campaign\ao_roman3.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-roman-04	Add-on Roman	12	50	—	3 / 0x1F49	0x0B	ao_roman%01i	Map\Campaign\ao_roman4.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-viking-01	Add-on Viking	14	112	—	0 / 0x1F4D	0x0C	ao_viking%01i	Map\Campaign\ao_viking1.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-viking-02	Add-on Viking	14	113	—	1 / 0x1F4D	0x0C	ao_viking%01i	Map\Campaign\ao_viking2.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-viking-03	Add-on Viking	14	114	—	2 / 0x1F4D	0x0C	ao_viking%01i	Map\Campaign\ao_viking3.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-viking-04	Add-on Viking	14	115	—	3 / 0x1F4D	0x0C	ao_viking%01i	Map\Campaign\ao_viking4.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-mayan-01	Add-on Mayan	13	34	480,177,175,30	0 / 0x1F4B	0x0D	ao_maya%01i	Map\Campaign\ao_maya1.map	AO	L6B-I	CLOSED
-addon-mayan-02	Add-on Mayan	13	35	—	1 / 0x1F4B	0x0D	ao_maya%01i	Map\Campaign\ao_maya2.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-mayan-03	Add-on Mayan	13	36	—	2 / 0x1F4B	0x0D	ao_maya%01i	Map\Campaign\ao_maya3.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-mayan-04	Add-on Mayan	13	37	—	3 / 0x1F4B	0x0D	ao_maya%01i	Map\Campaign\ao_maya4.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-settle-01	Add-on Settle	15	77	—	0 / 0x1F47	0x0E	ao_settle%01i	Map\Campaign\ao_settle1.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-settle-02	Add-on Settle	15	78	—	1 / 0x1F47	0x0E	ao_settle%01i	Map\Campaign\ao_settle2.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-settle-03	Add-on Settle	15	79	—	2 / 0x1F47	0x0E	ao_settle%01i	Map\Campaign\ao_settle3.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-settle-04	Add-on Settle	15	80	—	3 / 0x1F47	0x0E	ao_settle%01i	Map\Campaign\ao_settle4.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-trojan-01	Add-on Trojan	11	91	320,200,175,30	0 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan01.map	AO	L6B-I	CLOSED
-addon-trojan-02	Add-on Trojan	11	92	—	1 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan02.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-trojan-03	Add-on Trojan	11	93	—	2 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan03.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-trojan-04	Add-on Trojan	11	94	—	3 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan04.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-trojan-05	Add-on Trojan	11	95	—	4 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan05.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-trojan-06	Add-on Trojan	11	96	—	5 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan06.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-trojan-07	Add-on Trojan	11	97	—	6 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan07.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-trojan-08	Add-on Trojan	11	98	—	7 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan08.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-trojan-09	Add-on Trojan	11	99	—	8 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan09.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-trojan-10	Add-on Trojan	11	100	—	9 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan10.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-trojan-11	Add-on Trojan	11	101	—	10 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan11.map	AO	L6B-I (control absent)	EVIDENCE GAP
-addon-trojan-12	Add-on Trojan	11	102	—	11 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan12.map	AO	L6B-I (control absent)	EVIDENCE GAP
-md-roman-01	Mission CD Roman	16	1903	237,148,175,30	0 / 0x1B60	0x05	md_roman%01i	Map\Campaign\md_roman1.map	MD	L6B-I	CLOSED
-md-roman-02	Mission CD Roman	16	1904	237,195,175,30	1 / 0x1B60	0x05	md_roman%01i	Map\Campaign\md_roman2.map	MD	L6B-I	CLOSED
-md-roman-03	Mission CD Roman	16	1905	—	2 / 0x1B60	0x05	md_roman%01i	Map\Campaign\md_roman3.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-roman-04	Mission CD Roman	16	1906	—	3 / 0x1B60	0x05	md_roman%01i	Map\Campaign\md_roman4.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-roman-05	Mission CD Roman	16	1907	—	4 / 0x1B60	0x05	md_roman%01i	Map\Campaign\md_roman5.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-viking-01	Mission CD Viking	17	1950	—	0 / 0x1B64	0x06	md_viking%01i	Map\Campaign\md_viking1.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-viking-02	Mission CD Viking	17	1951	—	1 / 0x1B64	0x06	md_viking%01i	Map\Campaign\md_viking2.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-viking-03	Mission CD Viking	17	1952	—	2 / 0x1B64	0x06	md_viking%01i	Map\Campaign\md_viking3.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-viking-04	Mission CD Viking	17	1953	—	3 / 0x1B64	0x06	md_viking%01i	Map\Campaign\md_viking4.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-viking-05	Mission CD Viking	17	1954	—	4 / 0x1B64	0x06	md_viking%01i	Map\Campaign\md_viking5.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-mayan-01	Mission CD Mayan	18	1889	430,177,175,30	0 / 0x1B62	0x07	md_maya%01i	Map\Campaign\md_maya1.map	MD	L6B-I	CLOSED
-md-mayan-02	Mission CD Mayan	18	1890	—	1 / 0x1B62	0x07	md_maya%01i	Map\Campaign\md_maya2.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-mayan-03	Mission CD Mayan	18	1891	—	2 / 0x1B62	0x07	md_maya%01i	Map\Campaign\md_maya3.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-mayan-04	Mission CD Mayan	18	1892	—	3 / 0x1B62	0x07	md_maya%01i	Map\Campaign\md_maya4.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-mayan-05	Mission CD Mayan	18	1893	—	4 / 0x1B62	0x07	md_maya%01i	Map\Campaign\md_maya5.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-settle-01	Mission CD Settle	19	1941	—	0 / 0x1B66	0x08	md_settle%01i	Map\Campaign\md_settle1.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-settle-02	Mission CD Settle	19	1942	—	1 / 0x1B66	0x08	md_settle%01i	Map\Campaign\md_settle2.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-settle-03	Mission CD Settle	19	1943	—	2 / 0x1B66	0x08	md_settle%01i	Map\Campaign\md_settle3.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-conflict-01	Mission CD Conflict	19	1944	—	0 / 0x1B67	0x09	md_conflict%01i	Map\Campaign\md_conflict1.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-conflict-02	Mission CD Conflict	19	1945	—	1 / 0x1B67	0x09	md_conflict%01i	Map\Campaign\md_conflict2.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-conflict-03	Mission CD Conflict	19	1946	—	2 / 0x1B67	0x09	md_conflict%01i	Map\Campaign\md_conflict3.map	MD	L6B-I (control absent)	EVIDENCE GAP
-md-bonus	Mission CD Bonus	4	1919	—	0 / 0x1B5F	0x0A	md_bonus (literal)	Map\Campaign\md_bonus.map	MD	L6B-F page 4 (control absent)	EVIDENCE GAP
-mcd2-roman-01	New World (MCD2) Roman	6	1825	—	0 / 0x232A	0x11	mcd2_roman%01i	Map\Campaign\mcd2_roman1.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-roman-02	New World (MCD2) Roman	6	1826	—	1 / 0x232A	0x11	mcd2_roman%01i	Map\Campaign\mcd2_roman2.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-roman-03	New World (MCD2) Roman	6	1827	—	2 / 0x232A	0x11	mcd2_roman%01i	Map\Campaign\mcd2_roman3.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-roman-04	New World (MCD2) Roman	6	1828	—	3 / 0x232A	0x11	mcd2_roman%01i	Map\Campaign\mcd2_roman4.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-roman-05	New World (MCD2) Roman	6	1829	—	4 / 0x232A	0x11	mcd2_roman%01i	Map\Campaign\mcd2_roman5.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-viking-01	New World (MCD2) Viking	6	1830	—	0 / 0x232B	0x12	mcd2_viking%01i	Map\Campaign\mcd2_viking1.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-viking-02	New World (MCD2) Viking	6	1831	—	1 / 0x232B	0x12	mcd2_viking%01i	Map\Campaign\mcd2_viking2.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-viking-03	New World (MCD2) Viking	6	1832	—	2 / 0x232B	0x12	mcd2_viking%01i	Map\Campaign\mcd2_viking3.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-viking-04	New World (MCD2) Viking	6	1833	—	3 / 0x232B	0x12	mcd2_viking%01i	Map\Campaign\mcd2_viking4.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-viking-05	New World (MCD2) Viking	6	1834	—	4 / 0x232B	0x12	mcd2_viking%01i	Map\Campaign\mcd2_viking5.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-mayan-01	New World (MCD2) Mayan	6	1835	—	0 / 0x232C	0x13	mcd2_maya%01i	Map\Campaign\mcd2_maya1.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-mayan-02	New World (MCD2) Mayan	6	1836	—	1 / 0x232C	0x13	mcd2_maya%01i	Map\Campaign\mcd2_maya2.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-mayan-03	New World (MCD2) Mayan	6	1837	—	2 / 0x232C	0x13	mcd2_maya%01i	Map\Campaign\mcd2_maya3.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-mayan-04	New World (MCD2) Mayan	6	1838	—	3 / 0x232C	0x13	mcd2_maya%01i	Map\Campaign\mcd2_maya4.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-mayan-05	New World (MCD2) Mayan	6	1839	—	4 / 0x232C	0x13	mcd2_maya%01i	Map\Campaign\mcd2_maya5.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-trojan-01	New World (MCD2) Trojan	6	1840	—	0 / 0x232D	0x14	mcd2_trojan%01i	Map\Campaign\mcd2_trojan1.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-trojan-02	New World (MCD2) Trojan	6	1841	—	1 / 0x232D	0x14	mcd2_trojan%01i	Map\Campaign\mcd2_trojan2.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-trojan-03	New World (MCD2) Trojan	6	1842	—	2 / 0x232D	0x14	mcd2_trojan%01i	Map\Campaign\mcd2_trojan3.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-trojan-04	New World (MCD2) Trojan	6	1843	—	3 / 0x232D	0x14	mcd2_trojan%01i	Map\Campaign\mcd2_trojan4.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-mcd2-trojan-05	New World (MCD2) Trojan	6	1844	—	4 / 0x232D	0x14	mcd2_trojan%01i	Map\Campaign\mcd2_trojan5.map	MD2	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-roman-01	New World 2 (XMD3) Roman	6	2939	—	0 / 0x251E	0x15	xmd3_roman%01i	Map\Campaign\xmd3_roman1.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-roman-02	New World 2 (XMD3) Roman	6	2940	—	1 / 0x251E	0x15	xmd3_roman%01i	Map\Campaign\xmd3_roman2.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-roman-03	New World 2 (XMD3) Roman	6	2941	—	2 / 0x251E	0x15	xmd3_roman%01i	Map\Campaign\xmd3_roman3.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-roman-04	New World 2 (XMD3) Roman	6	2942	—	3 / 0x251E	0x15	xmd3_roman%01i	Map\Campaign\xmd3_roman4.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-viking-01	New World 2 (XMD3) Viking	6	2943	—	0 / 0x251F	0x16	xmd3_viking%01i	Map\Campaign\xmd3_viking1.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-viking-02	New World 2 (XMD3) Viking	6	2944	—	1 / 0x251F	0x16	xmd3_viking%01i	Map\Campaign\xmd3_viking2.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-viking-03	New World 2 (XMD3) Viking	6	2945	—	2 / 0x251F	0x16	xmd3_viking%01i	Map\Campaign\xmd3_viking3.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-viking-04	New World 2 (XMD3) Viking	6	2946	—	3 / 0x251F	0x16	xmd3_viking%01i	Map\Campaign\xmd3_viking4.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-trojan-01	New World 2 (XMD3) Trojan	6	2947	—	0 / 0x2521	0x18	xmd3_trojan%01i	Map\Campaign\xmd3_trojan1.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-trojan-02	New World 2 (XMD3) Trojan	6	2948	—	1 / 0x2521	0x18	xmd3_trojan%01i	Map\Campaign\xmd3_trojan2.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-trojan-03	New World 2 (XMD3) Trojan	6	2949	—	2 / 0x2521	0x18	xmd3_trojan%01i	Map\Campaign\xmd3_trojan3.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-trojan-04	New World 2 (XMD3) Trojan	6	2950	—	3 / 0x2521	0x18	xmd3_trojan%01i	Map\Campaign\xmd3_trojan4.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-mayan-01	New World 2 (XMD3) Mayan	6	2951	—	0 / 0x2520	0x17	xmd3_maya%01i	Map\Campaign\xmd3_maya1.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-mayan-02	New World 2 (XMD3) Mayan	6	2952	—	1 / 0x2520	0x17	xmd3_maya%01i	Map\Campaign\xmd3_maya2.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-mayan-03	New World 2 (XMD3) Mayan	6	2953	—	2 / 0x2520	0x17	xmd3_maya%01i	Map\Campaign\xmd3_maya3.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-xmd3-mayan-04	New World 2 (XMD3) Mayan	6	2954	—	3 / 0x2520	0x17	xmd3_maya%01i	Map\Campaign\xmd3_maya4.map	XMD3	L6B-F (mission control absent)	EVIDENCE GAP
-original-viking-01	Original Viking	20	2038	—	0 / 0x66	0x02	viking%02i	Map\Campaign\viking01.map	ORIG	L6B-I (control absent)	EVIDENCE GAP
-original-viking-02	Original Viking	20	2039	420,150,175,30	1 / 0x66	0x02	viking%02i	Map\Campaign\viking02.map	ORIG	L6B-I	CLOSED
-original-viking-03	Original Viking	20	2040	420,190,175,30	2 / 0x66	0x02	viking%02i	Map\Campaign\viking03.map	ORIG	L6B-I	CLOSED
-original-mayan-01	Original Mayan	20	2041	—	0 / 0x66	0x03	maya%02i	Map\Campaign\maya01.map	ORIG	L6B-I (control absent)	EVIDENCE GAP
-original-mayan-02	Original Mayan	20	2042	—	1 / 0x66	0x03	maya%02i	Map\Campaign\maya02.map	ORIG	L6B-I (control absent)	EVIDENCE GAP
-original-mayan-03	Original Mayan	20	2043	—	2 / 0x66	0x03	maya%02i	Map\Campaign\maya03.map	ORIG	L6B-I (control absent)	EVIDENCE GAP
-original-roman-01	Original Roman	20	2044	—	0 / 0x66	0x01	roman%02i	Map\Campaign\roman01.map	ORIG	L6B-I (control absent)	EVIDENCE GAP
-original-roman-02	Original Roman	20	2045	—	1 / 0x66	0x01	roman%02i	Map\Campaign\roman02.map	ORIG	L6B-I (control absent)	EVIDENCE GAP
-original-roman-03	Original Roman	20	2046	—	2 / 0x66	0x01	roman%02i	Map\Campaign\roman03.map	ORIG	L6B-I (control absent)	EVIDENCE GAP
-dark-01	Dark Tribe	21	2081	500,104,175,30	0 / 0x64	0x04	dark%02i	Map\Campaign\dark01.map	DARK	D6A	CLOSED
-dark-02	Dark Tribe	21	2082	500,136,175,30	1 / 0x64	0x04	dark%02i	Map\Campaign\dark02.map	DARK	D6A	CLOSED
-dark-03	Dark Tribe	21	2083	500,168,175,30	2 / 0x64	0x04	dark%02i	Map\Campaign\dark03.map	DARK	D6A	CLOSED
-dark-04	Dark Tribe	21	2084	500,200,175,30	3 / 0x64	0x04	dark%02i	Map\Campaign\dark04.map	DARK	D6A	CLOSED
-dark-05	Dark Tribe	21	2085	500,232,175,30	4 / 0x64	0x04	dark%02i	Map\Campaign\dark05.map	DARK	D6A	CLOSED
-dark-06	Dark Tribe	21	2086	500,264,175,30	5 / 0x64	0x04	dark%02i	Map\Campaign\dark06.map	DARK	D6A	CLOSED
-dark-07	Dark Tribe	21	2087	500,296,175,30	6 / 0x64	0x04	dark%02i	Map\Campaign\dark07.map	DARK	D6A	CLOSED
-dark-08	Dark Tribe	21	2088	500,328,175,30	7 / 0x64	0x04	dark%02i	Map\Campaign\dark08.map	DARK	D6A	CLOSED
-dark-09	Dark Tribe	21	2089	500,360,175,30	8 / 0x64	0x04	dark%02i	Map\Campaign\dark09.map	DARK	D6A	CLOSED
-dark-10	Dark Tribe	21	2090	500,392,175,30	9 / 0x64	0x04	dark%02i	Map\Campaign\dark10.map	DARK	D6A	CLOSED
-dark-11	Dark Tribe	21	2091	500,424,175,30	10 / 0x64	0x04	dark%02i	Map\Campaign\dark11.map	DARK	D6A	CLOSED
-dark-12	Dark Tribe	21	2092	500,456,175,30	11 / 0x64	0x04	dark%02i	Map\Campaign\dark12.map	DARK	D6A	CLOSED
+addon-roman-01	Add-on Roman	12	47	480,148,175,30	0 / 0x1F49	0x0B	ao_roman%01i	Map\Campaign\ao_roman1.map	AO	L6D-G	CLOSED
+addon-roman-02	Add-on Roman	12	48	480,195,175,30	1 / 0x1F49	0x0B	ao_roman%01i	Map\Campaign\ao_roman2.map	AO	L6D-G	CLOSED
+addon-roman-03	Add-on Roman	12	49	480,243,175,30	2 / 0x1F49	0x0B	ao_roman%01i	Map\Campaign\ao_roman3.map	AO	L6D-G	CLOSED
+addon-roman-04	Add-on Roman	12	50	480,295,175,30	3 / 0x1F49	0x0B	ao_roman%01i	Map\Campaign\ao_roman4.map	AO	L6D-G	CLOSED
+addon-viking-01	Add-on Viking	14	112	500,124,175,30	0 / 0x1F4D	0x0C	ao_viking%01i	Map\Campaign\ao_viking1.map	AO	L6D-G	CLOSED
+addon-viking-02	Add-on Viking	14	113	500,171,175,30	1 / 0x1F4D	0x0C	ao_viking%01i	Map\Campaign\ao_viking2.map	AO	L6D-G	CLOSED
+addon-viking-03	Add-on Viking	14	114	500,219,175,30	2 / 0x1F4D	0x0C	ao_viking%01i	Map\Campaign\ao_viking3.map	AO	L6D-G	CLOSED
+addon-viking-04	Add-on Viking	14	115	500,266,175,30	3 / 0x1F4D	0x0C	ao_viking%01i	Map\Campaign\ao_viking4.map	AO	L6D-G	CLOSED
+addon-mayan-01	Add-on Mayan	13	34	480,177,175,30	0 / 0x1F4B	0x0D	ao_maya%01i	Map\Campaign\ao_maya1.map	AO	L6D-G	CLOSED
+addon-mayan-02	Add-on Mayan	13	35	480,223,175,30	1 / 0x1F4B	0x0D	ao_maya%01i	Map\Campaign\ao_maya2.map	AO	L6D-G	CLOSED
+addon-mayan-03	Add-on Mayan	13	36	480,269,175,30	2 / 0x1F4B	0x0D	ao_maya%01i	Map\Campaign\ao_maya3.map	AO	L6D-G	CLOSED
+addon-mayan-04	Add-on Mayan	13	37	480,317,175,30	3 / 0x1F4B	0x0D	ao_maya%01i	Map\Campaign\ao_maya4.map	AO	L6D-G	CLOSED
+addon-settle-01	Add-on Settle	15	77	480,115,175,30	0 / 0x1F47	0x0E	ao_settle%01i	Map\Campaign\ao_settle1.map	AO	L6D-G	CLOSED
+addon-settle-02	Add-on Settle	15	78	480,162,175,30	1 / 0x1F47	0x0E	ao_settle%01i	Map\Campaign\ao_settle2.map	AO	L6D-G	CLOSED
+addon-settle-03	Add-on Settle	15	79	480,209,175,30	2 / 0x1F47	0x0E	ao_settle%01i	Map\Campaign\ao_settle3.map	AO	L6D-G	CLOSED
+addon-settle-04	Add-on Settle	15	80	480,256,175,30	3 / 0x1F47	0x0E	ao_settle%01i	Map\Campaign\ao_settle4.map	AO	L6D-G	CLOSED
+addon-trojan-01	Add-on Trojan	11	91	320,200,175,30	0 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan01.map	AO	L6D-G	CLOSED
+addon-trojan-02	Add-on Trojan	11	92	320,240,175,30	1 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan02.map	AO	L6D-G	CLOSED
+addon-trojan-03	Add-on Trojan	11	93	320,280,175,30	2 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan03.map	AO	L6D-G	CLOSED
+addon-trojan-04	Add-on Trojan	11	94	320,320,175,30	3 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan04.map	AO	L6D-G	CLOSED
+addon-trojan-05	Add-on Trojan	11	95	320,360,175,30	4 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan05.map	AO	L6D-G	CLOSED
+addon-trojan-06	Add-on Trojan	11	96	320,400,175,30	5 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan06.map	AO	L6D-G	CLOSED
+addon-trojan-07	Add-on Trojan	11	97	520,200,175,30	6 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan07.map	AO	L6D-G	CLOSED
+addon-trojan-08	Add-on Trojan	11	98	520,240,175,30	7 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan08.map	AO	L6D-G	CLOSED
+addon-trojan-09	Add-on Trojan	11	99	520,280,175,30	8 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan09.map	AO	L6D-G	CLOSED
+addon-trojan-10	Add-on Trojan	11	100	520,320,175,30	9 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan10.map	AO	L6D-G	CLOSED
+addon-trojan-11	Add-on Trojan	11	101	520,360,175,30	10 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan11.map	AO	L6D-G	CLOSED
+addon-trojan-12	Add-on Trojan	11	102	520,400,175,30	11 / 0x1F4F	0x0F	ao_trojan%02i	Map\Campaign\ao_trojan12.map	AO	L6D-G	CLOSED
+md-roman-01	Mission CD Roman	16	1903	237,148,175,30	0 / 0x1B60	0x05	md_roman%01i	Map\Campaign\md_roman1.map	MD	L6D-G	CLOSED
+md-roman-02	Mission CD Roman	16	1904	237,195,175,30	1 / 0x1B60	0x05	md_roman%01i	Map\Campaign\md_roman2.map	MD	L6D-G	CLOSED
+md-roman-03	Mission CD Roman	16	1905	237,243,175,30	2 / 0x1B60	0x05	md_roman%01i	Map\Campaign\md_roman3.map	MD	L6D-G	CLOSED
+md-roman-04	Mission CD Roman	16	1906	237,293,175,30	3 / 0x1B60	0x05	md_roman%01i	Map\Campaign\md_roman4.map	MD	L6D-G	CLOSED
+md-roman-05	Mission CD Roman	16	1907	237,343,175,30	4 / 0x1B60	0x05	md_roman%01i	Map\Campaign\md_roman5.map	MD	L6D-G	CLOSED
+md-viking-01	Mission CD Viking	17	1950	404,124,175,30	0 / 0x1B64	0x06	md_viking%01i	Map\Campaign\md_viking1.map	MD	L6D-G	CLOSED
+md-viking-02	Mission CD Viking	17	1951	404,171,175,30	1 / 0x1B64	0x06	md_viking%01i	Map\Campaign\md_viking2.map	MD	L6D-G	CLOSED
+md-viking-03	Mission CD Viking	17	1952	404,219,175,30	2 / 0x1B64	0x06	md_viking%01i	Map\Campaign\md_viking3.map	MD	L6D-G	CLOSED
+md-viking-04	Mission CD Viking	17	1953	402,266,175,30	3 / 0x1B64	0x06	md_viking%01i	Map\Campaign\md_viking4.map	MD	L6D-G	CLOSED
+md-viking-05	Mission CD Viking	17	1954	404,312,175,30	4 / 0x1B64	0x06	md_viking%01i	Map\Campaign\md_viking5.map	MD	L6D-G	CLOSED
+md-mayan-01	Mission CD Mayan	18	1889	430,177,175,30	0 / 0x1B62	0x07	md_maya%01i	Map\Campaign\md_maya1.map	MD	L6D-G	CLOSED
+md-mayan-02	Mission CD Mayan	18	1890	431,223,175,30	1 / 0x1B62	0x07	md_maya%01i	Map\Campaign\md_maya2.map	MD	L6D-G	CLOSED
+md-mayan-03	Mission CD Mayan	18	1891	430,269,175,30	2 / 0x1B62	0x07	md_maya%01i	Map\Campaign\md_maya3.map	MD	L6D-G	CLOSED
+md-mayan-04	Mission CD Mayan	18	1892	432,317,175,30	3 / 0x1B62	0x07	md_maya%01i	Map\Campaign\md_maya4.map	MD	L6D-G	CLOSED
+md-mayan-05	Mission CD Mayan	18	1893	432,363,175,30	4 / 0x1B62	0x07	md_maya%01i	Map\Campaign\md_maya5.map	MD	L6D-G	CLOSED
+md-settle-01	Mission CD Settle	19	1941	128,115,175,30	0 / 0x1B66	0x08	md_settle%01i	Map\Campaign\md_settle1.map	MD	L6D-G	CLOSED
+md-settle-02	Mission CD Settle	19	1942	127,162,175,30	1 / 0x1B66	0x08	md_settle%01i	Map\Campaign\md_settle2.map	MD	L6D-G	CLOSED
+md-settle-03	Mission CD Settle	19	1943	126,208,175,30	2 / 0x1B66	0x08	md_settle%01i	Map\Campaign\md_settle3.map	MD	L6D-G	CLOSED
+md-conflict-01	Mission CD Conflict	19	1944	520,347,175,30	0 / 0x1B67	0x09	md_conflict%01i	Map\Campaign\md_conflict1.map	MD	L6D-G	CLOSED
+md-conflict-02	Mission CD Conflict	19	1945	521,392,175,30	1 / 0x1B67	0x09	md_conflict%01i	Map\Campaign\md_conflict2.map	MD	L6D-G	CLOSED
+md-conflict-03	Mission CD Conflict	19	1946	520,437,175,30	2 / 0x1B67	0x09	md_conflict%01i	Map\Campaign\md_conflict3.map	MD	L6D-G	CLOSED
+md-bonus	Mission CD Bonus	4	1919	427,370,277,127	0 / 0x1B5F	0x0A	md_bonus (literal)	Map\Campaign\md_bonus.map	MD	L6D-G	CLOSED
+mcd2-roman-01	New World (MCD2) Roman	6	1825	688,39,40,59	0 / 0x232A	0x11	mcd2_roman%01i	Map\Campaign\mcd2_roman1.map	MD2	L6D-G	CLOSED
+mcd2-roman-02	New World (MCD2) Roman	6	1826	685,513,100,80	1 / 0x232A	0x11	mcd2_roman%01i	Map\Campaign\mcd2_roman2.map	MD2	L6D-G	CLOSED
+mcd2-roman-03	New World (MCD2) Roman	6	1827	711,278,28,25	2 / 0x232A	0x11	mcd2_roman%01i	Map\Campaign\mcd2_roman3.map	MD2	L6D-G	CLOSED
+mcd2-roman-04	New World (MCD2) Roman	6	1828	475,275,28,25	3 / 0x232A	0x11	mcd2_roman%01i	Map\Campaign\mcd2_roman4.map	MD2	L6D-G	CLOSED
+mcd2-roman-05	New World (MCD2) Roman	6	1829	437,288,28,25	4 / 0x232A	0x11	mcd2_roman%01i	Map\Campaign\mcd2_roman5.map	MD2	L6D-G	CLOSED
+mcd2-viking-01	New World (MCD2) Viking	6	1830	335,288,28,25	0 / 0x232B	0x12	mcd2_viking%01i	Map\Campaign\mcd2_viking1.map	MD2	L6D-G	CLOSED
+mcd2-viking-02	New World (MCD2) Viking	6	1831	248,268,28,25	1 / 0x232B	0x12	mcd2_viking%01i	Map\Campaign\mcd2_viking2.map	MD2	L6D-G	CLOSED
+mcd2-viking-03	New World (MCD2) Viking	6	1832	277,145,28,25	2 / 0x232B	0x12	mcd2_viking%01i	Map\Campaign\mcd2_viking3.map	MD2	L6D-G	CLOSED
+mcd2-viking-04	New World (MCD2) Viking	6	1833	429,218,28,25	3 / 0x232B	0x12	mcd2_viking%01i	Map\Campaign\mcd2_viking4.map	MD2	L6D-G	CLOSED
+mcd2-viking-05	New World (MCD2) Viking	6	1834	255,203,28,25	4 / 0x232B	0x12	mcd2_viking%01i	Map\Campaign\mcd2_viking5.map	MD2	L6D-G	CLOSED
+mcd2-mayan-01	New World (MCD2) Mayan	6	1835	194,147,28,25	0 / 0x232C	0x13	mcd2_maya%01i	Map\Campaign\mcd2_maya1.map	MD2	L6D-G	CLOSED
+mcd2-mayan-02	New World (MCD2) Mayan	6	1836	178,183,28,25	1 / 0x232C	0x13	mcd2_maya%01i	Map\Campaign\mcd2_maya2.map	MD2	L6D-G	CLOSED
+mcd2-mayan-03	New World (MCD2) Mayan	6	1837	703,246,28,25	2 / 0x232C	0x13	mcd2_maya%01i	Map\Campaign\mcd2_maya3.map	MD2	L6D-G	CLOSED
+mcd2-mayan-04	New World (MCD2) Mayan	6	1838	400,244,28,25	3 / 0x232C	0x13	mcd2_maya%01i	Map\Campaign\mcd2_maya4.map	MD2	L6D-G	CLOSED
+mcd2-mayan-05	New World (MCD2) Mayan	6	1839	83,352,28,25	4 / 0x232C	0x13	mcd2_maya%01i	Map\Campaign\mcd2_maya5.map	MD2	L6D-G	CLOSED
+mcd2-trojan-01	New World (MCD2) Trojan	6	1840	129,420,28,25	0 / 0x232D	0x14	mcd2_trojan%01i	Map\Campaign\mcd2_trojan1.map	MD2	L6D-G	CLOSED
+mcd2-trojan-02	New World (MCD2) Trojan	6	1841	337,454,28,25	1 / 0x232D	0x14	mcd2_trojan%01i	Map\Campaign\mcd2_trojan2.map	MD2	L6D-G	CLOSED
+mcd2-trojan-03	New World (MCD2) Trojan	6	1842	134,333,28,25	2 / 0x232D	0x14	mcd2_trojan%01i	Map\Campaign\mcd2_trojan3.map	MD2	L6D-G	CLOSED
+mcd2-trojan-04	New World (MCD2) Trojan	6	1843	444,392,28,25	3 / 0x232D	0x14	mcd2_trojan%01i	Map\Campaign\mcd2_trojan4.map	MD2	L6D-G	CLOSED
+mcd2-trojan-05	New World (MCD2) Trojan	6	1844	676,339,28,25	4 / 0x232D	0x14	mcd2_trojan%01i	Map\Campaign\mcd2_trojan5.map	MD2	L6D-G	CLOSED
+xmd3-roman-01	New World 2 (XMD3) Roman	6	2939	636,253,28,25	0 / 0x251E	0x15	xmd3_roman%01i	Map\Campaign\xmd3_roman1.map	XMD3	L6D-G	CLOSED
+xmd3-roman-02	New World 2 (XMD3) Roman	6	2940	618,212,28,25	1 / 0x251E	0x15	xmd3_roman%01i	Map\Campaign\xmd3_roman2.map	XMD3	L6D-G	CLOSED
+xmd3-roman-03	New World 2 (XMD3) Roman	6	2941	689,341,28,25	2 / 0x251E	0x15	xmd3_roman%01i	Map\Campaign\xmd3_roman3.map	XMD3	L6D-G	CLOSED
+xmd3-roman-04	New World 2 (XMD3) Roman	6	2942	595,263,28,25	3 / 0x251E	0x15	xmd3_roman%01i	Map\Campaign\xmd3_roman4.map	XMD3	L6D-G	CLOSED
+xmd3-viking-01	New World 2 (XMD3) Viking	6	2943	552,152,28,25	0 / 0x251F	0x16	xmd3_viking%01i	Map\Campaign\xmd3_viking1.map	XMD3	L6D-G	CLOSED
+xmd3-viking-02	New World 2 (XMD3) Viking	6	2944	593,140,28,25	1 / 0x251F	0x16	xmd3_viking%01i	Map\Campaign\xmd3_viking2.map	XMD3	L6D-G	CLOSED
+xmd3-viking-03	New World 2 (XMD3) Viking	6	2945	558,116,28,25	2 / 0x251F	0x16	xmd3_viking%01i	Map\Campaign\xmd3_viking3.map	XMD3	L6D-G	CLOSED
+xmd3-viking-04	New World 2 (XMD3) Viking	6	2946	593,95,28,25	3 / 0x251F	0x16	xmd3_viking%01i	Map\Campaign\xmd3_viking4.map	XMD3	L6D-G	CLOSED
+xmd3-trojan-01	New World 2 (XMD3) Trojan	6	2947	683,240,28,25	0 / 0x2521	0x18	xmd3_trojan%01i	Map\Campaign\xmd3_trojan1.map	XMD3	L6D-G	CLOSED
+xmd3-trojan-02	New World 2 (XMD3) Trojan	6	2948	705,279,28,25	1 / 0x2521	0x18	xmd3_trojan%01i	Map\Campaign\xmd3_trojan2.map	XMD3	L6D-G	CLOSED
+xmd3-trojan-03	New World 2 (XMD3) Trojan	6	2949	726,249,28,25	2 / 0x2521	0x18	xmd3_trojan%01i	Map\Campaign\xmd3_trojan3.map	XMD3	L6D-G	CLOSED
+xmd3-trojan-04	New World 2 (XMD3) Trojan	6	2950	722,203,28,25	3 / 0x2521	0x18	xmd3_trojan%01i	Map\Campaign\xmd3_trojan4.map	XMD3	L6D-G	CLOSED
+xmd3-mayan-01	New World 2 (XMD3) Mayan	6	2951	143,348,28,25	0 / 0x2520	0x17	xmd3_maya%01i	Map\Campaign\xmd3_maya1.map	XMD3	L6D-G	CLOSED
+xmd3-mayan-02	New World 2 (XMD3) Mayan	6	2952	116,305,28,25	1 / 0x2520	0x17	xmd3_maya%01i	Map\Campaign\xmd3_maya2.map	XMD3	L6D-G	CLOSED
+xmd3-mayan-03	New World 2 (XMD3) Mayan	6	2953	97,253,28,25	2 / 0x2520	0x17	xmd3_maya%01i	Map\Campaign\xmd3_maya3.map	XMD3	L6D-G	CLOSED
+xmd3-mayan-04	New World 2 (XMD3) Mayan	6	2954	85,208,28,25	3 / 0x2520	0x17	xmd3_maya%01i	Map\Campaign\xmd3_maya4.map	XMD3	L6D-G	CLOSED
+original-viking-01	Original Viking	20	2038	420,110,175,30	0 / 0x66	0x02	viking%02i	Map\Campaign\viking01.map	ORIG	L6D-G	CLOSED
+original-viking-02	Original Viking	20	2039	420,150,175,30	1 / 0x66	0x02	viking%02i	Map\Campaign\viking02.map	ORIG	L6D-G	CLOSED
+original-viking-03	Original Viking	20	2040	420,190,175,30	2 / 0x66	0x02	viking%02i	Map\Campaign\viking03.map	ORIG	L6D-G	CLOSED
+original-mayan-01	Original Mayan	20	2041	170,390,175,30	0 / 0x66	0x03	maya%02i	Map\Campaign\maya01.map	ORIG	L6D-G	CLOSED
+original-mayan-02	Original Mayan	20	2042	170,430,175,30	1 / 0x66	0x03	maya%02i	Map\Campaign\maya02.map	ORIG	L6D-G	CLOSED
+original-mayan-03	Original Mayan	20	2043	170,470,175,30	2 / 0x66	0x03	maya%02i	Map\Campaign\maya03.map	ORIG	L6D-G	CLOSED
+original-roman-01	Original Roman	20	2044	210,150,175,30	0 / 0x66	0x01	roman%02i	Map\Campaign\roman01.map	ORIG	L6D-G	CLOSED
+original-roman-02	Original Roman	20	2045	210,190,175,30	1 / 0x66	0x01	roman%02i	Map\Campaign\roman02.map	ORIG	L6D-G	CLOSED
+original-roman-03	Original Roman	20	2046	210,230,175,30	2 / 0x66	0x01	roman%02i	Map\Campaign\roman03.map	ORIG	L6D-G	CLOSED
+dark-01	Dark Tribe	21	2081	500,104,175,30	0 / 0x64	0x04	dark%02i	Map\Campaign\dark01.map	DARK	L6D-G	CLOSED
+dark-02	Dark Tribe	21	2082	500,136,175,30	1 / 0x64	0x04	dark%02i	Map\Campaign\dark02.map	DARK	L6D-G	CLOSED
+dark-03	Dark Tribe	21	2083	500,168,175,30	2 / 0x64	0x04	dark%02i	Map\Campaign\dark03.map	DARK	L6D-G	CLOSED
+dark-04	Dark Tribe	21	2084	500,200,175,30	3 / 0x64	0x04	dark%02i	Map\Campaign\dark04.map	DARK	L6D-G	CLOSED
+dark-05	Dark Tribe	21	2085	500,232,175,30	4 / 0x64	0x04	dark%02i	Map\Campaign\dark05.map	DARK	L6D-G	CLOSED
+dark-06	Dark Tribe	21	2086	500,264,175,30	5 / 0x64	0x04	dark%02i	Map\Campaign\dark06.map	DARK	L6D-G	CLOSED
+dark-07	Dark Tribe	21	2087	500,296,175,30	6 / 0x64	0x04	dark%02i	Map\Campaign\dark07.map	DARK	L6D-G	CLOSED
+dark-08	Dark Tribe	21	2088	500,328,175,30	7 / 0x64	0x04	dark%02i	Map\Campaign\dark08.map	DARK	L6D-G	CLOSED
+dark-09	Dark Tribe	21	2089	500,360,175,30	8 / 0x64	0x04	dark%02i	Map\Campaign\dark09.map	DARK	L6D-G	CLOSED
+dark-10	Dark Tribe	21	2090	500,392,175,30	9 / 0x64	0x04	dark%02i	Map\Campaign\dark10.map	DARK	L6D-G	CLOSED
+dark-11	Dark Tribe	21	2091	500,424,175,30	10 / 0x64	0x04	dark%02i	Map\Campaign\dark11.map	DARK	L6D-G	CLOSED
+dark-12	Dark Tribe	21	2092	500,456,175,30	11 / 0x64	0x04	dark%02i	Map\Campaign\dark12.map	DARK	L6D-G	CLOSED

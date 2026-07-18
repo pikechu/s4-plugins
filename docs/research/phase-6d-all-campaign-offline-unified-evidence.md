@@ -2,6 +2,12 @@
 
 Date: 2026-07-16 (Asia/Shanghai)
 
+> Superseded for geometry status on 2026-07-18: the approved gap-only live
+> batch closed all 107 public rectangles with zero remaining evidence gaps.
+> See
+> [the Phase 6D geometry report](phase-6d-gap-only-all-campaign-geometry-report.md).
+> This document remains the frozen static control-to-relative evidence.
+
 ## Decision
 
 Offline analysis closes the exact control-to-relative chain for 107 selectable

@@ -152,3 +152,27 @@ machine-readable result is retained at
 Deployment is complete. Dynamic acceptance remains pending and does not
 authorize mission launch, database/save reads or writes, completion
 classification, or campaign-marker rendering.
+
+## Live geometry acceptance
+
+The user completed the approved one-process, no-launch traversal of selector
+page 4, all campaign subpages, and all accessible scroll states, then returned
+to the main menu.
+
+The frozen `0.10.0` session slice `[19621126,19679027)` is `57901` bytes with
+SHA-256
+`971f0bc7f7a4797334f6e76ef84e025e5c279683712ef0efbb4f68e6ab85cb82`.
+It contains 46 successful campaign snapshots and no invalid/empty snapshot,
+warning, error, MapInit, Lua identity, campaign association, or session bind.
+
+Exact page/control reconciliation closed 107/107 statically proven mission
+controls with zero extra controls and zero rectangle instability across
+re-entry or scroll. The merged descriptor matrix now has 107 unique descriptor
+keys, 107 unique page/control keys, 107 `CLOSED` rows, and zero
+`EVIDENCE GAP` rows. Detailed coverage and the frozen matrix hash are recorded
+in
+[`phase-6d-gap-only-all-campaign-geometry-report.md`](phase-6d-gap-only-all-campaign-geometry-report.md).
+
+Live geometry acceptance is **GO**. Normal-shutdown postflight remains pending.
+This GO does not authorize completion-database/save access, completion
+classification, marker implementation/rendering, or another deployment.

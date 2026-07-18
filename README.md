@@ -269,6 +269,11 @@ read/one-record write still require their own explicit approvals. See the
 and [offline evidence](docs/research/phase-6d-all-campaign-offline-unified-evidence.md).
 The audited gap-only candidate is recorded in the
 [candidate audit](docs/research/phase-6d-gap-only-campaign-catalog-candidate-audit.md).
+Its single live catalog batch closed all 107 exact public mission rectangles
+with no invalid snapshot, extra control, or rectangle instability. The merged
+matrix now has zero geometry gaps; normal-shutdown postflight remains pending.
+See the
+[live geometry report](docs/research/phase-6d-gap-only-all-campaign-geometry-report.md).
 
 Development feedback policy:
 
