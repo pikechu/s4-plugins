@@ -199,6 +199,7 @@ LRESULT CompletionManagerWindow::HandleMessage(
     HWND window, UINT message, WPARAM wparam, LPARAM lparam) {
     switch (message) {
         case WM_CREATE:
+            window_ = window;
             CreateControls();
             return 0;
         case WM_SIZE: {

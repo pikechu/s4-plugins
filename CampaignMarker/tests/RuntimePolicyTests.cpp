@@ -70,7 +70,7 @@ int RunRuntimePolicyTests() {
     const auto policy =
         ReadText(root / "config" / "CampaignCompletionDebug.ini");
     for (const auto* required : {
-             "Version=0.13.1",
+             "Version=0.13.2",
              "DiagnosticMode=Phase7ClassifiedCompletionManager",
              "InternalMenuReadOnly=1", "InternalMenuWrites=0",
              "InternalMenuRendering=0", "PublicMarkerFallback=0",
@@ -145,7 +145,7 @@ int RunRuntimePolicyTests() {
                 "runtime descriptor evidence must use each full frozen window hash");
     }
 
-    Require(runtime.find("version=0.13.1") != std::string::npos &&
+    Require(runtime.find("version=0.13.2") != std::string::npos &&
                 runtime.find("mode=phase-7-classified-completion-manager") !=
                     std::string::npos,
             "runtime identifies the Phase 7 completion manager mode");
@@ -360,10 +360,18 @@ int RunRuntimePolicyTests() {
             "borrowed diagnostic components are disabled before listener removal");
 
     const auto cmake = ReadText(root / "CMakeLists.txt");
+    const auto managerWindow = ReadText(
+        root / "src" / "manager" / "CompletionManagerWindow.cpp");
     const auto asiBegin = cmake.find("add_library(CampaignCompletionDebug");
     const auto asiEnd = cmake.find("target_include_directories", asiBegin);
     Require(asiBegin != std::string::npos && asiEnd != std::string::npos,
             "ASI source block exists");
+    Require(cmake.find("/utf-8") != std::string::npos,
+            "MSVC parses native manager text as UTF-8");
+    Require(managerWindow.find(
+                "case WM_CREATE:\n            window_ = window;\n"
+                "            CreateControls();") != std::string::npos,
+            "manager binds the created HWND before creating child controls");
     const auto asiSources = cmake.substr(asiBegin, asiEnd - asiBegin);
     Require(asiSources.find("src/campaign/CampaignMenuCapture.cpp") !=
                     std::string::npos &&

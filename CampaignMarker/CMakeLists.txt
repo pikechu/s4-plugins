@@ -71,7 +71,9 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/dllmain.cpp")
   target_compile_definitions(CampaignCompletionDebug PRIVATE
     WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE
   )
-  target_compile_options(CampaignCompletionDebug PRIVATE /W4 /WX /permissive-)
+  target_compile_options(CampaignCompletionDebug PRIVATE
+    /W4 /WX /permissive- $<$<COMPILE_LANGUAGE:CXX>:/utf-8>
+  )
   target_link_options(CampaignCompletionDebug PRIVATE /INCREMENTAL:NO)
   target_link_libraries(CampaignCompletionDebug PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/S4ModApi/S4ModApi.lib"
@@ -203,7 +205,9 @@ target_compile_definitions(campaign_completion_tests PRIVATE
   UNICODE
   _UNICODE
 )
-target_compile_options(campaign_completion_tests PRIVATE /W4 /WX /permissive-)
+target_compile_options(campaign_completion_tests PRIVATE
+  /W4 /WX /permissive- $<$<COMPILE_LANGUAGE:CXX>:/utf-8>
+)
 target_link_libraries(campaign_completion_tests PRIVATE Version Advapi32 Crypt32 Psapi Gdi32)
 set_target_properties(campaign_completion_tests PROPERTIES
   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
