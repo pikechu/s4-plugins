@@ -27,7 +27,7 @@ campaign_completion::CampaignMenuFeature Feature(WORD id, WORD x = 10u) {
 int RunCampaignMenuCaptureTests() {
     using namespace campaign_completion;
 
-    constexpr std::array<std::pair<DWORD, WORD>, 27u> admittedControls{{
+    constexpr std::array<std::pair<DWORD, DWORD>, 27u> admittedControls{{
         {S4_SCREEN_MISSIONCD, 1919u},
         {S4_SCREEN_NEWWORLD2, 1825u},
         {S4_SCREEN_NEWWORLD2, 1844u},
@@ -57,17 +57,18 @@ int RunCampaignMenuCaptureTests() {
         {S4_SCREEN_SINGLEPLAYER_DARKTRIBE, 2092u},
     }};
     for (const auto& [page, control] : admittedControls) {
-        Require(IsPhase6DCampaignMissionControl(page, control),
+        Require(IsPhase6DCampaignMissionControl(
+                    page, static_cast<WORD>(control)),
                 "every Phase 6D mission-control boundary is admitted");
     }
     for (const auto rejected :
-         {std::pair<DWORD, WORD>{S4_SCREEN_MISSIONCD, 1925u},
+         {std::pair<DWORD, DWORD>{S4_SCREEN_MISSIONCD, 1925u},
           {S4_SCREEN_NEWWORLD2, 2938u},
           {S4_SCREEN_SINGLEPLAYER_CAMPAIGN, 2037u},
           {S4_SCREEN_SINGLEPLAYER_DARKTRIBE, 2080u},
           {S4_SCREEN_ADDON_ROMAN, 46u}}) {
-        Require(!IsPhase6DCampaignMissionControl(rejected.first,
-                                                  rejected.second),
+        Require(!IsPhase6DCampaignMissionControl(
+                    rejected.first, static_cast<WORD>(rejected.second)),
                 "navigation and neighboring controls stay outside the gap catalog");
     }
 
