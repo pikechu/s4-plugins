@@ -106,3 +106,49 @@ gap-only catalog candidate after the user has normally closed both protected
 applications. The guarded live acceptance is one uninterrupted, no-launch
 traversal of page 4 and all accessible campaign pages/scroll states, followed
 by one completion report and normal shutdown.
+
+## Guarded deployment
+
+The user subsequently confirmed both protected applications were closed and
+explicitly approved deployment of this exact Phase 6D gap-only candidate.
+Fresh preflight confirmed:
+
+- protected-process count `0`;
+- installed Phase 6C.1 archive SHA-256
+  `ac69b07181c2e832b750591921e1fe73308c2eff8910f6ce17068137b6894988`;
+- live Phase 6C.1 INI SHA-256
+  `024c92062fbdd42703dfa0b30a0de2dc609d61fa075ba31abd4cadc35c899e7b`;
+- candidate ASI and INI exactly matched the audited hashes above;
+- immutable original archive SHA-256 remained
+  `807e58bc92e20afbda4a99d7abdfcd05b87eb230fbb630e4330b487b6ba8c265`;
+- database main/backup hashes and timestamps exactly matched the Phase 6C.1
+  normal-shutdown postflight;
+- no authorized temporary sibling existed.
+
+Before mutation, the fixed-hash elevated script created and verified the full
+rollback snapshot at
+`research/backups/campaign-completion/2026-07-18-pre-v0.10.0-phase6d-gap-only-catalog`.
+The established guarded installer replaced only the project ASI archive entry,
+and the project INI was replaced atomically in its existing project-owned
+directory.
+
+Independent post-deployment verification recorded:
+
+| Item | Result |
+| --- | --- |
+| installed `Plugin_SU.zip` | `1,400,259` bytes; SHA-256 `ea15116f8b84996c4c72e037d6b41782c4921f91224eec24c6acdc1d40e9ac67` |
+| embedded ASI | SHA-256 `de36bfca5cfd3f0cf36a063e7717fe1a20c20754bff2f1bcc6d39158dc113a6c`, exact candidate |
+| live INI | `1,270` bytes; SHA-256 `4a9835f5ea2228aea2780e2d393f001d87e09c35dd87f6525969cc69a0b01e38`, exact candidate |
+| database main | `1,260` bytes; timestamp `2026-07-16T05:41:41.3482563Z`; SHA-256 `49b81aaffddd0380c6cfa69f870ad911d9b82f0ba55a213f305ad7955d4ff26e` |
+| database backup | `951` bytes; timestamp `2026-07-14T11:13:02.1756072Z`; SHA-256 `31edf4f486d7e0078efa23d958482ebc23ffadda2b555c73b5f49b2493756b1f` |
+
+The installed archive contains the same seven immutable original file entries
+plus exactly one project ASI. The installer metadata was updated to the new
+archive and embedded-ASI hashes. Protected-process count remained zero, and
+the archive, INI, and database temporary siblings were all absent. The
+machine-readable result is retained at
+`artifacts/phase6d-gap-only-catalog-d9d3345/deployment-result.json`.
+
+Deployment is complete. Dynamic acceptance remains pending and does not
+authorize mission launch, database/save reads or writes, completion
+classification, or campaign-marker rendering.
