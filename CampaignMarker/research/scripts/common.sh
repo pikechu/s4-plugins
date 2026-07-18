@@ -2,9 +2,10 @@
 set -euo pipefail
 
 readonly WORKSPACE_DIR="/mnt/f/claude projects/thesettler4plugin"
+readonly CAMPAIGN_MARKER_DIR="$WORKSPACE_DIR/CampaignMarker"
 readonly GAME_DIR="/mnt/f/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/games/thesettlers4"
 readonly SU_DIR="/mnt/c/Program Files/Settlers United"
-readonly EVIDENCE_DIR="$WORKSPACE_DIR/research/evidence"
+readonly EVIDENCE_DIR="$CAMPAIGN_MARKER_DIR/research/evidence"
 
 require_readable_file() {
     local path="$1"

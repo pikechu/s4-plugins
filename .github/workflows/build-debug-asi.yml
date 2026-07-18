@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "CMakeLists.txt"
-      - "cmake/**"
-      - "src/**"
-      - "tests/**"
+      - "CampaignMarker/CMakeLists.txt"
+      - "CampaignMarker/cmake/**"
+      - "CampaignMarker/src/**"
+      - "CampaignMarker/tests/**"
       - "third_party/**"
-      - "config/CampaignCompletionDebug.ini"
-      - "tools/**"
+      - "CampaignMarker/config/CampaignCompletionDebug.ini"
+      - "CampaignMarker/tools/**"
       - ".github/workflows/build-debug-asi.yml"
 
 concurrency:
@@ -27,27 +27,27 @@ jobs:
       - name: Restore incremental build cache
         uses: actions/cache@v4
         with:
-          path: build
-          key: win32-release-build-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**', 'tests/**', 'third_party/**') }}
+          path: CampaignMarker/build
+          key: win32-release-build-${{ hashFiles('CampaignMarker/CMakeLists.txt', 'CampaignMarker/cmake/**', 'CampaignMarker/src/**', 'CampaignMarker/tests/**', 'third_party/**') }}
           restore-keys: |
             win32-release-build-
 
       - name: Test Settlers United archive integration
         shell: pwsh
-        run: ./tools/test_settlers_united_artifact.ps1
+        run: ./CampaignMarker/tools/test_settlers_united_artifact.ps1
 
       - name: Configure Win32
-        run: cmake -S . -B build -A Win32 -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S CampaignMarker -B CampaignMarker/build -A Win32 -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build build --config Release --parallel
+        run: cmake --build CampaignMarker/build --config Release --parallel
 
       - name: Verify completion marker rendering policy
         shell: pwsh
         run: |
-          ./tools/verify_no_process_patch.ps1 `
-            -Binary build/Release/CampaignCompletionDebug.asi `
-            -SourceRoot .
+          ./CampaignMarker/tools/verify_no_process_patch.ps1 `
+            -Binary CampaignMarker/build/Release/CampaignCompletionDebug.asi `
+            -SourceRoot CampaignMarker
 
       - name: Reject forbidden behavior fixtures
         shell: pwsh
@@ -57,8 +57,8 @@ jobs:
           function New-PolicyFixture {
             $root = Join-Path $env:RUNNER_TEMP "campaign-policy-fixture"
             New-Item -ItemType Directory -Path $root -Force | Out-Null
-            Copy-Item -LiteralPath CMakeLists.txt -Destination $root
-            Copy-Item -LiteralPath src -Destination (Join-Path $root "src") -Recurse
+            Copy-Item -LiteralPath CampaignMarker/CMakeLists.txt -Destination $root
+            Copy-Item -LiteralPath CampaignMarker/src -Destination (Join-Path $root "src") -Recurse
             return $root
           }
           function Assert-Rejected(
@@ -68,11 +68,11 @@ jobs:
             [string]$message
           ) {
             $fixturePath = Join-Path $root $relativePath
-            $originalPath = Join-Path $PWD $relativePath
+            $originalPath = Join-Path (Join-Path $PWD "CampaignMarker") $relativePath
             $accepted = $true
             try {
               [IO.File]::AppendAllText($fixturePath, "`n// $token mutation fixture`n")
-              ./tools/verify_no_process_patch.ps1 `
+              ./CampaignMarker/tools/verify_no_process_patch.ps1 `
                 -SourceRoot $root `
                 -SourceOnly
             } catch {
@@ -115,22 +115,22 @@ jobs:
           }
 
       - name: Test
-        run: ctest --test-dir build -C Release --output-on-failure
+        run: ctest --test-dir CampaignMarker/build -C Release --output-on-failure
 
       - name: Package
         shell: pwsh
-        run: ./tools/package_debug.ps1 -BuildDirectory build/Release -OutputDirectory dist
+        run: ./CampaignMarker/tools/package_debug.ps1 -BuildDirectory CampaignMarker/build/Release -OutputDirectory CampaignMarker/dist
 
       - name: Verify PE32 and package contents
         shell: pwsh
         run: |
-          $asi = "build/Release/CampaignCompletionDebug.asi"
+          $asi = "CampaignMarker/build/Release/CampaignCompletionDebug.asi"
           if (-not (Test-Path $asi)) { throw "ASI missing" }
           $bytes = [IO.File]::ReadAllBytes($asi)
           $pe = [BitConverter]::ToInt32($bytes, 0x3c)
           $machine = [BitConverter]::ToUInt16($bytes, $pe + 4)
           if ($machine -ne 0x14c) { throw "Expected IMAGE_FILE_MACHINE_I386" }
-          $archive = "dist/CampaignCompletionDebug.zip"
+          $archive = "CampaignMarker/dist/CampaignCompletionDebug.zip"
           if (-not (Test-Path $archive)) { throw "Diagnostic archive missing" }
           $inspection = Join-Path $env:RUNNER_TEMP "campaign-completion-package"
           Expand-Archive -Path $archive -DestinationPath $inspection
@@ -148,4 +148,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: CampaignCompletionDebug-Win32
-          path: dist/CampaignCompletionDebug.zip
+          path: CampaignMarker/dist/CampaignCompletionDebug.zip

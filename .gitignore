@@ -1,15 +1,19 @@
-research/vendor/
-research/evidence/raw/
-research/evidence/*.etl
-research/evidence/*.dmp
-research/evidence/*.pdb.json
-/dist/
-/research/tmp/
-/research/backups/
-/artifacts/phase-3a-ci/
-/artifacts/phase-3-victory-diagnostics/
+CampaignMarker/research/vendor/
+CampaignMarker/research/evidence/raw/
+CampaignMarker/research/evidence/*.etl
+CampaignMarker/research/evidence/*.dmp
+CampaignMarker/research/evidence/*.pdb.json
+/CampaignMarker/dist/
+/CampaignMarker/research/tmp/
+/CampaignMarker/research/backups/
+/CampaignMarker/artifacts/phase-3a-ci/
+/CampaignMarker/artifacts/phase-3-victory-diagnostics/
+/CampaignMarker/artifacts/
+/CampaignMarker/research/evidence/save-samples/
+
+# Legacy workspace-level outputs retained during the project-directory migration
 /artifacts/
-/research/evidence/save-samples/
+/dist/
 
 # Visual Studio
 .vs/

@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 source "$SCRIPT_DIR/common.sh"
 
 readonly REPOSITORY_URL="https://github.com/nyfrk/S4ModApi.git"
-readonly VENDOR_DIR="$WORKSPACE_DIR/research/vendor/S4ModApi"
+readonly VENDOR_DIR="$CAMPAIGN_MARKER_DIR/research/vendor/S4ModApi"
 readonly OUTPUT="$EVIDENCE_DIR/s4modapi-source.txt"
 
 mkdir -p "$(dirname "$VENDOR_DIR")" "$EVIDENCE_DIR"
