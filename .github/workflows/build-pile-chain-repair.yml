@@ -35,7 +35,17 @@ jobs:
         run: cmake --build build --config Release --parallel
 
       - name: Run complete CTest suite
-        run: ctest --test-dir build -C Release --output-on-failure
+        run: ctest --test-dir build -C Release --output-on-failure --verbose
+
+      - name: Report CTest failure details
+        if: failure()
+        shell: pwsh
+        run: |
+          $log = "build/Testing/Temporary/LastTest.log"
+          if (-not (Test-Path -LiteralPath $log)) { throw "CTest failure log missing: $log" }
+          $details = (Get-Content -LiteralPath $log -Raw) -replace "`r?`n", " | "
+          if ($details.Length -gt 7000) { $details = $details.Substring($details.Length - 7000) }
+          Write-Output "::error title=CTest failure details::$details"
 
       - name: Verify PE32 and exact plugin export
         shell: pwsh
