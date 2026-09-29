@@ -55,7 +55,7 @@ jobs:
           if (-not (Test-Path -LiteralPath $asi)) { throw "PileChainRepair.asi missing" }
           $bytes = [IO.File]::ReadAllBytes($asi)
           $pe = [BitConverter]::ToInt32($bytes, 0x3c)
-          if ([BitConverter]::ToUInt16($bytes, $pe) -ne 0x5a4d) { throw "Expected MZ header" }
+          if ([BitConverter]::ToUInt16($bytes, 0) -ne 0x5a4d) { throw "Expected MZ header" }
           if ([BitConverter]::ToUInt32($bytes, $pe) -ne 0x00004550) { throw "Expected PE signature" }
           if ([BitConverter]::ToUInt16($bytes, $pe + 4) -ne 0x14c) { throw "Expected IMAGE_FILE_MACHINE_I386" }
 
