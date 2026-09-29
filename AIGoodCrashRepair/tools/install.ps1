@@ -20,7 +20,10 @@ $rollback = Join-Path ([IO.Path]::GetDirectoryName($archive)) "Plugin_SU.pile-ch
 $metadataTemporary = "$metadataPath.tmp"
 
 function Get-Sha256([string]$Path) {
-    (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    $stream = [IO.File]::OpenRead($Path)
+    $sha = [Security.Cryptography.SHA256]::Create()
+    try { return [BitConverter]::ToString($sha.ComputeHash($stream)).Replace('-', '').ToLowerInvariant() }
+    finally { $sha.Dispose(); $stream.Dispose() }
 }
 
 function Get-EntryHashes([string]$Path) {
