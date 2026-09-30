@@ -1,0 +1,6 @@
+[Diagnostic]
+; Highlights starts of the same stream or path inside this window.
+; This is a repeat candidate, not proof of audible replay or overlap.
+; Different-song starts are always logged, even outside this window.
+; Valid range: 1000..300000. Invalid values use the 15000 ms default.
+DuplicateWindowMs=15000
