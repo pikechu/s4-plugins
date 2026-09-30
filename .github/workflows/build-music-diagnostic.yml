@@ -1,0 +1,100 @@
+name: build-music-diagnostic
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "MusicDuplicatedRepair/**"
+      - "CampaignMarker/src/diagnostics/**"
+      - ".github/workflows/build-music-diagnostic.yml"
+  pull_request:
+    paths:
+      - "MusicDuplicatedRepair/**"
+      - "CampaignMarker/src/diagnostics/**"
+      - ".github/workflows/build-music-diagnostic.yml"
+
+concurrency:
+  group: build-music-diagnostic-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure independent Win32 diagnostic
+        run: cmake -S MusicDuplicatedRepair -B build-music -A Win32 -DBUILD_TESTING=ON
+
+      - name: Build diagnostic and existing tracker target
+        run: cmake --build build-music --config Release --parallel
+
+      - name: Run existing event tracker suite
+        id: tracker-tests
+        run: ctest --test-dir build-music -C Release --output-on-failure --verbose -R "^music_event_tracker_tests$"
+
+      - name: Report existing CTest failure details
+        if: failure() && steps.tracker-tests.outcome == 'failure'
+        shell: pwsh
+        run: |
+          $log = "build-music/Testing/Temporary/LastTest.log"
+          if (-not (Test-Path -LiteralPath $log)) { throw "CTest failure log missing: $log" }
+          $details = (Get-Content -LiteralPath $log -Raw) -replace "`r?`n", " | "
+          if ($details.Length -gt 7000) { $details = $details.Substring($details.Length - 7000) }
+          $details = $details.Replace('%', '%25')
+          Write-Output "::error title=Music tracker failure details::$details"
+
+      - name: Verify PE32 and diagnostic export
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $asi = "build-music/Release/MusicLoopRepair.asi"
+          $bytes = [IO.File]::ReadAllBytes($asi)
+          if ($bytes.Length -lt 64 -or [BitConverter]::ToUInt16($bytes, 0) -ne 0x5a4d) { throw "Expected MZ header" }
+          $pe = [BitConverter]::ToInt32($bytes, 0x3c)
+          if ($pe -lt 64 -or $pe + 26 -gt $bytes.Length) { throw "Invalid PE header offset" }
+          if ([BitConverter]::ToUInt32($bytes, $pe) -ne 0x00004550) { throw "Expected PE signature" }
+          if ([BitConverter]::ToUInt16($bytes, $pe + 4) -ne 0x14c) { throw "Expected IMAGE_FILE_MACHINE_I386" }
+          if ([BitConverter]::ToUInt16($bytes, $pe + 24) -ne 0x10b) { throw "Expected PE32 optional header" }
+
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio/Installer/vswhere.exe"
+          $vs = & $vswhere -latest -products '*' -property installationPath
+          if (-not $vs) { throw "Visual Studio installation not found" }
+          $toolRoot = Join-Path $vs "VC/Tools/MSVC"
+          $version = Get-ChildItem -LiteralPath $toolRoot -Directory | Sort-Object Name -Descending | Select-Object -First 1
+          $dumpbin = Join-Path $version.FullName "bin/Hostx64/x86/dumpbin.exe"
+          $exports = & $dumpbin /nologo /exports $asi
+          if ($LASTEXITCODE -ne 0) { throw "dumpbin export inspection failed" }
+          $exportNames = @($exports | ForEach-Object {
+            if ($_ -match '^\s+\d+\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+(\S+)\s*$') { $Matches[1] }
+          })
+          if ($exportNames.Count -ne 1 -or $exportNames[0] -cne "MusicLoopRepairStop") {
+            throw "Unexpected exports: $($exportNames -join ', ')"
+          }
+
+      - name: Package observation diagnostic and example INI
+        run: cmake --build build-music --config Release --target music_diagnostic_package
+
+      - name: Verify exact package contents and record hashes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [IO.Compression.ZipFile]::OpenRead((Join-Path $PWD "build-music/MusicLoopRepair-diagnostic.zip"))
+          try {
+            $entries = @($zip.Entries | Where-Object { -not $_.FullName.EndsWith('/') } | ForEach-Object { $_.FullName.Replace('\', '/') } | Sort-Object)
+            $expected = @("Plugins/MusicLoopRepair.asi", "Plugins/MusicLoopRepair/MusicLoopRepair.ini.example") | Sort-Object
+            if ($entries.Count -ne 2 -or (Compare-Object $entries $expected -CaseSensitive)) {
+              throw "Unexpected diagnostic package contents: $($entries -join ', ')"
+            }
+          } finally { $zip.Dispose() }
+          Get-Content -LiteralPath "build-music/MusicLoopRepair-diagnostic.zip.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MusicLoopRepair-diagnostic-Win32
+          path: |
+            build-music/MusicLoopRepair-diagnostic.zip
+            build-music/MusicLoopRepair-diagnostic.zip.sha256
+          if-no-files-found: error
