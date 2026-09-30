@@ -1,0 +1,65 @@
+name: package-accepted-release
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "tools/package_accepted_release.ps1"
+      - "tools/release/**"
+      - ".github/workflows/package-accepted-release.yml"
+  pull_request:
+    paths:
+      - "tools/package_accepted_release.ps1"
+      - "tools/release/**"
+      - ".github/workflows/package-accepted-release.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: package-accepted-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the accepted CI binaries
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          gh run download 29646186916 --repo pikechu/s4-plugins --name CampaignCompletionDebug-Win32 --dir accepted/campaign
+          if ($LASTEXITCODE -ne 0) { throw "Accepted CampaignMarker artifact download failed" }
+          gh run download 36718849781 --repo pikechu/s4-plugins --name PileChainRepair-Win32 --dir accepted/pile
+          if ($LASTEXITCODE -ne 0) { throw "Accepted PileChainRepair artifact download failed" }
+          Expand-Archive -LiteralPath accepted/campaign/CampaignCompletionDebug.zip -DestinationPath accepted/campaign/inner
+          Expand-Archive -LiteralPath accepted/pile/PileChainRepair.zip -DestinationPath accepted/pile/inner
+
+      - name: Package the exact accepted versions
+        shell: pwsh
+        run: |
+          ./tools/package_accepted_release.ps1 `
+            -CampaignAsiPath accepted/campaign/inner/Plugins/CampaignCompletionDebug.asi `
+            -PileRepairAsiPath accepted/pile/inner/Plugins/PileChainRepair.asi `
+            -OutputDirectory dist
+
+      - name: Record package checksum
+        shell: pwsh
+        run: |
+          $package = "dist/Settlers4Plugins-0.13.4-0.3.1.zip"
+          if (-not (Test-Path -LiteralPath $package -PathType Leaf)) { throw "Accepted release package missing" }
+          $hash = (Get-FileHash -LiteralPath $package -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  Settlers4Plugins-0.13.4-0.3.1.zip" | Set-Content -LiteralPath "$package.sha256" -Encoding ascii
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Settlers4Plugins-0.13.4-0.3.1
+          path: |
+            dist/Settlers4Plugins-0.13.4-0.3.1.zip
+            dist/Settlers4Plugins-0.13.4-0.3.1.zip.sha256

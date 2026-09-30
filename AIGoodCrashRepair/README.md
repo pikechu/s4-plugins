@@ -1,12 +1,32 @@
 # AI Good Crash Repair
 
+## Accepted build
+
+Version `0.3.1` passed live acceptance on 2026-09-30 for the known Pathes crash
+fixture. The runtime cut the link from entity `4961` to missing entity `6302`,
+the user ran and saved without a crash, then reloaded `PileChainRepairz` and
+confirmed normal transport. The captured initial and reload sessions contain
+no errors or repeated corruption. See the
+[acceptance record](docs/2026-09-30-acceptance.md) for the build, hashes, and
+scope.
+
+For the accepted Campaign Marker `0.13.4` + PileChainRepair `0.3.1` pair, use
+the bundle created by `../tools/package_accepted_release.ps1` and its bundled
+`install.ps1` / `rollback.ps1`. The feature installer below is useful when
+maintaining PileChainRepair independently.
+
+## Implementation and maintenance
+
 All implementation work for this feature lives below this directory:
 
 - `src/` — plugin runtime and pile-chain repair core
-- `tests/` — standalone core tests
-- `tools/` — guarded Settlers United installer
-- `backups/` — installer-owned backups (created on first installation)
-- `repro/` — exact crashing map/save fixture, trace, hashes, and instructions
+- `tests/` — standalone core and archive-installer integration tests
+- `tools/` — guarded Settlers United installer and entry-level uninstall
+- `backups/` — installer-owned backups (created on first installation; ignored
+  by Git)
+- `repro/` — local crashing map/save fixture, trace, hashes, and instructions;
+  proprietary fixture binaries are excluded from Git
+- `docs/` — committed acceptance records
 
 The repository root `CMakeLists.txt` exposes the `PileChainRepair` target and
 its core and archive-installer tests; feature sources remain below this folder.

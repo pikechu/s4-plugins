@@ -62,3 +62,7 @@ CampaignCompletion/completed_maps.json.tmp
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Accepted release scripts are source files, including on case-insensitive hosts.
+!/tools/release/
+!/tools/release/**
