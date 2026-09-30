@@ -119,7 +119,7 @@ bool PileRepairRuntime::Start(HMODULE module) {
     stopPath_ = dataDirectory / L"PileChainRepair.stop";
     if (!logger_.Open(dataDirectory / L"PileChainRepair.log")) return false;
     logger_.Write(LogLevel::Info,
-                  "PileChainRepair bootstrap version=0.3.0 mode=local-cut");
+                  "PileChainRepair bootstrap version=0.3.1 mode=local-cut");
 
     const auto modules = EnumerateLoadedModules();
     const ModuleInfo* executable = nullptr;
@@ -205,28 +205,6 @@ bool PileRepairRuntime::ValidateTables() const noexcept {
                            tables_.ecoSectorSlots * sizeof(void*), false);
 }
 
-bool PileRepairRuntime::RefreshEcoSectorList() noexcept {
-    try {
-        std::vector<std::uint16_t> candidate;
-        candidate.push_back(0u);
-        for (std::size_t sector = 1u; sector < tables_.ecoSectorSlots;
-             ++sector) {
-            const auto* manager = tables_.ecoSectors[sector];
-            if (manager == nullptr) continue;
-            if (!AccessibleRange(manager, kEcoSectorBytesRequired, true)) {
-                return false;
-            }
-            candidate.push_back(static_cast<std::uint16_t>(sector));
-        }
-        activeEcoSectors_.swap(candidate);
-        tables_.activeEcoSectors = activeEcoSectors_.data();
-        tables_.activeEcoSectorCount = activeEcoSectors_.size();
-        return true;
-    } catch (...) {
-        return false;
-    }
-}
-
 bool PileRepairRuntime::Repair(const ChainAnalysis& analysis,
                                DWORD tick) noexcept {
     std::ostringstream detected;
@@ -254,16 +232,6 @@ void PileRepairRuntime::ObserveMapInit() noexcept {
 }
 
 void PileRepairRuntime::ObserveTick(DWORD tick) noexcept {
-    bool expected = false;
-    if (!inCallback_.compare_exchange_strong(expected, true,
-                                              std::memory_order_acq_rel)) {
-        return;
-    }
-    struct CallbackExit {
-        std::atomic<bool>& flag;
-        ~CallbackExit() { flag.store(false, std::memory_order_release); }
-    } exit{inCallback_};
-
     if (!ValidateTables()) {
         if (mapPending_.load(std::memory_order_acquire)) {
             logger_.Write(LogLevel::Warning,
@@ -271,13 +239,7 @@ void PileRepairRuntime::ObserveTick(DWORD tick) noexcept {
         }
         return;
     }
-    if (mapPending_.exchange(false, std::memory_order_acq_rel) &&
-        !RefreshEcoSectorList()) {
-        mapPending_.store(true, std::memory_order_release);
-        logger_.Write(LogLevel::Error,
-                      "validation postponed: economy-sector list is inaccessible");
-        return;
-    }
+    mapPending_.store(false, std::memory_order_release);
     constexpr std::size_t kMaxCutsPerTick = 64u;
     for (std::size_t cut = 0u; cut < kMaxCutsPerTick; ++cut) {
         const auto analysis = AnalyzeFatalPileChainIssues(tables_);
@@ -290,13 +252,25 @@ void PileRepairRuntime::ObserveTick(DWORD tick) noexcept {
 
 HRESULT S4HCALL PileRepairRuntime::OnMapInit(LPVOID, LPVOID) {
     auto* runtime = active_.load(std::memory_order_acquire);
-    if (runtime != nullptr) runtime->ObserveMapInit();
+    if (runtime != nullptr) {
+        std::lock_guard<std::mutex> lock(runtime->callbackMutex_);
+        if (active_.load(std::memory_order_acquire) == runtime &&
+            !runtime->stopRequested_.load(std::memory_order_acquire)) {
+            runtime->ObserveMapInit();
+        }
+    }
     return S_OK;
 }
 
 HRESULT S4HCALL PileRepairRuntime::OnTick(DWORD tick, BOOL, BOOL) {
     auto* runtime = active_.load(std::memory_order_acquire);
-    if (runtime != nullptr) runtime->ObserveTick(tick);
+    if (runtime != nullptr) {
+        std::lock_guard<std::mutex> lock(runtime->callbackMutex_);
+        if (active_.load(std::memory_order_acquire) == runtime &&
+            !runtime->stopRequested_.load(std::memory_order_acquire)) {
+            runtime->ObserveTick(tick);
+        }
+    }
     return S_OK;
 }
 
@@ -319,7 +293,11 @@ void PileRepairRuntime::RunControlLoop() {
 
 void PileRepairRuntime::Stop() noexcept {
     active_.store(nullptr, std::memory_order_release);
-    while (inCallback_.load(std::memory_order_acquire)) Sleep(1u);
+    {
+        // A delayed callback rechecks active_ under this same mutex, so it
+        // cannot resume memory writes after the stop barrier has passed.
+        std::lock_guard<std::mutex> lock(callbackMutex_);
+    }
     if (api_ != nullptr) {
         if (tickHook_ != 0u) api_->RemoveListener(tickHook_);
         if (mapInitHook_ != 0u) api_->RemoveListener(mapInitHook_);

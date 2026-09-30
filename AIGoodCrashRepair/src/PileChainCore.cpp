@@ -38,17 +38,6 @@ bool CanAccess(const ChainTables& tables, const void* address,
             tables.accessProbe(address, bytes, requireWrite));
 }
 
-std::size_t SectorCount(const ChainTables& tables) noexcept {
-    return tables.activeEcoSectors != nullptr ? tables.activeEcoSectorCount
-                                               : tables.ecoSectorSlots;
-}
-
-std::size_t SectorAt(const ChainTables& tables, std::size_t index) noexcept {
-    return tables.activeEcoSectors != nullptr
-               ? tables.activeEcoSectors[index]
-               : index;
-}
-
 ChainIssue Issue(ChainIssueKind kind, std::size_t sector,
                  std::uint16_t good, std::uint16_t entity,
                  std::uint16_t expectedPrevious = 0u,
@@ -73,6 +62,11 @@ ChainAnalysis AnalyzePileChains(const ChainTables& tables) {
         return analysis;
     }
 
+    if ((tables.visitMarks == nullptr) != (tables.visitGeneration == nullptr)) {
+        analysis.firstIssue.kind = ChainIssueKind::InaccessibleMemory;
+        return analysis;
+    }
+
     std::vector<std::uint32_t> localVisited;
     std::uint32_t localGeneration = 0u;
     if (tables.visitMarks == nullptr) {
@@ -87,8 +81,7 @@ ChainAnalysis AnalyzePileChains(const ChainTables& tables) {
     auto* const generation = tables.visitGeneration != nullptr
                                  ? tables.visitGeneration
                                  : &localGeneration;
-    for (std::size_t scan = 1u; scan < SectorCount(tables); ++scan) {
-        const auto sector = SectorAt(tables, scan);
+    for (std::size_t sector = 1u; sector < tables.ecoSectorSlots; ++sector) {
         const auto* manager = tables.ecoSectors[sector];
         if (manager == nullptr) {
             continue;
@@ -180,6 +173,11 @@ ChainAnalysis AnalyzeFatalPileChainIssues(const ChainTables& tables) {
         return analysis;
     }
 
+    if ((tables.visitMarks == nullptr) != (tables.visitGeneration == nullptr)) {
+        analysis.firstIssue.kind = ChainIssueKind::InaccessibleMemory;
+        return analysis;
+    }
+
     std::vector<std::uint32_t> localVisited;
     std::uint32_t localGeneration = 0u;
     if (tables.visitMarks == nullptr) {
@@ -194,8 +192,7 @@ ChainAnalysis AnalyzeFatalPileChainIssues(const ChainTables& tables) {
     auto* const generation = tables.visitGeneration != nullptr
                                  ? tables.visitGeneration
                                  : &localGeneration;
-    for (std::size_t scan = 1u; scan < SectorCount(tables); ++scan) {
-        const auto sector = SectorAt(tables, scan);
+    for (std::size_t sector = 1u; sector < tables.ecoSectorSlots; ++sector) {
         const auto* manager = tables.ecoSectors[sector];
         if (manager == nullptr) continue;
         if (!CanAccess(tables, manager, kEcoSectorBytesRequired, false)) {
@@ -253,7 +250,13 @@ ChainAnalysis AnalyzeFatalPileChainIssues(const ChainTables& tables) {
 
 bool CutFatalPileChainIssue(const ChainTables& tables,
                             const ChainIssue& issue) {
-    if (!issue || issue.ecoSector == 0u ||
+    const bool fatal = issue.kind == ChainIssueKind::DanglingEntity ||
+                       issue.kind == ChainIssueKind::WrongEntityType ||
+                       issue.kind == ChainIssueKind::Cycle ||
+                       issue.kind == ChainIssueKind::InaccessibleMemory;
+    if (!fatal || tables.entities == nullptr ||
+        tables.ecoSectors == nullptr || issue.entity == 0u ||
+        issue.ecoSector == 0u ||
         issue.ecoSector >= tables.ecoSectorSlots ||
         issue.goodType < kFirstGoodType ||
         issue.goodType > kLastGoodType) {

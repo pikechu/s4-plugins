@@ -33,8 +33,6 @@ struct ChainTables final {
     std::size_t entitySlots = 0u;
     void* const* ecoSectors = nullptr;
     std::size_t ecoSectorSlots = 0u;
-    const std::uint16_t* activeEcoSectors = nullptr;
-    std::size_t activeEcoSectorCount = 0u;
     std::uint32_t* visitMarks = nullptr;
     std::size_t visitMarkCount = 0u;
     std::uint32_t* visitGeneration = nullptr;

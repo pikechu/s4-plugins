@@ -4,7 +4,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <stdexcept>
+#include <utility>
 
 namespace {
 
@@ -116,6 +118,21 @@ void TestCutRejectsInaccessibleAndStaleTargets() {
     Require(fixture.Snapshot() == before,
             "rejected inaccessible cut changed memory");
 
+    tables = fixture.Tables();
+    tables.ecoSectors = nullptr;
+    Require(!CutFatalPileChainIssue(tables, issue),
+            "cut accepted a null sector table");
+    tables = fixture.Tables();
+    tables.entities = nullptr;
+    Require(!CutFatalPileChainIssue(tables, issue),
+            "cut accepted a null entity table");
+    auto nonfatal = issue;
+    nonfatal.kind = ChainIssueKind::PreviousMismatch;
+    Require(!CutFatalPileChainIssue(fixture.Tables(), nonfatal),
+            "cut accepted a nonfatal bookkeeping issue");
+    Require(fixture.Snapshot() == before,
+            "rejected malformed cut changed memory");
+
     fixture.Links(10, 0, 11);
     const auto staleBefore = fixture.Snapshot();
     Require(!CutFatalPileChainIssue(fixture.Tables(), issue),
@@ -145,31 +162,47 @@ void TestMalformedTableBoundsFailClosed() {
     Require(!result.Clean(), "null table pointers were accepted");
 }
 
-void TestCachedSectorListAndReusableVisitMarks() {
+void TestDynamicSectorsAndReusableVisitMarks() {
     Fixture fixture;
-    fixture.Head(3, 9, 15);
+    fixture.sectors[3] = nullptr;
     auto tables = fixture.Tables();
-    const std::uint16_t activeSectors[]{0u, 2u};
     std::array<std::uint32_t, 32> visitMarks{};
     std::uint32_t generation = 0u;
-    tables.activeEcoSectors = activeSectors;
-    tables.activeEcoSectorCount = 2u;
     tables.visitMarks = visitMarks.data();
     tables.visitMarkCount = visitMarks.size();
     tables.visitGeneration = &generation;
 
     const auto noActiveFault = AnalyzeFatalPileChainIssues(tables);
     Require(noActiveFault.Clean() && noActiveFault.managers == 1u,
-            "cached active-sector scan included an inactive manager");
+            "null manager was not skipped");
+
+    fixture.sectors[3] = fixture.managerBytes[1].data();
+    fixture.Head(3, 9, 15);
+    const auto newSector = AnalyzeFatalPileChainIssues(tables);
+    Require(newSector.firstIssue.kind == ChainIssueKind::DanglingEntity &&
+                newSector.firstIssue.ecoSector == 3u,
+            "sector created after the first scan was omitted");
+    fixture.Head(3, 9, 0);
 
     fixture.Good(10, 7);
     fixture.Head(2, 7, 10);
+    fixture.Links(10, 0, 0);
+    Require(AnalyzeFatalPileChainIssues(tables).Clean() &&
+                AnalyzeFatalPileChainIssues(tables).Clean(),
+            "reuse created a false cycle on a healthy chain");
+    generation = std::numeric_limits<std::uint32_t>::max();
+    Require(AnalyzeFatalPileChainIssues(tables).Clean(),
+            "generation rollover created a false cycle");
     fixture.Links(10, 0, 10);
     const auto cycle = AnalyzeFatalPileChainIssues(tables);
     Require(cycle.firstIssue.kind == ChainIssueKind::Cycle,
             "reused visit marks missed a cycle");
     Require(generation > 0u, "visit generation was not advanced");
 
+    tables.visitGeneration = nullptr;
+    Require(!AnalyzeFatalPileChainIssues(tables).Clean(),
+            "workspace without persistent generation was accepted");
+    tables.visitGeneration = &generation;
     tables.visitMarkCount = 4u;
     const auto undersized = AnalyzeFatalPileChainIssues(tables);
     Require(undersized.firstIssue.kind == ChainIssueKind::InaccessibleMemory,
@@ -220,7 +253,7 @@ int RunPileChainCoreTests() {
     TestCleanAndCorruptChains();
     TestCutRejectsInaccessibleAndStaleTargets();
     TestMalformedTableBoundsFailClosed();
-    TestCachedSectorListAndReusableVisitMarks();
+    TestDynamicSectorsAndReusableVisitMarks();
     TestLocalFatalCutPreservesValidChains();
     return 0;
 }

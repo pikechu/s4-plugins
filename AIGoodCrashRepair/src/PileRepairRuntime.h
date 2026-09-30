@@ -9,6 +9,7 @@
 #include <atomic>
 #include <cstdint>
 #include <filesystem>
+#include <mutex>
 #include <vector>
 
 namespace pile_chain_repair {
@@ -26,7 +27,6 @@ private:
     void ObserveMapInit() noexcept;
     void ObserveTick(DWORD tick) noexcept;
     bool ValidateTables() const noexcept;
-    bool RefreshEcoSectorList() noexcept;
     bool Repair(const ChainAnalysis& analysis, DWORD tick) noexcept;
     void Stop() noexcept;
 
@@ -38,11 +38,10 @@ private:
     S4HOOK mapInitHook_ = 0u;
     S4HOOK tickHook_ = 0u;
     ChainTables tables_{};
-    std::vector<std::uint16_t> activeEcoSectors_;
     std::vector<std::uint32_t> visitMarks_;
     std::uint32_t visitGeneration_ = 0u;
     std::atomic<bool> stopRequested_{false};
-    std::atomic<bool> inCallback_{false};
+    std::mutex callbackMutex_;
     std::atomic<bool> mapPending_{true};
     std::size_t repairs_ = 0u;
     bool started_ = false;

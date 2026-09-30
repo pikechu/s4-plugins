@@ -8,11 +8,15 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $entryName = 'Plugins/PileChainRepair.asi'
 $featureRoot = Split-Path -Parent $PSScriptRoot
-$backupEntry = Join-Path (Join-Path $featureRoot 'backups') 'PileChainRepair.asi.pre-install'
-$metadataPath = Join-Path (Join-Path $featureRoot 'backups') 'Plugin_SU.pile-chain-repair.json'
+$backupRoot = Join-Path $featureRoot 'backups'
+$backupEntry = Join-Path $backupRoot 'PileChainRepair.asi.pre-install'
+$metadataPath = Join-Path $backupRoot 'Plugin_SU.pile-chain-repair.json'
+$legacyBackup = Join-Path $backupRoot 'Plugin_SU.zip.pre-pile-chain-repair'
+$transactionLockPath = Join-Path $backupRoot 'PileChainRepair.transaction.lock'
 $archive = Join-Path $SettlersUnitedDirectory 'resources/bin/s4_artifacts/Plugin_SU.zip'
 $candidate = Join-Path ([IO.Path]::GetDirectoryName($archive)) "Plugin_SU.pile-chain-repair.$([guid]::NewGuid()).tmp"
 $rollback = Join-Path ([IO.Path]::GetDirectoryName($archive)) "Plugin_SU.pile-chain-repair.$([guid]::NewGuid()).rollback"
+$metadataRollback = "$metadataPath.$([guid]::NewGuid()).rollback"
 
 function Get-Sha256([string]$Path) {
     $stream = [IO.File]::OpenRead($Path)
@@ -36,6 +40,17 @@ function Get-EntryHashes([string]$Path) {
         }
     } finally { $zip.Dispose() }
     return $hashes
+}
+
+function Copy-ArchiveEntry([string]$ZipPath, [string]$Name, [string]$Destination) {
+    $zip = [IO.Compression.ZipFile]::OpenRead($ZipPath)
+    try {
+        $matches = @($zip.Entries | Where-Object { $_.FullName -ceq $Name })
+        if ($matches.Count -ne 1) { throw "Legacy plugin entry lookup was inconsistent: $Name" }
+        $input = $matches[0].Open()
+        $output = [IO.File]::Open($Destination, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
+        try { $input.CopyTo($output) } finally { $output.Dispose(); $input.Dispose() }
+    } finally { $zip.Dispose() }
 }
 
 function New-ArchiveRestoredEntry([string]$Source, [string]$Destination, [string]$Name, [bool]$HadPreviousEntry, [string]$PreviousEntry) {
@@ -64,29 +79,46 @@ function New-ArchiveRestoredEntry([string]$Source, [string]$Destination, [string
     } finally { $inputZip.Dispose() }
 }
 
-$running = @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -in @('S4_Main', 'Settlers United') })
+$running = @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -eq 'S4_Main' -or $_.ProcessName -like '*Settlers*United*' })
 if ($running.Count -gt 0) { throw "Close S4_Main and Settlers United first: $($running.ProcessName -join ', ')" }
 if (-not (Test-Path -LiteralPath $archive -PathType Leaf) -or -not (Test-Path -LiteralPath $metadataPath -PathType Leaf)) { throw 'Archive or PileChainRepair install metadata is missing' }
-if ((Test-Path -LiteralPath $candidate) -or (Test-Path -LiteralPath $rollback)) { throw 'A PileChainRepair transaction temporary already exists' }
-
-$metadata = Get-Content -LiteralPath $metadataPath -Raw | ConvertFrom-Json
-if ([IO.Path]::GetFullPath([string]$metadata.archivePath) -cne [IO.Path]::GetFullPath($archive)) { throw 'Install metadata belongs to a different archive' }
-$before = Get-EntryHashes $archive
-if (-not $before.ContainsKey($entryName)) { throw 'PileChainRepair entry is missing from archive' }
-if ($metadata.PSObject.Properties.Name -contains 'installedAsiSha256') {
-    $installedHash = [string]$metadata.installedAsiSha256
-    $hadPreviousEntry = [bool]$metadata.hadPreviousEntry
-    $previousHash = [string]$metadata.previousAsiSha256
-} else {
-    $installedHash = [string]$metadata.embeddedAsiSha256
-    $hadPreviousEntry = $false
-    $previousHash = ''
-}
-if ($before[$entryName] -cne $installedHash) { throw 'PileChainRepair entry changed after installation; refusing uninstall' }
-if ($hadPreviousEntry -and ((-not (Test-Path -LiteralPath $backupEntry -PathType Leaf)) -or (Get-Sha256 $backupEntry) -cne $previousHash)) { throw 'Pre-install plugin entry backup failed verification' }
-
-Copy-Item -LiteralPath $archive -Destination $rollback
+if ((Test-Path -LiteralPath $candidate) -or (Test-Path -LiteralPath $rollback) -or (Test-Path -LiteralPath "$metadataPath.tmp")) { throw 'A PileChainRepair transaction temporary already exists' }
+try { $transactionLock = [IO.File]::Open($transactionLockPath, [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None) }
+catch { throw "Another PileChainRepair transaction holds the lock: $transactionLockPath" }
+$createdEntryBackup = $false
+$archiveMayHaveChanged = $false
+$metadataMayHaveChanged = $false
+$rollbackFailed = $false
+$committed = $false
 try {
+    $metadata = Get-Content -LiteralPath $metadataPath -Raw | ConvertFrom-Json
+    $originalMetadataHash = Get-Sha256 $metadataPath
+    if ([IO.Path]::GetFullPath([string]$metadata.archivePath) -cne [IO.Path]::GetFullPath($archive)) { throw 'Install metadata belongs to a different archive' }
+    $before = Get-EntryHashes $archive
+    $originalArchiveHash = Get-Sha256 $archive
+    if (-not $before.ContainsKey($entryName)) { throw 'PileChainRepair entry is missing from archive' }
+    if ($metadata.PSObject.Properties.Name -contains 'installedAsiSha256') {
+        $installedHash = [string]$metadata.installedAsiSha256
+        $hadPreviousEntry = [bool]$metadata.hadPreviousEntry
+        $previousHash = [string]$metadata.previousAsiSha256
+    } else {
+        if (-not (Test-Path -LiteralPath $legacyBackup -PathType Leaf) -or (Get-Sha256 $legacyBackup) -cne [string]$metadata.preRepairSha256) { throw 'Legacy pre-install archive failed verification' }
+        $legacyEntries = Get-EntryHashes $legacyBackup
+        $installedHash = [string]$metadata.embeddedAsiSha256
+        $hadPreviousEntry = $legacyEntries.ContainsKey($entryName)
+        $previousHash = if ($hadPreviousEntry) { $legacyEntries[$entryName] } else { '' }
+        if ($hadPreviousEntry -and -not (Test-Path -LiteralPath $backupEntry)) {
+            $createdEntryBackup = $true
+            Copy-ArchiveEntry $legacyBackup $entryName $backupEntry
+        }
+    }
+    if ($before[$entryName] -cne $installedHash) { throw 'PileChainRepair entry changed after installation; refusing uninstall' }
+    if ($hadPreviousEntry -and ((-not (Test-Path -LiteralPath $backupEntry -PathType Leaf)) -or (Get-Sha256 $backupEntry) -cne $previousHash)) { throw 'Pre-install plugin entry backup failed verification' }
+
+    Copy-Item -LiteralPath $archive -Destination $rollback
+    if ((Get-Sha256 $rollback) -cne $originalArchiveHash) { throw 'Current archive snapshot failed verification' }
+    Copy-Item -LiteralPath $metadataPath -Destination $metadataRollback
+    if ((Get-Sha256 $metadataRollback) -cne $originalMetadataHash) { throw 'Install metadata snapshot failed verification' }
     New-ArchiveRestoredEntry $archive $candidate $entryName $hadPreviousEntry $backupEntry
     $after = Get-EntryHashes $candidate
     foreach ($name in $before.Keys) {
@@ -97,13 +129,42 @@ try {
         if (-not $after.ContainsKey($entryName) -or $after[$entryName] -cne $previousHash) { throw 'Restored plugin entry hash mismatch' }
     } elseif ($after.ContainsKey($entryName)) { throw 'Plugin entry was not removed' }
     if ($after.Count -ne ($before.Count - [int](-not $hadPreviousEntry))) { throw 'Candidate entry count mismatch' }
+    $running = @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -eq 'S4_Main' -or $_.ProcessName -like '*Settlers*United*' })
+    if ($running.Count -gt 0) { throw 'Game or Settlers United started during uninstall' }
+    if ((Get-Sha256 $archive) -cne $originalArchiveHash) { throw 'Archive changed during uninstall' }
+    $archiveMayHaveChanged = $true
     Move-Item -LiteralPath $candidate -Destination $archive -Force
+    $metadataMayHaveChanged = $true
     Remove-Item -LiteralPath $metadataPath -Force
-    if (Test-Path -LiteralPath $backupEntry) { Remove-Item -LiteralPath $backupEntry -Force }
+    $committed = $true
     [pscustomobject]@{ Archive = $archive; Entry = $entryName; Removed = (-not $hadPreviousEntry) }
 } catch {
-    if (Test-Path -LiteralPath $rollback) { Copy-Item -LiteralPath $rollback -Destination $archive -Force }
-    throw
+    $failure = $_
+    try {
+        if ($archiveMayHaveChanged) {
+            Copy-Item -LiteralPath $rollback -Destination $archive -Force
+            if ((Get-Sha256 $archive) -cne $originalArchiveHash) { throw 'Restored archive failed verification' }
+        }
+        if ($metadataMayHaveChanged) {
+            Copy-Item -LiteralPath $metadataRollback -Destination $metadataPath -Force
+            if ((Get-Sha256 $metadataPath) -cne $originalMetadataHash) { throw 'Restored metadata failed verification' }
+        }
+    } catch {
+        $rollbackFailed = $true
+        throw "Uninstall failed: $failure. Rollback failed: $_. Recovery snapshots retained at $rollback and $metadataRollback"
+    }
+    throw $failure
 } finally {
-    foreach ($path in @($candidate, $rollback)) { if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Force } }
+    if (-not $rollbackFailed) {
+        foreach ($path in @($candidate, $rollback, $metadataRollback)) {
+            if (Test-Path -LiteralPath $path) {
+                try { Remove-Item -LiteralPath $path -Force } catch { Write-Warning "Transaction cleanup failed for ${path}: $_" }
+            }
+        }
+        if (($committed -or $createdEntryBackup) -and (Test-Path -LiteralPath $backupEntry)) {
+            try { Remove-Item -LiteralPath $backupEntry -Force } catch { Write-Warning "Entry backup cleanup failed: $_" }
+        }
+    }
+    $transactionLock.Dispose()
+    Remove-Item -LiteralPath $transactionLockPath -Force -ErrorAction SilentlyContinue
 }

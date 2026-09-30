@@ -24,9 +24,10 @@ memory, and cycles. When corruption is detected, it cuts only the single link
 that points at the fatal node. It does not rebuild economy-sector lists or
 reassign healthy piles.
 
-The nonempty economy-sector indices are cached at map initialization, and the
-visited-entity workspace is reused between ticks to avoid scanning the full
-sector pointer table and allocating a large marker array on every tick.
+The visited-entity workspace is reused between ticks. Every tick scans the
+current sector pointer table, including economy sectors created during play.
+Version `0.3.1` also serializes map/tick callbacks with the stop barrier so a
+delayed callback cannot write game memory after controlled stop.
 
 The runtime log is written beside the plugin at:
 
