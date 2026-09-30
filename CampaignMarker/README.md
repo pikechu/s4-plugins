@@ -7,12 +7,25 @@ display completion indicators directly in the game UI.
 
 The goal is to provide a unified progress tracker for all Settlers IV campaigns, fixed scenarios, and single-player missions.
 
+## Current accepted build
+
+Version `0.13.4` is installed and its campaign marker placement was confirmed
+normal by the user on 2026-09-30. It includes automatic completion persistence,
+campaign and fixed-map markers, and the classified completion manager opened
+from the main menu with `Ctrl+Shift+M`. See the
+[Phase 7.4 audit and live acceptance](docs/research/phase-7-4-container-offset-marker-candidate-audit.md).
+
+For the accepted Campaign Marker `0.13.4` + PileChainRepair `0.3.1` pair, use
+the bundle created by `../tools/package_accepted_release.ps1` and follow its
+README for `install.ps1` / `rollback.ps1`. The diagnostic name
+`CampaignCompletionDebug.asi` is retained by the current build.
+
 ---
 
 ## Features
 
-The following list describes the intended release feature set, not the current
-diagnostic build:
+The following list describes the intended release feature set, with broader
+content coverage still governed by the admitted identity matrix:
 
 - In-game completion indicators
 - Automatic victory detection
@@ -111,9 +124,10 @@ Architecture:
 
 ---
 
-## Phase 2.1 Diagnostic Build
+## Historical Phase 2.1 Diagnostic Build
 
-`CampaignCompletionDebug` is a diagnostic-only bootstrap. It inventories loaded
+The Phase 2.1 `CampaignCompletionDebug` version was a diagnostic-only bootstrap.
+The following section describes that historical version. It inventories loaded
 modules and records events delivered through public S4ModApi listeners. It does
 not detect victory, save completion state, create completion JSON, or render
 completion markers. It installs no internal game hooks.
@@ -134,23 +148,26 @@ TheSettlers4/
     `-- CampaignCompletionDebug.ini
 ```
 
-Settlers United synchronizes the game `Plugins` directory before launch. With
-the owner's explicit authorization, Phase 2.1 therefore adds only
+Settlers United synchronizes the game `Plugins` directory before launch.
+Phase 2.1 added only
 `Plugins/CampaignCompletionDebug.asi` inside this archive after backing it up:
 
 ```
 C:\Program Files\Settlers United\resources\bin\s4_artifacts\Plugin_SU.zip
 ```
 
-Both `S4_Main.exe` and the Settlers United application must be closed before
-install or restore. From the repository root, install a CI-built ASI with:
+These historical scripts own a complete archive baseline. For the current
+combined accepted version, use the bundle installation and rollback above.
+The historical Phase 2.1 commands, from the repository root with both
+applications closed, were:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\install_settlers_united_artifact.ps1 -AsiPath "F:\path\to\CampaignCompletionDebug.asi"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\CampaignMarker\tools\install_settlers_united_artifact.ps1 -AsiPath "F:\path\to\CampaignCompletionDebug.asi"
 ```
 
 The installer creates and verifies
-`research/backups/settlers-united/Plugin_SU.zip.original` plus JSON metadata,
+`CampaignMarker/research/backups/settlers-united/Plugin_SU.zip.original` plus
+JSON metadata,
 preserves the hash of every original ZIP entry, and refuses an unrecognized
 installed archive. Proprietary backup binaries and generated metadata under
 `research/backups/` are ignored by Git.
@@ -158,7 +175,7 @@ installed archive. Proprietary backup binaries and generated metadata under
 Restore the byte-identical original archive with both applications closed:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\restore_settlers_united_artifact.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\CampaignMarker\tools\restore_settlers_united_artifact.ps1
 ```
 
 When the game runs, the diagnostic plugin may create
@@ -189,8 +206,16 @@ Launch the game through Settlers United.
 
 ## Development Roadmap
 
-Current status: Phase 6E automatic campaign/fixed-map persistence and immediate
-marker rendering are live-validated. Phase 7 adds a native classified
+Current status: `0.13.4` has passed the user's live marker placement acceptance
+on 2026-09-30. The accepted two-plugin bundle has installation, rollback, and
+acceptance documentation. Broader public release coverage is still pending.
+
+The phase descriptions below preserve their checkpoint history; statements
+about then-unapproved candidates refer to those earlier checkpoints. Current
+code and installation are summarized above.
+
+Checkpoint history: Phase 6E automatic campaign/fixed-map persistence and
+immediate marker rendering are live-validated. Phase 7 adds a native classified
 completion manager: from the main menu, `Ctrl+Shift+M` opens a window listing
 all 107 admitted campaign missions and installed fixed maps by family, with
 check/uncheck support through one revision-conflict-safe atomic database
@@ -208,8 +233,8 @@ unchanged Apply result was immediately overwritten by refresh guidance. The
 audited `0.13.3` candidate uses English-only manager text, enables Apply only
 for pending checkbox changes, and preserves the resulting status message.
 Live New World evidence then proved that composite-map campaign controls use
-container-relative geometry. The `0.13.4` candidate supersedes `0.13.3` and
-adds the public GUI container `xOffset/yOffset` before drawing campaign
+container-relative geometry. The now-accepted `0.13.4` version supersedes
+`0.13.3` and adds the public GUI container `xOffset/yOffset` before drawing campaign
 markers, while retaining local geometry for exact identity admission. See the
 [Phase 7 design](docs/superpowers/specs/2026-07-18-phase-7-classified-completion-manager-design.md).
 
@@ -330,15 +355,16 @@ Research and planning documents:
 
 ### Phase 3 - UI Integration
 
-- [ ] Campaign menu markers
+- [x] Campaign menu markers for the admitted 107-mission matrix
 - [x] Scenario list markers
-- [ ] Support different campaign layouts
+- [x] Support admitted campaign layouts, including container offsets
+- [x] Classified completion manager
 
 ### Phase 4 - Release
 
-- [ ] Stable release
-- [ ] Documentation
-- [ ] Installer package
+- [ ] Stable public release with broader live coverage
+- [x] Candidate audit and live acceptance documentation
+- [x] Accepted two-plugin installer and rollback package
 
 ---
 

@@ -1,0 +1,92 @@
+name: build-pile-chain-repair
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "CMakeLists.txt"
+      - "AIGoodCrashRepair/src/**"
+      - "AIGoodCrashRepair/tests/**"
+      - "AIGoodCrashRepair/tools/**"
+      - "AIGoodCrashRepair/README.md"
+      - "AIGoodCrashRepair/repro/README.md"
+      - "CampaignMarker/src/diagnostics/**"
+      - "CampaignMarker/tests/**"
+      - "CampaignMarker/CMakeLists.txt"
+      - "CampaignMarker/cmake/**"
+      - "third_party/S4ModApi/**"
+      - ".github/workflows/build-pile-chain-repair.yml"
+
+concurrency:
+  group: build-pile-chain-repair-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Win32
+        run: cmake -S . -B build -A Win32 -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build all plugin and test targets
+        run: cmake --build build --config Release --parallel
+
+      - name: Run complete CTest suite
+        run: ctest --test-dir build -C Release --output-on-failure --verbose
+
+      - name: Report CTest failure details
+        if: failure()
+        shell: pwsh
+        run: |
+          $log = "build/Testing/Temporary/LastTest.log"
+          if (-not (Test-Path -LiteralPath $log)) { throw "CTest failure log missing: $log" }
+          $details = (Get-Content -LiteralPath $log -Raw) -replace "`r?`n", " | "
+          if ($details.Length -gt 7000) { $details = $details.Substring($details.Length - 7000) }
+          Write-Output "::error title=CTest failure details::$details"
+
+      - name: Verify PE32 and exact plugin export
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $asi = "build/Release/PileChainRepair.asi"
+          if (-not (Test-Path -LiteralPath $asi)) { throw "PileChainRepair.asi missing" }
+          $bytes = [IO.File]::ReadAllBytes($asi)
+          $pe = [BitConverter]::ToInt32($bytes, 0x3c)
+          if ([BitConverter]::ToUInt16($bytes, 0) -ne 0x5a4d) { throw "Expected MZ header" }
+          if ([BitConverter]::ToUInt32($bytes, $pe) -ne 0x00004550) { throw "Expected PE signature" }
+          if ([BitConverter]::ToUInt16($bytes, $pe + 4) -ne 0x14c) { throw "Expected IMAGE_FILE_MACHINE_I386" }
+
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio/Installer/vswhere.exe"
+          $vs = & $vswhere -latest -products '*' -property installationPath
+          if (-not $vs) { throw "Visual Studio installation not found" }
+          $toolRoot = Join-Path $vs "VC/Tools/MSVC"
+          $version = Get-ChildItem -LiteralPath $toolRoot -Directory | Sort-Object Name -Descending | Select-Object -First 1
+          $dumpbin = Join-Path $version.FullName "bin/Hostx64/x86/dumpbin.exe"
+          $exports = & $dumpbin /nologo /exports $asi
+          if ($LASTEXITCODE -ne 0) { throw "dumpbin export inspection failed" }
+          $exportNames = @($exports | ForEach-Object {
+            if ($_ -match '^\s+\d+\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+(\S+)\s*$') { $Matches[1] }
+          })
+          if ($exportNames.Count -ne 1 -or $exportNames[0] -cne "PileChainRepairStop") {
+            throw "Unexpected exports: $($exportNames -join ', ')"
+          }
+
+      - name: Package PileChainRepair
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $packageRoot = Join-Path $env:RUNNER_TEMP "PileChainRepair-package"
+          New-Item -ItemType Directory -Path (Join-Path $packageRoot "Plugins") -Force | Out-Null
+          Copy-Item -LiteralPath "build/Release/PileChainRepair.asi" -Destination (Join-Path $packageRoot "Plugins/PileChainRepair.asi")
+          New-Item -ItemType Directory -Path "dist" -Force | Out-Null
+          Compress-Archive -Path (Join-Path $packageRoot "Plugins") -DestinationPath "dist/PileChainRepair.zip" -CompressionLevel Optimal
+          $entries = @(Get-ChildItem -LiteralPath $packageRoot -File -Recurse | ForEach-Object { $_.FullName.Substring($packageRoot.Length + 1).Replace('\', '/') })
+          if ($entries.Count -ne 1 -or $entries[0] -cne "Plugins/PileChainRepair.asi") { throw "Unexpected package contents: $($entries -join ', ')" }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PileChainRepair-Win32
+          path: dist/PileChainRepair.zip

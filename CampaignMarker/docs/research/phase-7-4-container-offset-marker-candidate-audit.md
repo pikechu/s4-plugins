@@ -4,7 +4,10 @@ Date: 2026-07-18
 
 ## Result
 
-Phase 7.4 is **GREEN for the audited offline `0.13.4` candidate**.
+Phase 7.4 is **GREEN for the audited `0.13.4` candidate**, with the user's
+live marker placement acceptance recorded on 2026-09-30. The original offline
+audit and deployment details below retain their 2026-07-18 checkpoint values;
+the current combined installation is recorded in the appended acceptance section.
 
 The user-saved New World evidence showed that completed Mayan 1 and Mayan 2
 were admitted correctly but drawn near the upper-left of the composite page.
@@ -140,3 +143,26 @@ candidate remain in the project-owned Phase 7.4 backup directory.
 RD handling remains fail-closed. Only exact same-session
 `identity.relative` is admitted. An exact `RD_` relative remains random,
 marker-hidden, non-editable, and is never displayed or named by the manager.
+
+## Live acceptance — 2026-09-30
+
+The user confirmed “标记正常没有问题” after version verification and live
+marker inspection. This closes the pending marker-placement acceptance for
+`0.13.4` on the exercised menu. The confirmation does not record a new sweep of
+all campaign layouts or a new campaign-victory persistence test.
+
+PileChainRepair was subsequently updated independently to `0.3.1`. The accepted
+combined deployment preserved `Plugins/CampaignCompletionDebug.asi` with
+SHA-256 `de10824a451bec3d566dbf417307c23fb9912fbf6aa2ea2b03e98e9d20655534`.
+The deployment verification recorded `campaignMarkerPreserved=true`, and all
+other archive entries were preserved when updating PileChainRepair.
+
+The current accepted pair is Campaign Marker `0.13.4` and PileChainRepair
+`0.3.1`; the older PileChainRepair hash and complete archive hashes in the
+Guarded deployment section describe the July checkpoint. The
+[PileChainRepair acceptance record](../../../AIGoodCrashRepair/docs/2026-09-30-acceptance.md)
+records the later combined archive and build hashes.
+
+Use the accepted bundle's `install.ps1` / `rollback.ps1` to maintain this pair.
+The older Phase 7.4 complete-archive rollback snapshot is a historical
+checkpoint and would also restore its then-current PileChainRepair version.
