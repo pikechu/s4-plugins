@@ -119,9 +119,9 @@ bool MusicIatHooks::Start(HMODULE executable, std::uint32_t mappedSize,
         failure_ = MusicHookFailure::InvalidPeImage;
         return false;
     }
-    const auto* nt = reinterpret_cast<const IMAGE_NT_HEADERS32*>(
-        base + static_cast<std::uint32_t>(dos->e_lfanew));
-    if (nt->Signature != IMAGE_NT_SIGNATURE ||
+    const auto* nt = ImagePointer<IMAGE_NT_HEADERS32>(
+        base, mappedSize, static_cast<std::uint32_t>(dos->e_lfanew));
+    if (nt == nullptr || nt->Signature != IMAGE_NT_SIGNATURE ||
         nt->FileHeader.Machine != IMAGE_FILE_MACHINE_I386 ||
         nt->OptionalHeader.Magic != IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
         failure_ = MusicHookFailure::InvalidPeImage;

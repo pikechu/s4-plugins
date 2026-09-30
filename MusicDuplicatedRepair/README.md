@@ -60,8 +60,8 @@ The existing tracker test entry point is:
 ctest --test-dir build-music -C Release --output-on-failure --verbose -R "^music_event_tracker_tests$"
 ```
 
-Those tests cover repeated starts, path replacement, window boundaries, unknown
-stream handles, and starts at uptime zero. They do not exercise live IAT hooks,
+Those tests cover repeated starts, path replacement, starts within and outside
+the duplicate window, unknown stream handles, and starts at uptime zero. They do not exercise live IAT hooks,
 concurrent capture, controlled stop, or audible overlap.
 
 ## Collecting the overlap log
